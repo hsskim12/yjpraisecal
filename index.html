@@ -705,7 +705,7 @@ function renderMyPart() {
         renderPublic();
       },
     }, p)),
-    !myPart && el('span', { class: 'mphint' }, '고르면 연습 영상이 바로 보여요'));
+    myPart ? '' : el('span', { class: 'mphint' }, '고르면 연습 영상이 바로 보여요'));
 }
 
 // 지금 화면에 보여 줄 목록과 제목을 정함 (검색 / 다가오는 8주 / 고른 달)
