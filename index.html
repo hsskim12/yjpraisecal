@@ -681,7 +681,7 @@ async function shareEvents(list) {
       const url = safeUrl(e.parts?.[p]);
       return url && `${p === '전체' ? '듣기' : p}: ${url}`;
     }).filter(Boolean),
-  ].join('\n')).join('\n\n');
+  ].join('\n\n')).join('\n\n\n'); // 링크마다 빈 줄을 두어 누를 때 옆 링크가 눌리지 않게
   const url = location.origin + '/';
   try {
     if (navigator.share) await navigator.share({ title: '찬양대 알리미', text, url });
