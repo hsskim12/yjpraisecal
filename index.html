@@ -651,7 +651,11 @@ async function load() {
 
 // 화면을 다시 보거나 창으로 돌아왔을 때 1분이 지났으면 최신 내용을 다시 확인
 function refreshIfStale() {
-  if (document.visibilityState === 'visible' && !refreshing && !saving && Date.now() - lastLoadAt > 60000) load();
+  if (document.visibilityState === 'visible' && !refreshing && !saving && Date.now() - lastLoadAt > 60000) {
+    load();
+    // 홈 화면 앱은 켜 둔 채로 다시 열면 새 버전을 확인하지 않으므로 여기서 확인 (새 버전이 있으면 아래에서 새로고침)
+    navigator.serviceWorker?.getRegistration().then(r => r && r.update()).catch(() => {});
+  }
 }
 
 /* ===== 공개 화면 ===== */
@@ -1370,6 +1374,14 @@ load();
 
 // 홈 화면 설치(안드로이드 크롬)에 필요한 파일 등록 — 실패해도 사이트는 그대로 동작
 if ('serviceWorker' in navigator) {
+  // 새 버전(sw.js 번호가 바뀜)이 올라오면 자동으로 새로고침. 처음 설치될 때는 하지 않음
+  const hadController = !!navigator.serviceWorker.controller;
+  const reloadWhenIdle = () => {
+    // 입력 창이 열려 있거나 저장 중이면 끝날 때까지 기다림 (쓰던 내용이 날아가지 않게)
+    if (saving || document.querySelector('dialog[open]')) return setTimeout(reloadWhenIdle, 3000);
+    location.reload();
+  };
+  navigator.serviceWorker.addEventListener('controllerchange', () => { if (hadController) reloadWhenIdle(); });
   addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
 }
 </script>
