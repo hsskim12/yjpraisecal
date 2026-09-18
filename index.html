@@ -211,13 +211,16 @@
   .field input, .field textarea, .field select { display: block; width: 100%; margin-top: 4px; font: inherit; font-weight: 400; padding: 9px 10px; border: 1px solid var(--line); border-radius: 9px; }
   fieldset { border: 1px solid var(--line); border-radius: 12px; margin: 0 0 12px; padding: 10px 12px 0; }
   legend { font-size: 14px; font-weight: 600; padding: 0 4px; }
-  .partrow { display: grid; grid-template-columns: 64px 1fr auto; align-items: center; gap: 8px; margin-bottom: 10px; font-size: 14px; }
+  .partrow { display: grid; grid-template-columns: 64px 1fr auto auto; align-items: center; gap: 8px; margin-bottom: 10px; font-size: 14px; }
   .partrow input { font: inherit; padding: 8px 10px; border: 1px solid var(--line); border-radius: 9px; min-width: 0; }
   .partrow .iconbtn { width: 38px; height: 38px; }
   .autorow { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin-bottom: 10px; }
   .autorow .btn, .refsearch .btn { padding: 7px 12px; font-size: 14px; }
   .partrow input.autofilled { background: #fff8d6; border-color: #ecd67a; } /* 자동으로 채운 칸 — 고치면 원래 색 */
   .refsearch { margin: -6px 0 12px; }
+  .partpreview { grid-column: 1 / -1; }
+  .partpreview iframe { width: 100%; aspect-ratio: 16 / 9; border: 0; border-radius: 8px; display: block; }
+  .partpreview .hint { margin: 0; }
   /* 유튜브 검색 창 */
   .ytsearch { display: flex; gap: 8px; margin-bottom: 8px; }
   .ytsearch input { flex: 1; min-width: 0; font: inherit; padding: 9px 10px; border: 1px solid var(--line); border-radius: 9px; }
@@ -227,6 +230,8 @@
   .ytitem a { font-size: 14px; font-weight: 600; color: var(--ink); text-decoration: none; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
   .ytitem a:hover { text-decoration: underline; }
   .ytthumb { display: block; }
+  .ytitem.current { border-color: var(--accent); background: #fff8ec; }
+  .curbadge { display: inline-block; margin-bottom: 2px; background: var(--accent); color: #fff; font-size: 12px; font-weight: 700; border-radius: 999px; padding: 0 8px; }
   .ytpreview { grid-column: 1 / -1; aspect-ratio: 16 / 9; }
   .ytpreview iframe { width: 100%; height: 100%; border: 0; border-radius: 8px; display: block; }
   .ytitem small { display: block; color: var(--muted); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -246,6 +251,10 @@
     .edrow { flex-wrap: wrap; }
     .edinfo { flex: 1 1 100%; }
     .edbtns { margin-left: auto; }
+    /* 파트 링크 줄: 링크 칸을 넓게 */
+    .partrow { grid-template-columns: 50px 1fr auto auto; gap: 6px; }
+    .partrow .iconbtn { width: 34px; height: 34px; }
+    .partrow input { padding: 8px; }
   }
 </style>
 </head>
@@ -1086,7 +1095,24 @@ $('partFields').append(
     el('div', { class: 'partrow' },
       el('label', { for: 'part-' + p }, p),
       el('input', { type: 'url', id: 'part-' + p, name: 'part-' + p, placeholder: 'https://youtu.be/...', oninput: e => e.target.classList.remove('autofilled') }),
-      el('button', { type: 'button', class: 'iconbtn', title: `${p} 영상 유튜브에서 찾기`, 'aria-label': `${p} 영상 유튜브에서 찾기`, onclick: () => openYtSearch(p) }, '🔍'))));
+      el('button', { type: 'button', class: 'iconbtn', title: `${p} 영상 들어 보기`, 'aria-label': `${p} 영상 들어 보기`, onclick: () => previewPart(p) }, '▶'),
+      el('button', { type: 'button', class: 'iconbtn', title: `${p} 영상 유튜브에서 찾기`, 'aria-label': `${p} 영상 유튜브에서 찾기`, onclick: () => openYtSearch(p) }, '🔍'),
+      el('div', { class: 'partpreview', id: 'pv-' + p, hidden: '' }))));
+
+// ▶: 칸에 들어 있는 영상을 그 줄 아래에서 재생 (한 번에 하나, 다시 누르면 닫힘)
+function closePartPreviews() {
+  document.querySelectorAll('.partpreview').forEach(v => { v.hidden = true; v.replaceChildren(); });
+}
+function previewPart(p) {
+  const box = $('pv-' + p), open = box.hidden;
+  closePartPreviews();
+  if (!open) return;
+  const yt = youtube(safeUrl(form['part-' + p].value));
+  box.replaceChildren(yt ? embed(yt.id, yt.start, `${p} 영상`)
+    : el('p', { class: 'hint' }, form['part-' + p].value.trim() ? '유튜브 링크가 아니라서 여기서 재생할 수 없어요.' : '먼저 링크를 넣어 주세요.'));
+  box.hidden = false;
+}
+$('dlg').addEventListener('close', closePartPreviews); // 창을 닫으면 소리도 멈춤
 $('refSearchBtn').onclick = () => openYtSearch('refs');
 
 /* ===== 유튜브 검색 → [추가]로 링크 넣기 =====
@@ -1142,11 +1168,16 @@ async function ytSearch() {
   try {
     const { items, source } = await ytFetch(q);
     if (seq !== ytSeq) return;
+    // 지금 칸(참고연주는 모든 줄)에 들어 있는 영상 번호
+    const current = new Set((ytTarget === 'refs' ? form.refs.value.split('\n') : [form['part-' + ytTarget].value])
+      .map(line => { const m = line.trim().match(URL_LINE); return m && youtube(m[2])?.id; }).filter(Boolean));
     $('ytMsg').textContent = !items.length ? '검색 결과가 없습니다. 검색어를 바꿔 보세요.'
       : source === 'api' ? '빠른 검색이 안 되어 대체 검색 결과를 보여 드려요. 결과가 정확하지 않을 수 있습니다.'
       : '사진이나 제목을 누르면 여기서 미리 들어 볼 수 있어요.';
+    if (items.length && current.size && !items.some(x => current.has(x.id))) $('ytMsg').textContent += ' (지금 입력된 영상은 이 결과에 없어요)';
     $('ytList').replaceChildren(...items.filter(x => /^[\w-]{11}$/.test(x.id)).map(x => {
       const url = `https://youtu.be/${x.id}`;
+      const isCur = current.has(x.id);
       const preview = el('div', { class: 'ytpreview', hidden: '' });
       // 미리 듣기: 한 번에 하나만 열림, 다시 누르면 닫힘
       const toggle = e => {
@@ -1155,15 +1186,17 @@ async function ytSearch() {
         $('ytList').querySelectorAll('.ytpreview').forEach(v => { v.hidden = true; v.replaceChildren(); });
         if (open) { preview.replaceChildren(embed(x.id, 0, x.title)); preview.hidden = false; }
       };
-      return el('div', { class: 'ytitem' },
+      return el('div', { class: 'ytitem' + (isCur ? ' current' : '') },
         el('a', { href: url, class: 'ytthumb', onclick: toggle, 'aria-label': '미리 듣기' },
           el('img', { src: `https://i.ytimg.com/vi/${x.id}/mqdefault.jpg`, alt: '', loading: 'lazy' })),
         el('div', {},
+          isCur && el('span', { class: 'curbadge' }, '✓ 입력됨'),
           el('a', { href: url, onclick: toggle }, decodeHtml(x.title)),
           el('small', {}, [decodeHtml(x.channel), x.length, x.views].filter(Boolean).join(' · '))),
         el('button', { type: 'button', class: 'btn primary', onclick: () => addYt(url) }, '추가'),
         preview);
     }));
+    $('ytList').querySelector('.current')?.scrollIntoView({ block: 'nearest' }); // 입력된 영상이 아래에 있으면 보이게
   } catch (err) {
     if (seq === ytSeq) $('ytMsg').textContent = err.message;
   } finally {
