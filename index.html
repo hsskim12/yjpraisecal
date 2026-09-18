@@ -5,6 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>찬양대 알리미</title>
 <meta name="description" content="찬양대 알리미 — 찬양 일정, 파트 연습 영상과 악보">
+<!-- 카카오톡 등에 주소를 올렸을 때 보이는 미리보기 -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://yjpraisecal.vercel.app/">
+<meta property="og:title" content="찬양대 알리미">
+<meta property="og:description" content="인천영종교회 찬양대 — 찬양 일정, 파트 연습 영상과 악보">
+<meta property="og:image" content="https://yjpraisecal.vercel.app/icon-512.png">
 <link rel="icon" type="image/png" sizes="32x32" href="icon-32.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <!-- 휴대폰 홈 화면에 추가하면 앱처럼 열림 -->
@@ -64,7 +70,17 @@
 
   /* 이번 주 강조 카드 */
   .hero { background: var(--navy); border-radius: 18px; padding: 16px; margin-bottom: 26px; }
-  .hero .eyebrow { color: #cdd8ec; margin-bottom: 10px; font-size: 16px; }
+  .hero .eyebrow { color: #cdd8ec; margin: 0; font-size: 16px; }
+  .herohead { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
+  .sharebtn { flex-shrink: 0; background: rgb(255 255 255 / .15); color: #fff; border: 1px solid rgb(255 255 255 / .4); border-radius: 999px; padding: 5px 14px; font-size: 14px; font-weight: 600; }
+  .sharebtn:hover { background: rgb(255 255 255 / .25); }
+
+  /* 내 파트 (이 기기에 저장) */
+  .mypart { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin: -6px 0 16px; }
+  .mypart .mplabel { font-size: 14px; font-weight: 700; color: var(--muted); margin-right: 2px; }
+  .mypart .btn { padding: 6px 12px; font-size: 14px; }
+  .mypart .btn[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .mypart .mphint { font-size: 12px; color: var(--muted); }
   .hero .card { border: 0; }
   .hero .card + .card { margin-top: 10px; }
 
@@ -229,8 +245,13 @@
         <button type="button" class="clearbtn" id="searchClear" aria-label="검색어 지우기" title="검색어 지우기" hidden>✕</button>
       </div>
 
+      <div class="mypart" id="myPart" role="group" aria-label="내 파트"></div>
+
       <section class="hero" id="hero" hidden>
-        <p class="eyebrow" id="heroLabel"></p>
+        <div class="herohead">
+          <p class="eyebrow" id="heroLabel"></p>
+          <button type="button" class="sharebtn" id="shareBtn">공유</button>
+        </div>
         <div id="heroCards"></div>
       </section>
 
@@ -380,15 +401,15 @@ const TYPE_CUSTOM = '__custom__'; // 목록에 없는 구분을 직접 적을 �
 const NOTICE_HEAD = 30;   // 첫 화면에 보이는 공지 글자 수
 const UPCOMING_WEEKS = 8; // 첫 화면에 보여 줄 기간
 const URL_LINE = /^(.*?)\s*(https?:\/\/\S+)$/;
-const TOKEN_KEY = 'choir-token', CACHE_KEY = 'choir-cache', BIG_KEY = 'choir-big';
+const TOKEN_KEY = 'choir-token', CACHE_KEY = 'choir-cache', BIG_KEY = 'choir-big', PART_KEY = 'choir-part';
 
 /* ===== 공통 도구 ===== */
 const $ = id => document.getElementById(id);
 const pad = n => String(n).padStart(2, '0');
 const sorted = arr => [...arr].sort((a, b) => a.date.localeCompare(b.date));
 
-const now = new Date();
-const TODAY = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`; // 기기 시간 기준
+const todayKey = (d = new Date()) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; // 기기 시간 기준
+let TODAY = todayKey(); // 앱을 켜 둔 채 날짜가 바뀌면 load()에서 다시 계산
 
 const utc = key => Date.UTC(+key.slice(0, 4), +key.slice(5, 7) - 1, +key.slice(8, 10));
 const dayKey = ms => new Date(ms).toISOString().slice(0, 10);
@@ -453,6 +474,8 @@ let query = '';         // 검색어
 let showPast = false;   // 편집 화면에서 지난 일정 펼침
 let saving = false;     // 저장·삭제를 서버에 보내는 중
 const expanded = new Set(); // 목록에서 '자세히 보기'로 펼쳐 둔 일정
+let myPart = '';            // 내 파트 (이 기기에만 저장)
+try { myPart = PART_SHORT[localStorage.getItem(PART_KEY)] ? localStorage.getItem(PART_KEY) : ''; } catch {}
 let token = null;
 try { token = sessionStorage.getItem(TOKEN_KEY); } catch {}
 
@@ -512,6 +535,12 @@ function readCache() {
 
 // 지난번에 받은 내용을 먼저 보여 주고, 뒤에서 최신 내용을 받아 바꿈
 async function load() {
+  // 날짜가 바뀌었으면 '오늘'을 새로 잡고, 보던 8주도 현재 기준이었다면 함께 옮김
+  if (todayKey() !== TODAY) {
+    const wasNow = upcomingStart === nextSunday();
+    TODAY = todayKey();
+    if (wasNow) upcomingStart = nextSunday();
+  }
   if (loadState !== 'ok') {
     const c = readCache();
     if (c) { applyData(c); loadState = 'ok'; }
@@ -560,8 +589,11 @@ function card(ev, badge, opts = {}) {
   const past = ev.date < TODAY;
   // 제목 오른쪽: 듣기·반주·악보·참고연주
   const headChips = compact
-    ? HEAD_PARTS.filter(h => h.part === '전체')
-      .map(h => ({ label: h.label, url: safeUrl(ev.parts?.[h.part]), hl: true })).filter(x => x.url)
+    ? [
+      ...HEAD_PARTS.filter(h => h.part === '전체')
+        .map(h => ({ label: h.label, url: safeUrl(ev.parts?.[h.part]), hl: true })),
+      myPart && { label: myPart, url: safeUrl(ev.parts?.[myPart]), hl: true, icon: '▶' }, // 접힌 카드에도 내 파트
+    ].filter(x => x && x.url)
     : [
       ...HEAD_PARTS.map(h => ({ label: h.label, url: safeUrl(ev.parts?.[h.part]), hl: true })).filter(x => x.url),
       ...linkList(ev.scores, '악보'),
@@ -569,7 +601,7 @@ function card(ev, badge, opts = {}) {
     ];
   // 아래: 파트 연습 (S·A·T·B)
   const partChips = compact ? [] : PARTS.filter(p => !HEAD_PARTS.some(h => h.part === p))
-    .map(p => ({ label: PART_SHORT[p] || p, full: p, url: safeUrl(ev.parts?.[p]) })).filter(x => x.url);
+    .map(p => ({ label: PART_SHORT[p] || p, full: p, url: safeUrl(ev.parts?.[p]), hl: p === myPart })).filter(x => x.url);
 
   return el('article', { class: 'card' + (past ? ' past' : '') + (badge ? ' next' : '') },
     el('div', { class: 'date' },
@@ -583,7 +615,7 @@ function card(ev, badge, opts = {}) {
       el('div', { class: 'titlerow' }, el('h3', {}, ev.title),
         badge && el('span', { class: 'badge' }, badge),
         past && el('span', { class: 'done' }, '지난 찬양'),
-        headChips.length > 0 && el('div', { class: 'headchips' }, headChips.map(x => chip(x)))),
+        headChips.length > 0 && el('div', { class: 'headchips' }, headChips.map(x => chip(x, x.icon)))),
       partChips.length > 0 && el('div', { class: 'group' },
         el('p', { class: 'label' }, '파트 연습'),
         el('div', { class: 'chips' }, partChips.map(x => chip(x, '▶')))),
@@ -641,6 +673,41 @@ function renderNotices() {
   }));
 }
 
+// 이번 주 찬양을 카카오톡 등으로 보냄 (공유 창이 없는 컴퓨터에서는 복사)
+async function shareEvents(list) {
+  const text = list.map(e => [
+    `${fmtDate(e.date)} ${typeLabel(typeOf(e))} 「${e.title}」`,
+    ...PARTS.map(p => {
+      const url = safeUrl(e.parts?.[p]);
+      return url && `${p === '전체' ? '듣기' : p}: ${url}`;
+    }).filter(Boolean),
+  ].join('\n')).join('\n\n');
+  const url = location.origin + '/';
+  try {
+    if (navigator.share) await navigator.share({ title: '찬양대 알리미', text, url });
+    else {
+      await navigator.clipboard.writeText(`${text}\n\n${url}`);
+      alert('복사했습니다. 카카오톡에 붙여 넣으세요.');
+    }
+  } catch (e) {
+    if (e.name !== 'AbortError') alert('공유하지 못했습니다.'); // 공유 창을 닫은 경우는 조용히 넘어감
+  }
+}
+
+function renderMyPart() {
+  $('myPart').replaceChildren(
+    el('span', { class: 'mplabel' }, '내 파트'),
+    ...Object.keys(PART_SHORT).map(p => el('button', {
+      type: 'button', class: 'btn', 'aria-pressed': String(p === myPart),
+      onclick: () => { // 같은 파트를 다시 누르면 선택 해제
+        myPart = p === myPart ? '' : p;
+        try { myPart ? localStorage.setItem(PART_KEY, myPart) : localStorage.removeItem(PART_KEY); } catch {}
+        renderPublic();
+      },
+    }, p)),
+    !myPart && el('span', { class: 'mphint' }, '고르면 연습 영상이 바로 보여요'));
+}
+
 // 지금 화면에 보여 줄 목록과 제목을 정함 (검색 / 다가오는 8주 / 고른 달)
 function buildView(heroEvents = []) {
   if (query) {
@@ -685,6 +752,7 @@ function buildView(heroEvents = []) {
 
 function renderPublic() {
   renderNotices();
+  renderMyPart();
 
   // 오늘 이후 가장 가까운 일정
   const nextDate = events.find(e => e.date >= TODAY)?.date;
@@ -698,6 +766,7 @@ function renderPublic() {
   if (showHero) {
     $('heroLabel').textContent = `${badge === '다음 찬양' ? badge : badge + ' 찬양'} · ${fmtDate(nextDate)}`;
     $('heroCards').replaceChildren(...heroEvents.map(e => card(e)));
+    $('shareBtn').onclick = () => shareEvents(heroEvents);
   }
 
   const view = buildView(heroEvents);
