@@ -118,6 +118,18 @@
   .ympick { display: flex; gap: 6px; min-width: 0; }
   .ympick select { font: inherit; font-size: 16px; font-weight: 700; color: var(--ink); padding: 8px; border: 1px solid var(--line); border-radius: 10px; background: #fff; min-width: 0; }
 
+  /* 연도별 보기: 한 줄 목록 */
+  .yrow { display: grid; grid-template-columns: 76px 50px minmax(0, 1fr); gap: 2px 10px; align-items: baseline; width: 100%; text-align: left; background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
+  .yrow:hover { border-color: var(--navy); }
+  .yrow.past { opacity: .55; }
+  .yrow.next { border: 2px solid var(--accent); }
+  .list > .yrow + .yrow { margin-top: 6px; }
+  .yrdate { font-weight: 700; color: var(--navy); white-space: nowrap; }
+  .yrkind { font-size: 13px; color: var(--muted); white-space: nowrap; }
+  .yrtitle { font-size: 16px; font-weight: 700; overflow-wrap: anywhere; }
+  .yrtitle .badge { margin-left: 6px; vertical-align: middle; }
+  .yrpeople { grid-column: 3; font-size: 12px; color: var(--muted); }
+
   /* 월이 바뀌는 지점 구분선 */
   .monthsep { margin: 0; display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 14px; font-weight: 700; }
   .monthsep::before, .monthsep::after { content: ""; flex: 1; height: 1px; background: var(--line); }
@@ -244,6 +256,16 @@
   #toEdit, #toPublic { background: #eef1f5; border-color: #d7dde6; color: #4a5568; }
   #toEdit:hover, #toPublic:hover { background: #e3e8ef; color: var(--ink); }
   #fontBtn[aria-pressed="true"] { background: var(--navy); color: #fff; border-color: var(--navy); }
+  /* 연도별 목록 인쇄: 목록만 깔끔하게 */
+  @media print {
+    .top, .kakaobar, .staleMsg, .notices, .searchrow, .mypart, .hero, .modebar, .periodbar, .emptySundays, footer, .player, .detailbtn { display: none !important; }
+    body { background: #fff; zoom: 1; }
+    main.wrap { padding: 0; }
+    .yrow { border: 0; border-bottom: 1px solid #ccc; border-radius: 0; padding: 6px 0; break-inside: avoid; }
+    .yrow.past { opacity: 1; }
+    .list > .yrow + .yrow { margin-top: 0; }
+    .card { break-inside: avoid; }
+  }
   @media (max-width: 480px) {
     .periodmid { flex: 1; }
     .body { padding: 12px 10px; }
@@ -312,6 +334,7 @@
       <div class="modebar" id="modeBar" role="group" aria-label="조회 모드">
         <button type="button" class="btn" id="modeUpcoming" aria-pressed="true"></button>
         <button type="button" class="btn" id="modeMonth" aria-pressed="false">월별 보기</button>
+        <button type="button" class="btn" id="modeYear" aria-pressed="false">연도별 보기</button>
       </div>
 
       <div class="periodbar" id="periodBar">
@@ -325,6 +348,7 @@
         </div>
         <button type="button" class="arrow" id="next" aria-label="다음 기간">›</button>
         <button type="button" class="btn" id="nowBtn" hidden></button>
+        <button type="button" class="btn" id="printBtn" hidden>인쇄</button>
       </div>
 
       <p class="summary" id="searchSummary" role="status" hidden></p>
@@ -547,7 +571,7 @@ function busy(btn, on, label) {
 let events = [], notices = [];
 let loadState = 'loading', loadMsg = '', staleMsg = '', refreshing = false, lastLoadAt = 0;
 let viewY = +TODAY.slice(0, 4), viewM = +TODAY.slice(5, 7);
-let mode = 'upcoming';  // 'upcoming'(다가오는 8주) 또는 'month'(고른 달)
+let mode = 'upcoming';  // 'upcoming'(다가오는 8주) / 'month'(고른 달) / 'year'(고른 해 한 줄 목록)
 let upcomingStart = nextSunday();
 let query = '';         // 검색어
 let showPast = false;   // 편집 화면에서 지난 일정 펼침
@@ -887,6 +911,16 @@ function buildView(heroEvents = []) {
       emptySundays: [],
     };
   }
+  if (mode === 'year') {
+    const list = events.filter(e => e.date.startsWith(`${viewY}-`));
+    return {
+      list,
+      title: `${viewY}년 찬양 일정`,
+      summary: `${list.length}곡 등록`,
+      empty: '이 해에 등록된 찬양이 없습니다.',
+      emptySundays: [],
+    };
+  }
   const monthEvents = events.filter(e => e.date.startsWith(`${viewY}-${pad(viewM)}-`));
   const list = monthEvents; // 월별 보기에서는 강조 카드와 관계없이 모두 표시
   const suns = sundays(viewY, viewM);
@@ -925,9 +959,12 @@ function renderPublic() {
   $('list').replaceChildren(...(view.list.length
     ? view.list.flatMap((e, i) => {
       const month = e.date.slice(0, 7);
-      const separator = i > 0 && month !== view.list[i - 1].date.slice(0, 7)
-        ? [el('h3', { class: 'monthsep' }, `${+month.slice(0, 4)}년 ${+month.slice(5)}월`)] : [];
-      return [...separator, card(e, e.date === nextDate ? badge : null, { compact: !expanded.has(e.id), toggle: true })];
+      const yearList = mode === 'year' && !query;
+      const separator = (i > 0 && month !== view.list[i - 1].date.slice(0, 7)) || (yearList && i === 0)
+        ? [el('h3', { class: 'monthsep' }, yearList ? `${+month.slice(5)}월` : `${+month.slice(0, 4)}년 ${+month.slice(5)}월`)] : [];
+      const b = e.date === nextDate ? badge : null;
+      return [...separator, yearList && !expanded.has(e.id) ? yearRow(e, b)
+        : card(e, b, { compact: !yearList && !expanded.has(e.id), toggle: true })];
     })
     : [el('p', { class: 'empty' }, view.empty)]));
   // 일정이 하나도 없으면 "등록된 찬양이 없습니다" 안내만 보여 줌
@@ -940,12 +977,15 @@ function renderPublic() {
   $('modeUpcoming').textContent = `다가오는 ${UPCOMING_WEEKS}주 보기`;
   $('modeUpcoming').setAttribute('aria-pressed', String(mode === 'upcoming'));
   $('modeMonth').setAttribute('aria-pressed', String(mode === 'month'));
-  $('ympick').hidden = mode !== 'month';
+  $('modeYear').setAttribute('aria-pressed', String(mode === 'year'));
+  $('ympick').hidden = mode === 'upcoming';
+  $('monthSel').hidden = mode === 'year';
+  $('printBtn').hidden = mode !== 'year';
   // '현재 8주' 버튼은 기간을 옮겼을 때만 보여 줌
   $('nowBtn').hidden = mode !== 'upcoming' || upcomingStart === nextSunday();
   $('nowBtn').textContent = `현재 ${UPCOMING_WEEKS}주`;
-  $('prev').setAttribute('aria-label', mode === 'upcoming' ? `이전 ${UPCOMING_WEEKS}주` : '이전 달');
-  $('next').setAttribute('aria-label', mode === 'upcoming' ? `다음 ${UPCOMING_WEEKS}주` : '다음 달');
+  $('prev').setAttribute('aria-label', mode === 'upcoming' ? `이전 ${UPCOMING_WEEKS}주` : mode === 'year' ? '이전 해' : '이전 달');
+  $('next').setAttribute('aria-label', mode === 'upcoming' ? `다음 ${UPCOMING_WEEKS}주` : mode === 'year' ? '다음 해' : '다음 달');
   $('searchClear').hidden = !query;
 
   // 연도 선택지: 일정이 있는 해 ~ 올해 앞뒤 1년
@@ -960,6 +1000,26 @@ function renderPublic() {
 function clearSearch() {
   query = '';
   $('searchInput').value = '';
+}
+
+// 연도별 보기의 한 줄: 날짜 · 구분 · 제목 (지휘·반주). 누르면 카드로 펼쳐 영상·악보를 봄
+function yearRow(e, badge) {
+  const people = [e.conductor && '지휘 ' + e.conductor, e.pianist && '반주 ' + e.pianist].filter(Boolean).join(' · ');
+  return el('button', {
+    type: 'button', class: 'yrow' + (e.date < TODAY ? ' past' : '') + (badge ? ' next' : ''),
+    onclick: () => { expanded.add(e.id); renderPublic(); },
+  },
+    el('span', { class: 'yrdate' }, `${+e.date.slice(5, 7)}/${+e.date.slice(8, 10)} (${DOW[dowOf(e.date)]})`),
+    el('span', { class: 'yrkind' }, typeLabel(typeOf(e))),
+    el('span', { class: 'yrtitle' }, e.title, badge && el('span', { class: 'badge' }, badge)),
+    people && el('span', { class: 'yrpeople' }, people));
+}
+
+function showYear(y) {
+  clearSearch();
+  viewY = y;
+  mode = 'year';
+  renderPublic();
 }
 
 function showMonth(y, m) {
@@ -1413,6 +1473,8 @@ function movePeriod(direction) {
   if (mode === 'upcoming') {
     upcomingStart = dayKey(utc(upcomingStart) + direction * UPCOMING_WEEKS * 7 * 864e5);
     renderPublic();
+  } else if (mode === 'year') {
+    showYear(viewY + direction);
   } else {
     const date = new Date(Date.UTC(viewY, viewM - 1 + direction, 1));
     showMonth(date.getUTCFullYear(), date.getUTCMonth() + 1);
@@ -1420,9 +1482,11 @@ function movePeriod(direction) {
 }
 $('prev').onclick = () => movePeriod(-1);
 $('next').onclick = () => movePeriod(1);
-$('yearSel').onchange = e => showMonth(+e.target.value, viewM);
+$('yearSel').onchange = e => mode === 'year' ? showYear(+e.target.value) : showMonth(+e.target.value, viewM);
 $('monthSel').onchange = e => showMonth(viewY, +e.target.value);
 $('modeMonth').onclick = () => showMonth(viewY, viewM);
+$('modeYear').onclick = () => showYear(viewY);
+$('printBtn').onclick = () => print();
 // 모드를 다시 고르면 오늘 기준으로 돌아옴
 $('modeUpcoming').onclick = () => { mode = 'upcoming'; upcomingStart = nextSunday(); renderPublic(); };
 $('nowBtn').onclick = () => {
