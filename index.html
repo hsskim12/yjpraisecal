@@ -550,37 +550,57 @@ function setToken(t) {
 }
 
 /* ===== 서버(Apps Script) ===== */
-async function api(body) {
-  if (!API_URL) throw new Error('사이트 설정이 끝나지 않았습니다. index.html의 API_URL에 Apps Script 웹 앱 주소를 넣어 주세요.');
-  // Apps Script가 가끔 응답을 못 주므로 최대 3번까지 다시 보냄.
-  // 저장·삭제는 일정마다 고유 번호(id)로 처리해서, 같은 요청이 두 번 가도 중복되거나 어긋나지 않음
-  for (let i = 0; i < 3; i++) {
-    const ac = new AbortController();
-    // 로그인은 금방 끝나는 요청이라 15초 안에 답이 없으면 끊고 다시 보냄 (저장·삭제는 45초까지 기다림)
-    const timer = setTimeout(() => ac.abort(), !body ? 10000 : ['login', 'ytsearch'].includes(body.action) ? 15000 : 45000);
-    try {
-      const res = body
-        // text/plain으로 보내야 Apps Script가 받는 교차 출처 요청(사전 요청 없음)이 됨
-        ? await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(body), signal: ac.signal })
-        : await fetch(`${API_URL}${API_URL.includes('?') ? '&' : '?'}t=${Date.now()}`, { signal: ac.signal });
-      const data = await res.json();
-      if (!data.ok) {
-        const auth = data.error === 'auth';
-        throw Object.assign(new Error(auth ? '로그인이 만료되었습니다. 다시 로그인해 주세요.' : data.error || '요청에 실패했습니다.'), { auth, server: true });
-      }
-      return data;
-    } catch (e) {
-      if (e.server) throw e; // 서버가 거절한 요청은 재시도하지 않음
-    } finally {
-      clearTimeout(timer);
+// 요청 한 번 보내기 (ms 안에 답이 없거나 stop 신호가 오면 포기)
+async function send(body, ms, stop) {
+  const ac = new AbortController();
+  const timer = setTimeout(() => ac.abort(), ms);
+  const onStop = () => ac.abort();
+  stop.addEventListener('abort', onStop);
+  try {
+    const res = body
+      // text/plain으로 보내야 Apps Script가 받는 교차 출처 요청(사전 요청 없음)이 됨
+      ? await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(body), signal: ac.signal })
+      : await fetch(`${API_URL}${API_URL.includes('?') ? '&' : '?'}t=${Date.now()}`, { signal: ac.signal });
+    const data = await res.json(); // 구글이 오류 화면(HTML)을 주면 여기서 실패 → 다른 요청의 답을 기다림
+    if (!data.ok) {
+      const auth = data.error === 'auth';
+      throw Object.assign(new Error(auth ? '로그인이 만료되었습니다. 다시 로그인해 주세요.' : data.error || '요청에 실패했습니다.'), { auth, server: true });
     }
+    return data;
+  } finally {
+    clearTimeout(timer);
+    stop.removeEventListener('abort', onStop);
   }
-  throw Object.assign(new Error(
+}
+
+// 구글 Apps Script는 가끔 요청 하나를 30초 넘게 붙잡다가 오류로 끝냄 (특히 로그인·저장 같은 POST).
+// 그래서 답이 늦으면 앞 요청은 그대로 두고 같은 요청을 하나 더 보내, 가장 먼저 온 정상 답을 씀 (최대 4개).
+// 저장·삭제는 일정마다 고유 번호(id)로 처리해서, 같은 요청이 여러 번 가도 중복되거나 어긋나지 않음
+function api(body) {
+  if (!API_URL) return Promise.reject(new Error('사이트 설정이 끝나지 않았습니다. index.html의 API_URL에 Apps Script 웹 앱 주소를 넣어 주세요.'));
+  const gap = body && !['login', 'ytsearch'].includes(body.action) ? 8000 : 4000; // 저장은 원래 몇 초 걸리므로 조금 더 기다렸다 보냄
+  const fail = () => Object.assign(new Error(
     !body ? '일정을 불러오지 못했습니다. 인터넷 연결을 확인하고 잠시 후 다시 시도해 주세요.'
       : body.action === 'login' ? '서버 응답을 받지 못했습니다. 잠시 후 다시 로그인해 주세요.'
       : body.action === 'ytsearch' ? '검색 응답을 받지 못했습니다. 잠시 후 다시 검색해 주세요.'
-      : '세 번 시도했지만 응답이 없습니다. 목록을 다시 불러왔으니 반영됐는지 확인해 주세요. 그대로 다시 저장하셔도 중복되지 않습니다.'
+      : '여러 번 보냈지만 응답이 없습니다. 목록을 다시 불러왔으니 반영됐는지 확인해 주세요. 그대로 다시 저장하셔도 중복되지 않습니다.'
   ), { unknown: true });
+  const stop = new AbortController();
+  return new Promise((resolve, reject) => {
+    let failed = 0;
+    const end = (fn, v) => {
+      if (stop.signal.aborted) return;
+      stop.abort(); // 남은 요청은 모두 그만 기다림
+      timers.forEach(clearTimeout);
+      fn(v);
+    };
+    const timers = [0, 1, 2, 3].map(i => setTimeout(() => send(body, 40000, stop.signal).then(
+      data => end(resolve, data),
+      e => {
+        if (e.server) end(reject, e);          // 서버가 거절한 요청(비밀번호 틀림 등)은 바로 알림
+        else if (++failed === 4) end(reject, fail());
+      }), i * gap));
+  });
 }
 
 function applyData(d) {
@@ -1080,7 +1100,7 @@ async function ytSearch() {
         el('img', { src: `https://i.ytimg.com/vi/${x.id}/mqdefault.jpg`, alt: '', loading: 'lazy' }),
         el('div', {},
           el('a', { href: url, target: '_blank', rel: 'noopener' }, decodeHtml(x.title)),
-          el('small', {}, decodeHtml(x.channel))),
+          el('small', {}, [decodeHtml(x.channel), x.length, x.views].filter(Boolean).join(' · '))),
         el('button', {
           type: 'button', class: 'btn primary',
           onclick: () => {
