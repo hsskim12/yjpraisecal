@@ -214,6 +214,10 @@
   .partrow { display: grid; grid-template-columns: 64px 1fr auto; align-items: center; gap: 8px; margin-bottom: 10px; font-size: 14px; }
   .partrow input { font: inherit; padding: 8px 10px; border: 1px solid var(--line); border-radius: 9px; min-width: 0; }
   .partrow .iconbtn { width: 38px; height: 38px; }
+  .autorow { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin-bottom: 10px; }
+  .autorow .btn, .refsearch .btn { padding: 7px 12px; font-size: 14px; }
+  .partrow input.autofilled { background: #fff8d6; border-color: #ecd67a; } /* 자동으로 채운 칸 — 고치면 원래 색 */
+  .refsearch { margin: -6px 0 12px; }
   /* 유튜브 검색 창 */
   .ytsearch { display: flex; gap: 8px; margin-bottom: 8px; }
   .ytsearch input { flex: 1; min-width: 0; font: inherit; padding: 9px 10px; border: 1px solid var(--line); border-radius: 9px; }
@@ -222,6 +226,9 @@
   .ytitem img { width: 96px; height: 54px; object-fit: cover; border-radius: 6px; background: var(--navy-soft); display: block; }
   .ytitem a { font-size: 14px; font-weight: 600; color: var(--ink); text-decoration: none; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
   .ytitem a:hover { text-decoration: underline; }
+  .ytthumb { display: block; }
+  .ytpreview { grid-column: 1 / -1; aspect-ratio: 16 / 9; }
+  .ytpreview iframe { width: 100%; height: 100%; border: 0; border-radius: 8px; display: block; }
   .ytitem small { display: block; color: var(--muted); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   /* 일정 추가·수정·공지 수정 창: 직접 입력한 글자는 파란색 (예시 글자는 회색 그대로) */
   dialog .field input, dialog .field textarea, dialog .field select, dialog .partrow input { color: #1a56db; }
@@ -436,6 +443,7 @@
     <label class="field">참고연주 링크 <span class="hint">(한 줄에 하나 · 유튜브 등 참고할 연주 영상)</span>
       <textarea name="refs" rows="3" placeholder="https://youtu.be/...&#10;합창단 연주 https://youtu.be/..."></textarea>
     </label>
+    <div class="refsearch"><button type="button" class="btn" id="refSearchBtn">🔍 유튜브에서 참고연주 찾기</button></div>
     <label class="field">안내 메모 <span class="hint">(선택)</span><textarea name="note" rows="3" maxlength="2000" placeholder="연습 시 참고할 내용"></textarea></label>
     <p class="err" id="formErr" hidden></p>
     <div class="actions">
@@ -683,12 +691,15 @@ function youtube(url) {
   } catch { return null; }
 }
 
+// 유튜브 재생 화면 (자동 재생 없음 — ▶를 눌러야 재생)
+const embed = (id, start, title) => el('iframe', {
+  src: `https://www.youtube-nocookie.com/embed/${id}?playsinline=1&rel=0${start ? '&start=' + start : ''}`,
+  title, allow: 'encrypted-media; picture-in-picture; fullscreen; clipboard-write; web-share', // 복사·공유 버튼용
+  allowfullscreen: '', referrerpolicy: 'strict-origin-when-cross-origin',
+});
+
 function play(yt, url, caption) {
-  const src = `https://www.youtube-nocookie.com/embed/${yt.id}?playsinline=1&rel=0${yt.start ? '&start=' + yt.start : ''}`;
-  $('playerFrame').replaceChildren(el('iframe', {
-    src, title: caption, allow: 'encrypted-media; picture-in-picture; fullscreen; clipboard-write; web-share', // 복사·공유 버튼용
-    allowfullscreen: '', referrerpolicy: 'strict-origin-when-cross-origin',
-  }));
+  $('playerFrame').replaceChildren(embed(yt.id, yt.start, caption));
   $('playerTitle').textContent = caption;
   $('playerOpen').href = url; // 재생이 막힌 영상은 유튜브에서 열도록
   $('player').hidden = false;
@@ -1066,38 +1077,59 @@ let editingId = null;
 const newId = () => (crypto.randomUUID ? crypto.randomUUID()
   : Date.now().toString(36) + Math.random().toString(36).slice(2, 10));
 
-$('partFields').append(...PARTS.map(p =>
-  el('div', { class: 'partrow' },
-    el('label', { for: 'part-' + p }, p),
-    el('input', { type: 'url', id: 'part-' + p, name: 'part-' + p, placeholder: 'https://youtu.be/...' }),
-    el('button', { type: 'button', class: 'iconbtn', title: `${p} 영상 유튜브에서 찾기`, 'aria-label': `${p} 영상 유튜브에서 찾기`, onclick: () => openYtSearch(p) }, '🔍'))));
+const AUTO_HINT = '찬양 제목으로 비어 있는 칸을 한 번에 채워요';
+$('partFields').append(
+  el('div', { class: 'autorow' },
+    el('button', { type: 'button', class: 'btn', id: 'autoBtn', onclick: autoFillParts }, '🔍 파트 영상 자동 찾기'),
+    el('span', { class: 'hint', id: 'autoMsg' }, AUTO_HINT)),
+  ...PARTS.map(p =>
+    el('div', { class: 'partrow' },
+      el('label', { for: 'part-' + p }, p),
+      el('input', { type: 'url', id: 'part-' + p, name: 'part-' + p, placeholder: 'https://youtu.be/...', oninput: e => e.target.classList.remove('autofilled') }),
+      el('button', { type: 'button', class: 'iconbtn', title: `${p} 영상 유튜브에서 찾기`, 'aria-label': `${p} 영상 유튜브에서 찾기`, onclick: () => openYtSearch(p) }, '🔍'))));
+$('refSearchBtn').onclick = () => openYtSearch('refs');
 
 /* ===== 유튜브 검색 → [추가]로 링크 넣기 =====
    먼저 이 사이트의 Vercel 함수(api/ytsearch.js)로 빠르게 찾고, 안 되면 Apps Script 검색으로 대신함 */
-let ytPart = '', ytSeq = 0; // ytSeq: 가장 최근 검색 번호 (늦게 온 앞 검색 결과는 버림)
+let ytTarget = '', ytSeq = 0; // ytTarget: 파트 이름 또는 'refs'(참고연주) / ytSeq: 가장 최근 검색 번호 (늦게 온 앞 검색 결과는 버림)
 const decodeHtml = s => new DOMParser().parseFromString(String(s || ''), 'text/html').documentElement.textContent; // 대체 검색(API) 제목의 &#39; 등을 글자로
 
-function openYtSearch(part) {
-  ytPart = part;
-  $('ytTitle').textContent = `${part} 영상 찾기`;
-  // 기본 검색어: 찬양 제목 + 파트 이름 (전체는 제목만)
-  $('ytQ').value = [form.title.value.trim(), part === '전체' ? '' : part].filter(Boolean).join(' ');
+// 결과: { items, source } — source가 'api'면 대체 검색
+async function ytFetch(q) {
+  try {
+    const r = await fetch('/api/ytsearch?q=' + encodeURIComponent(q), { signal: AbortSignal.timeout(10000) });
+    const d = await r.json();
+    if (d.ok && d.items.length) return d;
+  } catch {}
+  const res = await api(null, { action: 'ytsearch', token, q });
+  // 서버(Code.gs)가 예전 버전이면 검색 대신 일정 목록을 돌려줌
+  if (!Array.isArray(res.items)) throw new Error('서버(Code.gs)를 새 버전으로 바꿔야 검색됩니다. 설정안내 9단계를 확인해 주세요.');
+  return { items: res.items, source: 'api' };
+}
+
+function openYtSearch(target) {
+  ytTarget = target;
+  const refs = target === 'refs';
+  $('ytTitle').textContent = refs ? '참고연주 영상 찾기' : `${target} 영상 찾기`;
+  // 기본 검색어: 찬양 제목 + 파트 이름 (전체·참고연주는 제목만)
+  $('ytQ').value = [form.title.value.trim(), refs || target === '전체' ? '' : target].filter(Boolean).join(' ');
   $('ytList').replaceChildren();
   $('ytMsg').textContent = '';
   $('ytDlg').showModal();
   if ($('ytQ').value) ytSearch(); else $('ytQ').focus();
 }
 
-async function ytFetch(q) {
-  try {
-    const r = await fetch('/api/ytsearch?q=' + encodeURIComponent(q), { signal: AbortSignal.timeout(10000) });
-    const d = await r.json();
-    if (d.ok && d.items.length) return d.items;
-  } catch {}
-  const res = await api(null, { action: 'ytsearch', token, q });
-  // 서버(Code.gs)가 예전 버전이면 검색 대신 일정 목록을 돌려줌
-  if (!Array.isArray(res.items)) throw new Error('서버(Code.gs)를 새 버전으로 바꿔야 검색됩니다. 설정안내 9단계를 확인해 주세요.');
-  return res.items;
+function addYt(url) {
+  if (ytTarget === 'refs') { // 참고연주는 여러 줄이라 맨 아래에 한 줄 추가
+    form.refs.value = [form.refs.value.trim(), url].filter(Boolean).join('\n');
+    form.refs.focus();
+  } else {
+    const box = form['part-' + ytTarget];
+    box.value = url;
+    box.classList.remove('autofilled');
+    box.focus();
+  }
+  $('ytDlg').close();
 }
 
 async function ytSearch() {
@@ -1108,24 +1140,29 @@ async function ytSearch() {
   $('ytMsg').textContent = '검색 중…';
   busy($('ytGo'), true, '검색 중…');
   try {
-    const items = await ytFetch(q);
+    const { items, source } = await ytFetch(q);
     if (seq !== ytSeq) return;
-    $('ytMsg').textContent = items.length ? '제목을 누르면 유튜브에서 미리 볼 수 있어요.' : '검색 결과가 없습니다. 검색어를 바꿔 보세요.';
+    $('ytMsg').textContent = !items.length ? '검색 결과가 없습니다. 검색어를 바꿔 보세요.'
+      : source === 'api' ? '빠른 검색이 안 되어 대체 검색 결과를 보여 드려요. 결과가 정확하지 않을 수 있습니다.'
+      : '사진이나 제목을 누르면 여기서 미리 들어 볼 수 있어요.';
     $('ytList').replaceChildren(...items.filter(x => /^[\w-]{11}$/.test(x.id)).map(x => {
       const url = `https://youtu.be/${x.id}`;
+      const preview = el('div', { class: 'ytpreview', hidden: '' });
+      // 미리 듣기: 한 번에 하나만 열림, 다시 누르면 닫힘
+      const toggle = e => {
+        e.preventDefault();
+        const open = preview.hidden;
+        $('ytList').querySelectorAll('.ytpreview').forEach(v => { v.hidden = true; v.replaceChildren(); });
+        if (open) { preview.replaceChildren(embed(x.id, 0, x.title)); preview.hidden = false; }
+      };
       return el('div', { class: 'ytitem' },
-        el('img', { src: `https://i.ytimg.com/vi/${x.id}/mqdefault.jpg`, alt: '', loading: 'lazy' }),
+        el('a', { href: url, class: 'ytthumb', onclick: toggle, 'aria-label': '미리 듣기' },
+          el('img', { src: `https://i.ytimg.com/vi/${x.id}/mqdefault.jpg`, alt: '', loading: 'lazy' })),
         el('div', {},
-          el('a', { href: url, target: '_blank', rel: 'noopener' }, decodeHtml(x.title)),
+          el('a', { href: url, onclick: toggle }, decodeHtml(x.title)),
           el('small', {}, [decodeHtml(x.channel), x.length, x.views].filter(Boolean).join(' · '))),
-        el('button', {
-          type: 'button', class: 'btn primary',
-          onclick: () => {
-            form['part-' + ytPart].value = url;
-            $('ytDlg').close();
-            form['part-' + ytPart].focus();
-          },
-        }, '추가'));
+        el('button', { type: 'button', class: 'btn primary', onclick: () => addYt(url) }, '추가'),
+        preview);
     }));
   } catch (err) {
     if (seq === ytSeq) $('ytMsg').textContent = err.message;
@@ -1136,6 +1173,53 @@ async function ytSearch() {
 
 $('ytForm').addEventListener('submit', e => { e.preventDefault(); ytSearch(); });
 $('ytClose').onclick = () => $('ytDlg').close();
+$('ytDlg').addEventListener('close', () => $('ytList').replaceChildren()); // 창을 닫으면 미리 듣기 소리도 멈춤
+
+/* ===== 파트 영상 자동 찾기 =====
+   파트마다 "제목 + 파트"로 동시에 검색해, 제목과 그 파트 이름이 함께 들어간 영상을 비어 있는 칸에 넣음 */
+const PART_WORDS = {
+  '전체': ['합창', '전체', 'choir', 'full'], '소프라노': ['소프라노', 'soprano'], '알토': ['알토', 'alto'],
+  '테너': ['테너', 'tenor'], '베이스': ['베이스', 'bass'], '반주': ['반주', 'accomp'],
+};
+const squash = s => String(s || '').toLowerCase().replace(/[^0-9a-z가-힣]/g, ''); // 띄어쓰기·기호를 빼고 비교
+const hasWord = (t, p) => PART_WORDS[p].some(w => t.includes(w));
+// 그 파트 이름만 들어간 영상 (다른 파트 이름이 같이 있으면 제외)
+const fitsPart = (t, p) => hasWord(t, p) && PARTS.every(o => o === p || o === '전체' || !hasWord(t, o));
+const autoMsg = t => { $('autoMsg').textContent = t; };
+
+async function autoFillParts() {
+  const title = form.title.value.trim();
+  if (!title) return autoMsg('찬양 제목을 먼저 입력해 주세요.');
+  const empty = PARTS.filter(p => !form['part-' + p].value.trim());
+  if (!empty.length) return autoMsg('모든 칸이 이미 채워져 있어요.');
+  const key = squash(title);
+  busy($('autoBtn'), true, '찾는 중…');
+  autoMsg('');
+  try {
+    const found = await Promise.all(empty.map(async p => {
+      const { items } = await ytFetch(`${title} ${p === '전체' ? '합창' : p}`);
+      return items.filter(x => { const t = squash(decodeHtml(x.title)); return t.includes(key) && fitsPart(t, p); })
+        .sort((a, b) => /midi/i.test(a.title) - /midi/i.test(b.title)); // MIDI 영상은 뒤로
+    }));
+    // 가능하면 파트가 가장 많이 나온 한 채널 것으로 맞춤
+    const count = {};
+    found.forEach(list => new Set(list.map(x => x.channel)).forEach(c => { count[c] = (count[c] || 0) + 1; }));
+    const best = Object.keys(count).sort((a, b) => count[b] - count[a])[0];
+    let n = 0;
+    empty.forEach((p, i) => {
+      const pick = found[i].find(x => x.channel === best) || found[i][0];
+      if (!pick) return;
+      form['part-' + p].value = `https://youtu.be/${pick.id}`;
+      form['part-' + p].classList.add('autofilled');
+      n++;
+    });
+    autoMsg(n ? `${n}칸을 채웠어요 (노란 칸). 저장 전에 🔍로 맞는 영상인지 확인해 주세요.` : '맞는 영상을 찾지 못했어요. 🔍로 직접 찾아 주세요.');
+  } catch (err) {
+    autoMsg(err.message);
+  } finally {
+    busy($('autoBtn'), false);
+  }
+}
 form.type.append(el('option', { value: '' }, '선택하세요'), ...TYPES.map(t => el('option', { value: t }, typeLabel(t))),
   el('option', { value: TYPE_CUSTOM }, '직접 입력'));
 form.type.onchange = () => {
@@ -1165,7 +1249,8 @@ function openForm(ev, asCopy) {
   form.title.value = v.title;
   form.conductor.value = v.conductor || '';
   form.pianist.value = v.pianist || '';
-  PARTS.forEach(p => { form['part-' + p].value = v.parts?.[p] || ''; });
+  PARTS.forEach(p => { form['part-' + p].value = v.parts?.[p] || ''; form['part-' + p].classList.remove('autofilled'); });
+  autoMsg(AUTO_HINT);
   form.scores.value = (v.scores || []).join('\n');
   form.refs.value = (v.refs || []).join('\n');
   form.note.value = v.note || '';
