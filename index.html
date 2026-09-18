@@ -212,9 +212,19 @@
   .field input, .field textarea, .field select { display: block; width: 100%; margin-top: 4px; font: inherit; font-weight: 400; padding: 9px 10px; border: 1px solid var(--line); border-radius: 9px; }
   fieldset { border: 1px solid var(--line); border-radius: 12px; margin: 0 0 12px; padding: 10px 12px 0; }
   legend { font-size: 14px; font-weight: 600; padding: 0 4px; }
-  .partrow { display: grid; grid-template-columns: 64px 1fr; align-items: center; gap: 8px; margin-bottom: 10px; font-size: 14px; }
+  .partrow { display: grid; grid-template-columns: 64px 1fr auto; align-items: center; gap: 8px; margin-bottom: 10px; font-size: 14px; }
   .partrow input { font: inherit; padding: 8px 10px; border: 1px solid var(--line); border-radius: 9px; min-width: 0; }
   /* 일정 추가·수정·공지 수정 창: 직접 입력한 글자는 파란색 (예시 글자는 회색 그대로) */
+  .partrow .iconbtn { width: 38px; height: 38px; }
+  /* 유튜브 검색 창 */
+  .ytsearch { display: flex; gap: 8px; margin-bottom: 8px; }
+  .ytsearch input { flex: 1; min-width: 0; font: inherit; padding: 9px 10px; border: 1px solid var(--line); border-radius: 9px; }
+  .ytlist { display: grid; gap: 8px; max-height: 60vh; overflow: auto; }
+  .ytitem { display: grid; grid-template-columns: 96px minmax(0, 1fr) auto; gap: 10px; align-items: center; border: 1px solid var(--line); border-radius: 10px; padding: 6px; }
+  .ytitem img { width: 96px; height: 54px; object-fit: cover; border-radius: 6px; background: var(--navy-soft); display: block; }
+  .ytitem a { font-size: 14px; font-weight: 600; color: var(--ink); text-decoration: none; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .ytitem a:hover { text-decoration: underline; }
+  .ytitem small { display: block; color: var(--muted); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   dialog .field input, dialog .field textarea, dialog .field select, dialog .partrow input { color: #1a56db; }
   .err { color: var(--danger); font-size: 14px; margin: 0 0 10px; }
   .actions { display: flex; justify-content: flex-end; gap: 8px; }
@@ -391,6 +401,22 @@
   </form>
 </dialog>
 
+<!-- 유튜브 검색 (일정 수정 창의 🔍 버튼, 관리자) -->
+<dialog id="ytDlg">
+  <div class="dlgbody">
+    <div class="dlghead">
+      <h3 id="ytTitle">유튜브 검색</h3>
+      <button type="button" class="iconbtn" id="ytClose" aria-label="닫기">✕</button>
+    </div>
+    <form class="ytsearch" id="ytForm">
+      <input type="search" id="ytQ" aria-label="검색어" enterkeyhint="search" maxlength="100">
+      <button type="submit" class="btn primary" id="ytGo">검색</button>
+    </form>
+    <p class="hint" id="ytMsg"></p>
+    <div class="ytlist" id="ytList"></div>
+  </div>
+</dialog>
+
 <!-- 일정 추가·수정 -->
 <dialog id="dlg">
   <form id="form" novalidate>
@@ -531,7 +557,7 @@ async function api(body) {
   for (let i = 0; i < 3; i++) {
     const ac = new AbortController();
     // 로그인은 금방 끝나는 요청이라 15초 안에 답이 없으면 끊고 다시 보냄 (저장·삭제는 45초까지 기다림)
-    const timer = setTimeout(() => ac.abort(), !body ? 10000 : body.action === 'login' ? 15000 : 45000);
+    const timer = setTimeout(() => ac.abort(), !body ? 10000 : ['login', 'ytsearch'].includes(body.action) ? 15000 : 45000);
     try {
       const res = body
         // text/plain으로 보내야 Apps Script가 받는 교차 출처 요청(사전 요청 없음)이 됨
@@ -552,6 +578,7 @@ async function api(body) {
   throw Object.assign(new Error(
     !body ? '일정을 불러오지 못했습니다. 인터넷 연결을 확인하고 잠시 후 다시 시도해 주세요.'
       : body.action === 'login' ? '서버 응답을 받지 못했습니다. 잠시 후 다시 로그인해 주세요.'
+      : body.action === 'ytsearch' ? '검색 응답을 받지 못했습니다. 잠시 후 다시 검색해 주세요.'
       : '세 번 시도했지만 응답이 없습니다. 목록을 다시 불러왔으니 반영됐는지 확인해 주세요. 그대로 다시 저장하셔도 중복되지 않습니다.'
   ), { unknown: true });
 }
@@ -1018,7 +1045,60 @@ const newId = () => (crypto.randomUUID ? crypto.randomUUID()
 const nextSunday = () => dayKey(utc(TODAY) + ((7 - dowOf(TODAY)) % 7) * 864e5);
 
 $('partFields').append(...PARTS.map(p =>
-  el('label', { class: 'partrow' }, p, el('input', { type: 'url', name: 'part-' + p, placeholder: 'https://youtu.be/...' }))));
+  el('div', { class: 'partrow' },
+    el('label', { for: 'part-' + p }, p),
+    el('input', { type: 'url', id: 'part-' + p, name: 'part-' + p, placeholder: 'https://youtu.be/...' }),
+    el('button', { type: 'button', class: 'iconbtn', title: `${p} 영상 유튜브에서 찾기`, 'aria-label': `${p} 영상 유튜브에서 찾기`, onclick: () => openYtSearch(p) }, '🔍'))));
+
+/* ===== 유튜브 검색 → [추가]로 링크 넣기 (서버의 YouTube 서비스 사용) ===== */
+let ytPart = '';
+const decodeHtml = s => new DOMParser().parseFromString(String(s || ''), 'text/html').documentElement.textContent; // 유튜브 제목의 &#39; 등을 글자로
+
+function openYtSearch(part) {
+  ytPart = part;
+  $('ytTitle').textContent = `${part} 영상 찾기`;
+  // 기본 검색어: 찬양 제목 + 파트 이름 (전체는 제목만)
+  $('ytQ').value = [form.title.value.trim(), part === '전체' ? '' : part].filter(Boolean).join(' ');
+  $('ytList').replaceChildren();
+  $('ytMsg').textContent = '';
+  $('ytDlg').showModal();
+  if ($('ytQ').value) ytSearch(); else $('ytQ').focus();
+}
+
+async function ytSearch() {
+  const q = $('ytQ').value.trim();
+  if (!q) return;
+  $('ytList').replaceChildren();
+  $('ytMsg').textContent = '검색 중…';
+  busy($('ytGo'), true, '검색 중…');
+  try {
+    const items = (await api({ action: 'ytsearch', token, q })).items || [];
+    $('ytMsg').textContent = items.length ? '제목을 누르면 유튜브에서 미리 볼 수 있어요.' : '검색 결과가 없습니다. 검색어를 바꿔 보세요.';
+    $('ytList').replaceChildren(...items.filter(x => /^[\w-]{11}$/.test(x.id)).map(x => {
+      const url = `https://youtu.be/${x.id}`;
+      return el('div', { class: 'ytitem' },
+        el('img', { src: `https://i.ytimg.com/vi/${x.id}/mqdefault.jpg`, alt: '', loading: 'lazy' }),
+        el('div', {},
+          el('a', { href: url, target: '_blank', rel: 'noopener' }, decodeHtml(x.title)),
+          el('small', {}, decodeHtml(x.channel))),
+        el('button', {
+          type: 'button', class: 'btn primary',
+          onclick: () => {
+            form['part-' + ytPart].value = url;
+            $('ytDlg').close();
+            form['part-' + ytPart].focus();
+          },
+        }, '추가'));
+    }));
+  } catch (err) {
+    $('ytMsg').textContent = err.message;
+  } finally {
+    busy($('ytGo'), false);
+  }
+}
+
+$('ytForm').addEventListener('submit', e => { e.preventDefault(); ytSearch(); });
+$('ytClose').onclick = () => $('ytDlg').close();
 form.type.append(el('option', { value: '' }, '선택하세요'), ...TYPES.map(t => el('option', { value: t }, typeLabel(t))),
   el('option', { value: TYPE_CUSTOM }, '직접 입력'));
 form.type.onchange = () => {
