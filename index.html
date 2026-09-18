@@ -1068,7 +1068,8 @@ $('partFields').append(...PARTS.map(p =>
     el('input', { type: 'url', id: 'part-' + p, name: 'part-' + p, placeholder: 'https://youtu.be/...' }),
     el('button', { type: 'button', class: 'iconbtn', title: `${p} 영상 유튜브에서 찾기`, 'aria-label': `${p} 영상 유튜브에서 찾기`, onclick: () => openYtSearch(p) }, '🔍'))));
 
-/* ===== 유튜브 검색 → [추가]로 링크 넣기 (서버가 유튜브 검색 화면을 읽어 옴) ===== */
+/* ===== 유튜브 검색 → [추가]로 링크 넣기 =====
+   먼저 이 사이트의 Vercel 함수(api/ytsearch.js)로 빠르게 찾고, 안 되면 Apps Script 검색으로 대신함 */
 let ytPart = '', ytSeq = 0; // ytSeq: 가장 최근 검색 번호 (늦게 온 앞 검색 결과는 버림)
 const decodeHtml = s => new DOMParser().parseFromString(String(s || ''), 'text/html').documentElement.textContent; // 대체 검색(API) 제목의 &#39; 등을 글자로
 
@@ -1083,6 +1084,18 @@ function openYtSearch(part) {
   if ($('ytQ').value) ytSearch(); else $('ytQ').focus();
 }
 
+async function ytFetch(q) {
+  try {
+    const r = await fetch('/api/ytsearch?q=' + encodeURIComponent(q), { signal: AbortSignal.timeout(10000) });
+    const d = await r.json();
+    if (d.ok && d.items.length) return d.items;
+  } catch {}
+  const res = await api(null, { action: 'ytsearch', token, q });
+  // 서버(Code.gs)가 예전 버전이면 검색 대신 일정 목록을 돌려줌
+  if (!Array.isArray(res.items)) throw new Error('서버(Code.gs)를 새 버전으로 바꿔야 검색됩니다. 설정안내 9단계를 확인해 주세요.');
+  return res.items;
+}
+
 async function ytSearch() {
   const q = $('ytQ').value.trim();
   if (!q) return;
@@ -1091,10 +1104,7 @@ async function ytSearch() {
   $('ytMsg').textContent = '검색 중…';
   busy($('ytGo'), true, '검색 중…');
   try {
-    const res = await api(null, { action: 'ytsearch', token, q });
-    // 서버(Code.gs)가 예전 버전이면 검색 대신 일정 목록을 돌려줌
-    if (!Array.isArray(res.items)) throw new Error('서버(Code.gs)를 새 버전으로 바꿔야 검색됩니다. 설정안내 9단계를 확인해 주세요.');
-    const items = res.items;
+    const items = await ytFetch(q);
     if (seq !== ytSeq) return;
     $('ytMsg').textContent = items.length ? '제목을 누르면 유튜브에서 미리 볼 수 있어요.' : '검색 결과가 없습니다. 검색어를 바꿔 보세요.';
     $('ytList').replaceChildren(...items.filter(x => /^[\w-]{11}$/.test(x.id)).map(x => {
