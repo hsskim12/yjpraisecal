@@ -198,7 +198,7 @@
   .partrow input { font: inherit; padding: 8px 10px; border: 1px solid var(--line); border-radius: 9px; min-width: 0; }
   .err { color: var(--danger); font-size: 14px; margin: 0 0 10px; }
   .actions { display: flex; justify-content: flex-end; gap: 8px; }
-  #fontBtn { min-width: 52px; font-size: 14px; line-height: 1.2; padding: 8px 10px; white-space: nowrap; }
+  #fontBtn { min-width: 76px; font-size: 14px; line-height: 1.2; padding: 8px 10px; white-space: nowrap; }
   /* 일정 편집 — 대원용 화면에서 튀지 않게 회색 톤 */
   #toEdit, #toPublic { background: #eef1f5; border-color: #d7dde6; color: #4a5568; }
   #toEdit:hover, #toPublic:hover { background: #e3e8ef; color: var(--ink); }
@@ -220,7 +220,7 @@
       <span class="brand"><b>찬양대 알리미</b><small>인천영종교회</small></span>
     </button>
     <nav class="topnav">
-      <button type="button" class="btn" id="fontBtn" aria-pressed="false" title="글자 크기 확대" aria-label="글자 크기 확대">크게</button>
+      <button type="button" class="btn" id="fontBtn" aria-pressed="false" title="글자 크기 확대" aria-label="글자 크기 확대">크게 보기</button>
       <a class="btn" href="#" id="toPublic" hidden>일정 보기</a>
       <a class="btn" href="#edit" id="toEdit">일정 편집</a>
     </nav>
@@ -705,7 +705,7 @@ function renderMyPart() {
         renderPublic();
       },
     }, p)),
-    myPart ? '' : el('span', { class: 'mphint' }, '고르면 연습 영상이 바로 보여요'));
+    el('span', { class: 'mphint' }, '파트를 선택하면 연습 영상 버튼이 바로 보여요'));
 }
 
 // 지금 화면에 보여 줄 목록과 제목을 정함 (검색 / 다가오는 8주 / 고른 달)
@@ -729,7 +729,7 @@ function buildView(heroEvents = []) {
     const list = events.filter(e => e.date >= start && e.date < end && !heroEvents.includes(e));
     return {
       list,
-      title: `다가오는 ${UPCOMING_WEEKS}주 일정`,
+      title: '찬양 일정 미리보기',
       summary: `${periodDate(start)} – ${periodDate(dayKey(utc(end) - 864e5), start.slice(0, 4))} · ${list.length}곡 등록`,
       empty: heroEvents.some(e => e.date >= start && e.date < end)
         ? '위 찬양 외에 선택한 기간에 등록된 일정이 없습니다.'
@@ -1047,7 +1047,7 @@ $('noticeForm').addEventListener('submit', e => {
 /* ===== 큰 글씨 보기 (이 기기에만 저장) ===== */
 function applyBig(on) {
   document.body.classList.toggle('big', on);
-  $('fontBtn').textContent = on ? '작게' : '크게'; // 확대 중에는 되돌리기
+  $('fontBtn').textContent = on ? '작게 보기' : '크게 보기'; // 확대 중에는 되돌리기
   $('fontBtn').setAttribute('aria-pressed', on ? 'true' : 'false');
   $('fontBtn').title = on ? '글자 크기 기본으로' : '글자 크기 확대';
   $('fontBtn').setAttribute('aria-label', $('fontBtn').title);
