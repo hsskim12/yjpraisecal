@@ -157,6 +157,15 @@
   .empty { background: #fff; border: 1px dashed var(--line); border-radius: 14px; padding: 18px; text-align: center; color: var(--muted); margin: 0; }
   .emptySundays { margin: 12px 0 0; color: var(--muted); font-size: 14px; padding: 10px 14px; background: #fff; border: 1px dashed var(--line); border-radius: 10px; }
 
+  /* 화면 아래 고정 유튜브 재생창 */
+  .player { position: fixed; left: 0; right: 0; bottom: 0; z-index: 10; background: #0f1a2e; color: #fff; padding: 8px 12px calc(10px + env(safe-area-inset-bottom)); box-shadow: 0 -4px 16px rgb(0 0 0 / .25); }
+  .playerhead { max-width: 760px; margin: 0 auto 8px; display: flex; align-items: center; gap: 10px; }
+  .playerhead b { flex: 1; min-width: 0; font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .playerhead a { color: #cdd8ec; font-size: 13px; flex-shrink: 0; }
+  .playerhead .iconbtn { background: rgb(255 255 255 / .12); border-color: rgb(255 255 255 / .3); color: #fff; }
+  .playerframe { width: min(100%, 736px, calc(40vh * 16 / 9)); aspect-ratio: 16 / 9; margin: 0 auto; }
+  .playerframe iframe { width: 100%; height: 100%; border: 0; border-radius: 8px; display: block; }
+
   footer.wrap { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; padding-block: 18px 32px; color: var(--muted); font-size: 13px; border-top: 1px solid var(--line); }
 
   /* 관리자 화면 */
@@ -333,6 +342,16 @@
   <span>♪ 인천영종교회 찬양대 알리미</span>
   <a class="btn" href="#edit" id="toEdit">일정 편집 (관리자)</a>
 </footer>
+
+<!-- 영상 재생창 (유튜브 버튼을 누르면 열림) -->
+<div class="player" id="player" hidden>
+  <div class="playerhead">
+    <b id="playerTitle"></b>
+    <a id="playerOpen" target="_blank" rel="noopener">유튜브에서 열기</a>
+    <button type="button" class="iconbtn" id="playerClose" aria-label="재생 닫기" title="재생 닫기">✕</button>
+  </div>
+  <div class="playerframe" id="playerFrame"></div>
+</div>
 
 <!-- 공지 전체 보기 -->
 <dialog id="noticeDlg">
@@ -586,10 +605,48 @@ function linkList(arr, base) {
   }).filter(Boolean);
 }
 
-const chip = (x, icon) => el('a', {
-  class: 'chip' + (x.hl ? ' hl' : ''), href: x.url, target: '_blank', rel: 'noopener',
-  'aria-label': x.full || x.label, title: x.full || x.label,
-}, icon ? el('span', { 'aria-hidden': 'true' }, icon) : null, x.label);
+/* ===== 유튜브 재생창 ===== */
+// 유튜브 주소에서 영상 번호(11자)와 시작 시각(t=90, t=1m30s)을 꺼냄. 유튜브가 아니면 null
+function youtube(url) {
+  try {
+    const u = new URL(url);
+    const host = u.hostname.replace(/^(www|m|music)\./, '');
+    const id = host === 'youtu.be' ? u.pathname.slice(1)
+      : host === 'youtube.com' ? u.searchParams.get('v') || (u.pathname.match(/^\/(?:shorts|embed|live)\/([^/?]+)/) || [])[1]
+      : '';
+    if (!/^[\w-]{11}$/.test(id || '')) return null;
+    const t = /^(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s?)?$/.exec(u.searchParams.get('t') || u.searchParams.get('start') || '') || [];
+    return { id, start: (+t[1] || 0) * 3600 + (+t[2] || 0) * 60 + (+t[3] || 0) };
+  } catch { return null; }
+}
+
+function play(yt, url, caption) {
+  const src = `https://www.youtube-nocookie.com/embed/${yt.id}?autoplay=1&playsinline=1&rel=0${yt.start ? '&start=' + yt.start : ''}`;
+  $('playerFrame').replaceChildren(el('iframe', {
+    src, title: caption, allow: 'autoplay; encrypted-media; picture-in-picture; fullscreen',
+    allowfullscreen: '', referrerpolicy: 'strict-origin-when-cross-origin',
+  }));
+  $('playerTitle').textContent = caption;
+  $('playerOpen').href = url; // 재생이 막힌 영상은 유튜브에서 열도록
+  $('player').hidden = false;
+  document.body.style.paddingBottom = $('player').offsetHeight + 'px'; // 재생창이 목록 끝을 가리지 않게
+}
+
+function closePlayer() {
+  $('playerFrame').replaceChildren(); // 창을 없애야 소리도 멈춤
+  $('player').hidden = true;
+  document.body.style.paddingBottom = '';
+}
+
+// caption: 재생창 위에 보일 이름 (곡 제목). 유튜브 링크는 새 창 대신 아래 재생창에서 재생
+const chip = (x, icon, caption) => {
+  const yt = youtube(x.url);
+  return el('a', {
+    class: 'chip' + (x.hl ? ' hl' : ''), href: x.url, target: '_blank', rel: 'noopener',
+    'aria-label': x.full || x.label, title: x.full || x.label,
+    onclick: yt && (e => { e.preventDefault(); play(yt, x.url, `${caption} · ${x.full || x.label}`); }),
+  }, icon ? el('span', { 'aria-hidden': 'true' }, icon) : null, x.label);
+};
 
 // opts.compact: 목록용 간략 카드 (날짜·구분·제목·듣기만) / opts.toggle: '자세히 보기' 버튼 표시
 // 맨 위 강조 카드는 옵션 없이 불러 전체를 보여 줌
@@ -624,10 +681,10 @@ function card(ev, badge, opts = {}) {
       el('div', { class: 'titlerow' }, el('h3', {}, ev.title),
         badge && el('span', { class: 'badge' }, badge),
         past && el('span', { class: 'done' }, '지난 찬양'),
-        headChips.length > 0 && el('div', { class: 'headchips' }, headChips.map(x => chip(x, x.icon)))),
+        headChips.length > 0 && el('div', { class: 'headchips' }, headChips.map(x => chip(x, x.icon, ev.title)))),
       partChips.length > 0 && el('div', { class: 'group' },
         el('p', { class: 'label' }, '파트 연습'),
-        el('div', { class: 'chips' }, partChips.map(x => chip(x, '▶')))),
+        el('div', { class: 'chips' }, partChips.map(x => chip(x, '▶', ev.title)))),
       !compact && ev.note && el('p', { class: 'note' }, ev.note),
       !compact && !headChips.length && !partChips.length && !ev.note && el('p', { class: 'muted' }, '연습 자료 준비 중'),
       toggle && el('button', {
@@ -1082,6 +1139,7 @@ $('noticeEditBtn').onclick = () => {   // 공지 전체 보기 창의 E 버튼
 $('noticeCancel').onclick = () => $('noticeEditDlg').close();
 $('noticeClose').onclick = () => $('noticeDlg').close();
 $('retryBtn').onclick = load;
+$('playerClose').onclick = closePlayer;
 $('brandBtn').onclick = () => location.reload(); // 이름·음표를 누르면 새로고침
 $('fontBtn').onclick = () => applyBig(!document.body.classList.contains('big'));
 
