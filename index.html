@@ -621,9 +621,9 @@ function youtube(url) {
 }
 
 function play(yt, url, caption) {
-  const src = `https://www.youtube-nocookie.com/embed/${yt.id}?autoplay=1&playsinline=1&rel=0${yt.start ? '&start=' + yt.start : ''}`;
+  const src = `https://www.youtube-nocookie.com/embed/${yt.id}?playsinline=1&rel=0${yt.start ? '&start=' + yt.start : ''}`;
   $('playerFrame').replaceChildren(el('iframe', {
-    src, title: caption, allow: 'autoplay; encrypted-media; picture-in-picture; fullscreen',
+    src, title: caption, allow: 'encrypted-media; picture-in-picture; fullscreen',
     allowfullscreen: '', referrerpolicy: 'strict-origin-when-cross-origin',
   }));
   $('playerTitle').textContent = caption;
