@@ -187,6 +187,12 @@
   .edinfo { min-width: 0; }
   .edinfo b { display: block; font-size: 13px; color: var(--muted); font-weight: 600; }
   .edinfo span { overflow-wrap: anywhere; }
+  /* 편집 목록: 항목별 입력 여부 (칠해짐 = 입력됨, 점선 = 비어 있음) */
+  .edtags { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; margin-top: 6px; }
+  .edtags .edtag { font-size: 12px; line-height: 1.5; padding: 0 7px; border-radius: 6px; border: 1px solid transparent; background: var(--navy-soft); color: var(--navy); font-weight: 600; }
+  .edtags .edtag.off { background: #fff; color: #a3acba; border: 1px dashed #cfd6e0; font-weight: 400; }
+  .edtags .edgroup { font-size: 11px; color: var(--muted); margin-left: 6px; }
+  .edtags .edgroup:first-child { margin-left: 0; }
   .edbtns { display: flex; gap: 6px; flex-shrink: 0; }
   .edbtns .btn { padding: 6px 10px; }
 
@@ -222,6 +228,10 @@
   @media (max-width: 480px) {
     .periodmid { flex: 1; }
     .body { padding: 12px 10px; }
+    /* 편집 목록: 입력 표시를 넓게 쓰고 버튼은 아래 오른쪽으로 */
+    .edrow { flex-wrap: wrap; }
+    .edinfo { flex: 1 1 100%; }
+    .edbtns { margin-left: auto; }
   }
 </style>
 </head>
@@ -320,7 +330,7 @@
     <p class="eyebrow">EDIT</p>
     <h1>찬양 일정 편집</h1>
     <div id="edBody">
-      <p class="hint edhint">저장하거나 삭제하면 사이트에 바로 반영됩니다.</p>
+      <p class="hint edhint">저장하거나 삭제하면 사이트에 바로 반영됩니다.<br>일정마다 색이 칠해진 항목은 입력됨, 점선 항목은 비어 있음입니다.</p>
       <div class="toolbar">
         <button type="button" class="btn primary" id="addBtn">+ 일정 추가</button>
         <button type="button" class="btn" id="noticeBtn">공지사항 수정</button>
@@ -519,7 +529,8 @@ async function api(body) {
   // 저장·삭제는 일정마다 고유 번호(id)로 처리해서, 같은 요청이 두 번 가도 중복되거나 어긋나지 않음
   for (let i = 0; i < 3; i++) {
     const ac = new AbortController();
-    const timer = setTimeout(() => ac.abort(), body ? 45000 : 10000);
+    // 로그인은 금방 끝나는 요청이라 15초 안에 답이 없으면 끊고 다시 보냄 (저장·삭제는 45초까지 기다림)
+    const timer = setTimeout(() => ac.abort(), !body ? 10000 : body.action === 'login' ? 15000 : 45000);
     try {
       const res = body
         // text/plain으로 보내야 Apps Script가 받는 교차 출처 요청(사전 요청 없음)이 됨
@@ -967,12 +978,25 @@ function renderEditor() {
     el('div', { class: 'edrow' + (e.date < TODAY ? ' past' : '') },
       el('div', { class: 'edinfo' },
         el('b', {}, `${e.date.slice(0, 4)}년 ${fmtDate(e.date)} · ${typeLabel(typeOf(e))}`),
-        el('span', {}, e.title)),
+        el('span', {}, e.title),
+        edTags(e)),
       el('div', { class: 'edbtns' },
         el('button', { type: 'button', class: 'btn', onclick: () => openForm(e) }, '수정'),
         el('button', { type: 'button', class: 'btn', onclick: () => openForm(e, true) }, '복제'),
         el('button', { type: 'button', class: 'btn danger', onclick: () => removeEvent(e) }, '삭제'))))
     : [el('p', { class: 'empty' }, pastCount ? '앞으로 등록된 일정이 없습니다.' : '등록된 일정이 없습니다.')]));
+}
+
+// 수정 창의 항목 순서대로 입력 여부를 작은 표시로 보여 줌 (구분·제목은 필수라 제외)
+function edTags(e) {
+  const tag = (label, on, full = label) => el('span', {
+    class: 'edtag' + (on ? '' : ' off'), title: `${full} ${on ? '입력됨' : '비어 있음'}`,
+  }, label);
+  const group = name => el('span', { class: 'edgroup' }, name);
+  return el('div', { class: 'edtags' },
+    group('담당'), tag('지휘', e.conductor), tag('반주자', e.pianist),
+    group('영상'), PARTS.map(p => tag(PART_SHORT[p] || p, safeUrl(e.parts?.[p]), `${p} 영상`)),
+    group('기타'), tag('악보', e.scores?.length), tag('참고연주', e.refs?.length), tag('메모', e.note));
 }
 
 function removeEvent(e) {
