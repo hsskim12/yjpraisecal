@@ -57,6 +57,9 @@
   .loadbox { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 20px; text-align: center; color: var(--muted); }
   .loadbox p { margin: 0; }
   .loadbox .btn { margin-top: 12px; }
+  .kakaobar { display: flex; align-items: flex-start; gap: 10px; margin: 0 0 14px; padding: 12px 14px; background: #fff8d6; border: 1px solid #ecd67a; border-radius: 12px; font-size: 14px; }
+  .kakaobar p { margin: 0; flex: 1; }
+  .kakaobar a { font-weight: 700; color: var(--navy); }
   .staleMsg { margin: 0 0 14px; font-size: 13px; color: var(--muted); }
 
   /* 공지사항 */
@@ -154,7 +157,7 @@
   .empty { background: #fff; border: 1px dashed var(--line); border-radius: 14px; padding: 18px; text-align: center; color: var(--muted); margin: 0; }
   .emptySundays { margin: 12px 0 0; color: var(--muted); font-size: 14px; padding: 10px 14px; background: #fff; border: 1px dashed var(--line); border-radius: 10px; }
 
-  footer.wrap { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding-block: 18px 32px; color: var(--muted); font-size: 13px; border-top: 1px solid var(--line); }
+  footer.wrap { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; padding-block: 18px 32px; color: var(--muted); font-size: 13px; border-top: 1px solid var(--line); }
 
   /* 관리자 화면 */
   .guide { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; margin-bottom: 14px; font-size: 14px; }
@@ -200,6 +203,7 @@
   .actions { display: flex; justify-content: flex-end; gap: 8px; }
   #fontBtn { min-width: 76px; font-size: 14px; line-height: 1.2; padding: 8px 10px; white-space: nowrap; }
   /* 일정 편집 — 대원용 화면에서 튀지 않게 회색 톤 */
+  #toEdit { font-size: 13px; padding: 6px 12px; text-decoration: none; }
   #toEdit, #toPublic { background: #eef1f5; border-color: #d7dde6; color: #4a5568; }
   #toEdit:hover, #toPublic:hover { background: #e3e8ef; color: var(--ink); }
   #fontBtn[aria-pressed="true"] { background: var(--navy); color: #fff; border-color: var(--navy); }
@@ -222,12 +226,15 @@
     <nav class="topnav">
       <button type="button" class="btn" id="fontBtn" aria-pressed="false" title="글자 크기 확대" aria-label="글자 크기 확대">크게 보기</button>
       <a class="btn" href="#" id="toPublic" hidden>일정 보기</a>
-      <a class="btn" href="#edit" id="toEdit">일정 편집</a>
     </nav>
   </div>
 </header>
 
 <main class="wrap">
+  <div class="kakaobar" id="kakaoBar" hidden>
+    <p id="kakaoMsg"></p>
+    <button type="button" class="iconbtn" id="kakaoClose" aria-label="안내 닫기">✕</button>
+  </div>
   <p class="staleMsg" id="staleMsg" hidden></p>
 
   <!-- 공개 화면 -->
@@ -324,6 +331,7 @@
 
 <footer class="wrap">
   <span>♪ 인천영종교회 찬양대 알리미</span>
+  <a class="btn" href="#edit" id="toEdit">일정 편집 (관리자)</a>
 </footer>
 
 <!-- 공지 전체 보기 -->
@@ -394,6 +402,7 @@ const PARTS = ['전체', '소프라노', '알토', '테너', '베이스', '반�
 // 제목 오른쪽 버튼 (데이터 키인 part 값은 그대로 두고 표시 이름만 정함)
 const HEAD_PARTS = [{ part: '전체', label: '듣기' }, { part: '반주', label: '반주' }];
 const PART_SHORT = { '소프라노': 'S', '알토': 'A', '테너': 'T', '베이스': 'B' };        // 파트 버튼 표시
+const MY_PARTS = [...Object.keys(PART_SHORT), '반주'];  // '내 파트'로 고를 수 있는 것
 const DOW = ['일', '월', '화', '수', '목', '금', '토'];
 const TYPES = ['주일 찬양', '대집회 특송', '모두회 특송', '구역모임 특송']; // 새 구분은 여기에만 추가
 const typeLabel = type => ({ '주일 찬양': '주일', '대집회 특송': '집회', '모두회 특송': '모두회', '구역모임 특송': '구역' })[type] || type;
@@ -475,7 +484,7 @@ let showPast = false;   // 편집 화면에서 지난 일정 펼침
 let saving = false;     // 저장·삭제를 서버에 보내는 중
 const expanded = new Set(); // 목록에서 '자세히 보기'로 펼쳐 둔 일정
 let myPart = '';            // 내 파트 (이 기기에만 저장)
-try { myPart = PART_SHORT[localStorage.getItem(PART_KEY)] ? localStorage.getItem(PART_KEY) : ''; } catch {}
+try { myPart = MY_PARTS.includes(localStorage.getItem(PART_KEY)) ? localStorage.getItem(PART_KEY) : ''; } catch {}
 let token = null;
 try { token = sessionStorage.getItem(TOKEN_KEY); } catch {}
 
@@ -681,6 +690,7 @@ async function shareEvents(list) {
       const url = safeUrl(e.parts?.[p]);
       return url && `${p === '전체' ? '듣기' : p}: ${url}`;
     }).filter(Boolean),
+    ...[...linkList(e.scores, '악보'), ...linkList(e.refs, '참고연주')].map(x => `${x.label}: ${x.url}`),
   ].join('\n\n')).join('\n\n\n'); // 링크마다 빈 줄을 두어 누를 때 옆 링크가 눌리지 않게
   const url = location.origin + '/';
   try {
@@ -697,7 +707,7 @@ async function shareEvents(list) {
 function renderMyPart() {
   $('myPart').replaceChildren(
     el('span', { class: 'mplabel' }, '내 파트'),
-    ...Object.keys(PART_SHORT).map(p => el('button', {
+    ...MY_PARTS.map(p => el('button', {
       type: 'button', class: 'btn', 'aria-pressed': String(p === myPart),
       onclick: () => { // 같은 파트를 다시 누르면 선택 해제
         myPart = p === myPart ? '' : p;
@@ -1130,6 +1140,27 @@ function route() {
 
   if (!ready || showLogin) return;
   edit ? renderEditor() : renderPublic();
+}
+
+/* ===== 카카오톡 안에서 열렸을 때 =====
+   카카오톡 속 브라우저에서는 홈 화면 추가가 안 되므로 기기 브라우저로 안내 */
+const KAKAO_KEY = 'choir-kakao-hide';
+if (/KAKAOTALK/i.test(navigator.userAgent)) {
+  const android = /Android/i.test(navigator.userAgent);
+  const external = 'kakaotalk://web/openExternal?url=' + encodeURIComponent(location.href);
+  if (android) location.href = external; // 안드로이드는 크롬으로 바로 넘김
+  let hide = false;
+  try { hide = localStorage.getItem(KAKAO_KEY) === '1'; } catch {}
+  if (!hide) {
+    $('kakaoMsg').replaceChildren(...(android
+      ? ['카카오톡 안에서 열렸습니다. ', el('a', { href: external }, '크롬으로 열기'), '를 누르면 홈 화면에 추가할 수 있어요.']
+      : ['카카오톡 안에서 열렸습니다. 오른쪽 아래 ', el('b', {}, '⋯'), ' 버튼 → ', el('b', {}, 'Safari로 열기'), '를 누르면 홈 화면에 추가할 수 있어요.']));
+    $('kakaoBar').hidden = false;
+  }
+  $('kakaoClose').onclick = () => {
+    $('kakaoBar').hidden = true;
+    try { localStorage.setItem(KAKAO_KEY, '1'); } catch {}
+  };
 }
 
 /* ===== 시작 ===== */
