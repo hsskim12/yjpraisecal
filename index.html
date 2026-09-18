@@ -539,11 +539,11 @@ const expanded = new Set(); // 목록에서 '자세히 보기'로 펼쳐 둔 일
 let myPart = '';            // 내 파트 (이 기기에만 저장)
 try { myPart = MY_PARTS.includes(localStorage.getItem(PART_KEY)) ? localStorage.getItem(PART_KEY) : ''; } catch {}
 let token = null;
-try { token = sessionStorage.getItem(TOKEN_KEY); } catch {}
+try { token = localStorage.getItem(TOKEN_KEY); } catch {} // 이 기기에서 30일 로그인 유지 (서버가 기한 관리)
 
 function setToken(t) {
   token = t;
-  try { t ? sessionStorage.setItem(TOKEN_KEY, t) : sessionStorage.removeItem(TOKEN_KEY); } catch {}
+  try { t ? localStorage.setItem(TOKEN_KEY, t) : localStorage.removeItem(TOKEN_KEY); } catch {}
 }
 
 /* ===== 서버(Apps Script) ===== */
@@ -578,7 +578,7 @@ async function send(body, query, ms, stop) {
 function api(body, query = {}) {
   if (!API_URL) return Promise.reject(new Error('사이트 설정이 끝나지 않았습니다. index.html의 API_URL에 Apps Script 웹 앱 주소를 넣어 주세요.'));
   const action = body ? body.action : query.action;
-  const gap = body && action !== 'login' ? 8000 : 4000; // 저장은 원래 몇 초 걸리므로 조금 더 기다렸다 보냄
+  const gap = action === 'login' ? 3000 : body ? 8000 : 4000; // 로그인은 보통 1~2초라 3초 넘으면 바로 하나 더, 저장은 원래 몇 초 걸려 8초
   const fail = () => Object.assign(new Error(
     !action ? '일정을 불러오지 못했습니다. 인터넷 연결을 확인하고 잠시 후 다시 시도해 주세요.'
       : action === 'login' ? '서버 응답을 받지 못했습니다. 잠시 후 다시 로그인해 주세요.'
@@ -1324,6 +1324,11 @@ function route() {
   $('staleMsg').textContent = stale;
   $('staleMsg').hidden = !stale || showLogin;
 
+  // 로그인 화면이 열리면 아이디를 치는 동안 서버를 미리 깨워 둠 (잠들어 있던 서버는 첫 응답이 느림)
+  if (showLogin && !refreshing && Date.now() - Math.max(lastLoadAt, route.warmed || 0) > 60000) {
+    route.warmed = Date.now(); // 실패해도 1분에 한 번만
+    load();
+  }
   if (!ready || showLogin) return;
   edit ? renderEditor() : renderPublic();
 }
