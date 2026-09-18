@@ -261,9 +261,16 @@
     .top, .kakaobar, .staleMsg, .notices, .searchrow, .mypart, .hero, .modebar, .periodbar, .emptySundays, footer, .player, .detailbtn { display: none !important; }
     body { background: #fff; zoom: 1; }
     main.wrap { padding: 0; }
-    .yrow { border: 0; border-bottom: 1px solid #ccc; border-radius: 0; padding: 6px 0; break-inside: avoid; }
+    /* 2단 인쇄: 목록을 왼쪽 단부터 채우고, 한 곡이 두 단에 걸쳐 잘리지 않게 */
+    .list { column-count: 2; column-gap: 28px; column-rule: 1px solid #ddd; }
+    .list > * + * { margin-top: 0; }
+    .list > .monthsep { margin: 10px 0 4px; break-after: avoid; }
+    .yrow { grid-template-columns: 64px 42px minmax(0, 1fr); gap: 0 8px; border: 0; border-bottom: 1px solid #ccc; border-radius: 0; padding: 5px 0; break-inside: avoid; }
     .yrow.past { opacity: 1; }
-    .list > .yrow + .yrow { margin-top: 0; }
+    .yrow.next { border: 0; border-bottom: 1px solid #ccc; }
+    .yrdate { font-size: 13px; }
+    .yrkind, .yrpeople { font-size: 11px; }
+    .yrtitle { font-size: 14px; }
     .card { break-inside: avoid; }
   }
   @media (max-width: 480px) {
