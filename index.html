@@ -214,11 +214,12 @@
   legend { font-size: 14px; font-weight: 600; padding: 0 4px; }
   .partrow { display: grid; grid-template-columns: 64px 1fr; align-items: center; gap: 8px; margin-bottom: 10px; font-size: 14px; }
   .partrow input { font: inherit; padding: 8px 10px; border: 1px solid var(--line); border-radius: 9px; min-width: 0; }
+  /* 일정 추가·수정·공지 수정 창: 직접 입력한 글자는 파란색 (예시 글자는 회색 그대로) */
+  dialog .field input, dialog .field textarea, dialog .field select, dialog .partrow input { color: #1a56db; }
   .err { color: var(--danger); font-size: 14px; margin: 0 0 10px; }
   .actions { display: flex; justify-content: flex-end; gap: 8px; }
   #fontBtn { min-width: 76px; font-size: 14px; line-height: 1.2; padding: 8px 10px; white-space: nowrap; }
   /* 일정 편집 — 대원용 화면에서 튀지 않게 회색 톤 */
-  #toEdit { font-size: 13px; padding: 6px 12px; text-decoration: none; }
   #toEdit, #toPublic { background: #eef1f5; border-color: #d7dde6; color: #4a5568; }
   #toEdit:hover, #toPublic:hover { background: #e3e8ef; color: var(--ink); }
   #fontBtn[aria-pressed="true"] { background: var(--navy); color: #fff; border-color: var(--navy); }
@@ -245,6 +246,7 @@
     <nav class="topnav">
       <button type="button" class="btn" id="fontBtn" aria-pressed="false" title="글자 크기 확대" aria-label="글자 크기 확대">크게 보기</button>
       <a class="btn" href="#" id="toPublic" hidden>일정 보기</a>
+      <a class="btn" href="#edit" id="toEdit">일정 편집</a>
     </nav>
   </div>
 </header>
@@ -350,7 +352,6 @@
 
 <footer class="wrap">
   <span>♪ 인천영종교회 찬양대 알리미</span>
-  <a class="btn" href="#edit" id="toEdit">일정 편집 (관리자)</a>
 </footer>
 
 <!-- 영상 재생창 (유튜브 버튼을 누르면 열림) -->
