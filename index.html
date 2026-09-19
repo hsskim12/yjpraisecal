@@ -245,6 +245,9 @@
   dialog h3 { margin: 0 0 12px; }
   .dlghead { display: flex; align-items: flex-start; gap: 10px; }
   .dlghead h3 { flex: 1; }
+  /* 일정 추가·수정 창: 제목과 ✕가 스크롤해도 위에 붙어 있게 */
+  .formhead { position: sticky; top: 0; z-index: 2; background: #fff; margin: -18px -18px 12px; padding: 18px 18px 10px; border-bottom: 1px solid var(--line); }
+  .formhead h3 { margin: 0; align-self: center; }
   .iconbtn { border: 1px solid var(--line); background: #fff; border-radius: 9px; width: 34px; height: 34px; font-size: 16px; line-height: 1; flex-shrink: 0; }
   .iconbtn:hover { background: var(--navy-soft); }
   .noticefull { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 16px; line-height: 1.7; }
@@ -512,7 +515,10 @@
 <!-- 일정 추가·수정 -->
 <dialog id="dlg">
   <form id="form" novalidate>
-    <h3 id="formTitle"></h3>
+    <div class="dlghead formhead">
+      <h3 id="formTitle"></h3>
+      <button type="button" class="iconbtn" id="formClose" aria-label="닫기" title="닫기">✕</button>
+    </div>
     <label class="field">날짜<input type="date" name="date" required></label>
     <label class="field">구분<select name="type" required></select></label>
     <label class="field" id="typeCustomRow" hidden>직접 입력할 구분 <span class="hint">(30자 이내)</span>
@@ -1563,6 +1569,7 @@ function openForm(ev, asCopy, slot = null) {
   form.note.value = v.note || '';
   $('formErr').hidden = true;
   $('dlg').showModal();
+  $('dlg').scrollTop = 0; // 전에 아래로 내려 둔 채 닫았어도 맨 위부터
 }
 
 form.addEventListener('submit', async e => {
@@ -1665,7 +1672,7 @@ $('logoutBtn').onclick = () => {
 $('addBtn').onclick = () => openForm(null);
 $('reCancel').onclick = () => { board = null; sel.clear(); renderEditor(); };
 $('reSave').onclick = saveBoard;
-$('cancelBtn').onclick = () => $('dlg').close();
+$('cancelBtn').onclick = $('formClose').onclick = () => $('dlg').close();
 $('pastBtn').onclick = () => { showPast = !showPast; renderEditor(); };
 $('noticeBtn').onclick = () => openNoticeEdit(0);
 $('noticeEditBtn').onclick = () => {   // 공지 전체 보기 창의 ✎ 버튼
