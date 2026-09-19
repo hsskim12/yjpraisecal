@@ -119,16 +119,20 @@
   .ympick select { font: inherit; font-size: 16px; font-weight: 700; color: var(--ink); padding: 8px; border: 1px solid var(--line); border-radius: 10px; background: #fff; min-width: 0; }
 
   /* 연도별 보기: 한 줄 목록 */
-  .yrow { display: grid; grid-template-columns: 76px 50px minmax(0, 1fr); gap: 2px 10px; align-items: baseline; width: 100%; text-align: left; background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
+  /* 일정 목록의 한 줄 (다가오는 8주·월별·연도별 공통) */
+  .yrow { display: grid; grid-template-columns: 92px 56px minmax(0, 1fr) auto; gap: 2px 10px; align-items: center; width: 100%; text-align: left; background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 12px 12px; cursor: pointer; }
   .yrow:hover { border-color: var(--navy); }
   .yrow.past { opacity: .55; }
   .yrow.next { border: 2px solid var(--accent); }
   .list > .yrow + .yrow { margin-top: 6px; }
-  .yrdate { font-weight: 700; color: var(--navy); white-space: nowrap; }
-  .yrkind { font-size: 13px; color: var(--muted); white-space: nowrap; }
-  .yrtitle { font-size: 16px; font-weight: 700; overflow-wrap: anywhere; }
+  .yrdate { font-size: 20px; font-weight: 800; color: var(--navy); white-space: nowrap; line-height: 1.2; }
+  .yrdate small { font-size: 15px; font-weight: 700; }
+  .yrkind { font-size: 14px; color: var(--muted); white-space: nowrap; }
+  .yrkind.special { color: var(--accent-dark); font-weight: 700; } /* 주일이 아닌 구분 (집회·특별집회 등) */
+  .yrtitle { font-size: 17px; font-weight: 700; overflow-wrap: anywhere; }
+  .yrchips { grid-row: 1 / span 2; grid-column: 4; display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; }
   .yrtitle .badge { margin-left: 6px; vertical-align: middle; }
-  .yrpeople { grid-column: 3; font-size: 12px; color: var(--muted); }
+  .yrpeople { grid-column: 3; font-size: 13px; color: var(--muted); }
 
   /* 월이 바뀌는 지점 구분선 */
   .monthsep { margin: 0; display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 14px; font-weight: 700; }
@@ -195,9 +199,7 @@
   #edList > * + * { margin-top: 8px; }
   #edList > .monthsep { margin: 18px 0 2px; }
   #edList > .monthsep:first-child { margin-top: 4px; }
-  .edrow { display: flex; align-items: center; gap: 12px; background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; }
-  .edrow.past { opacity: .6; }
-  .eddate { flex: 0 0 64px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 6px 0; border-radius: 10px; background: var(--navy-soft); text-align: center; }
+  .eddate { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 6px 0; border-radius: 10px; background: var(--navy-soft); text-align: center; }
   .eddate strong { font-size: 19px; line-height: 1.15; color: var(--navy); }
   .eddate small { font-size: 12px; line-height: 1.3; color: var(--muted); }
   .eddate .kind { font-weight: 700; color: var(--navy); word-break: keep-all; }
@@ -216,26 +218,24 @@
   .edtags .edgroup { font-size: 11px; color: var(--muted); }
   .edbtns { display: flex; gap: 6px; flex-shrink: 0; }
   /* 순서 바꾸기 */
-  .reactions { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; position: sticky; top: 0; z-index: 6; background: var(--bg); padding: 8px 0; }
-  .reactions .summary { margin-right: auto; }
-  .reslot { display: grid; grid-template-columns: 84px minmax(0, 1fr); gap: 8px; }
-  .reslot + .reslot { margin-top: 6px; }
-  .redate { display: flex; flex-direction: column; justify-content: center; font-weight: 700; color: var(--navy); font-size: 14px; white-space: nowrap; }
-  .redate small { font-weight: 400; color: var(--muted); font-size: 12px; }
-  .recard { display: flex; align-items: center; gap: 10px; min-width: 0; min-height: 52px; background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 6px 8px 6px 6px; cursor: grab; user-select: none; -webkit-user-select: none; touch-action: pan-y; }
-  .recard.empty { justify-content: center; border-style: dashed; color: var(--muted); font-size: 13px; cursor: default; }
+  /* 곡을 옮기거나 골랐을 때 화면 아래에 뜨는 막대 (목록이 밀리지 않게 아래에 고정) */
+  .reactions { position: fixed; left: 0; right: 0; bottom: 0; z-index: 9; display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 8px; padding: 10px max(16px, calc((100% - 728px) / 2)) calc(10px + env(safe-area-inset-bottom)); background: #fff; border-top: 1px solid var(--line); box-shadow: 0 -4px 16px rgb(0 0 0 / .08); }
+  .reactions .summary { margin-right: auto; font-size: 14px; color: var(--ink); }
+  #edBody:has(#reBar:not([hidden])) #edList { padding-bottom: 80px; } /* 막대가 마지막 줄을 가리지 않게 */
+  .reslot { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 8px; }
+  .reslot.past { opacity: .6; }
+  .recard { display: flex; align-items: center; gap: 10px; min-width: 0; min-height: 60px; background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 8px 10px 8px 6px; cursor: grab; user-select: none; -webkit-user-select: none; touch-action: pan-y; }
+  .recard.static { cursor: default; padding-left: 12px; }
+  .recard.empty { width: 100%; min-height: 48px; justify-content: center; border-style: dashed; color: var(--muted); font-size: 13px; cursor: pointer; }
+  .recard.empty:hover { border-color: var(--navy); color: var(--navy); background: var(--navy-soft); }
   .recard.dragging { position: relative; z-index: 5; box-shadow: 0 8px 20px rgb(0 0 0 / .2); cursor: grabbing; }
   .reslot.over .recard:not(.dragging) { outline: 2px dashed var(--accent); outline-offset: 2px; }
   .reslot.moved .recard { background: #fff8d6; border-color: #ecd67a; }
   .reslot.selected .recard { background: #e3edff; border-color: var(--navy); box-shadow: inset 4px 0 0 var(--navy); } /* 고른 곡 */
   .linkbtn { border: 0; background: none; padding: 0; color: var(--navy); font-size: 13px; font-weight: 600; text-decoration: underline; }
   .recard .handle { font-size: 22px; line-height: 1; color: var(--muted); padding: 6px 4px; touch-action: none; cursor: grab; }
-  .recard .info { flex: 1; min-width: 0; }
-  .recard .info b { display: block; overflow-wrap: anywhere; }
-  .recard .info small { color: var(--muted); font-size: 12px; }
-  .rebtns { display: flex; gap: 4px; flex-shrink: 0; }
-  .rebtns .iconbtn { width: 32px; height: 32px; }
-  .rebtns .iconbtn:disabled { opacity: .3; cursor: default; }
+  .recard.empty:disabled { opacity: .5; cursor: default; }
+  .movednote { color: #9a6b00; font-weight: 700; }   /* 옮긴 곡의 원래 날짜 */
   .edbtns .btn { padding: 5px 9px; font-size: 13px; }
 
   /* 창(대화상자) */
@@ -296,10 +296,11 @@
     .list { column-count: 2; column-gap: 28px; column-rule: 1px solid #ddd; }
     .list > * + * { margin-top: 0; }
     .list > .monthsep { margin: 10px 0 4px; break-after: avoid; }
+    .yrchips { display: none !important; }
     .yrow { grid-template-columns: 64px 42px minmax(0, 1fr); gap: 0 8px; border: 0; border-bottom: 1px solid #ccc; border-radius: 0; padding: 5px 0; break-inside: avoid; }
     .yrow.past { opacity: 1; }
     .yrow.next { border: 0; border-bottom: 1px solid #ccc; }
-    .yrdate { font-size: 13px; }
+    .yrdate, .yrdate small { font-size: 13px; }
     .yrkind, .yrpeople { font-size: 11px; }
     .yrtitle { font-size: 14px; }
     .card { break-inside: avoid; }
@@ -307,11 +308,19 @@
   @media (max-width: 480px) {
     .periodmid { flex: 1; }
     .body { padding: 12px 10px; }
+    /* 휴대폰: 구분은 날짜 아래, 제목 아래에 지휘·반주, 그 아래 듣기 버튼 */
+    .yrow { grid-template-columns: 78px minmax(0, 1fr); gap: 2px 10px; padding: 10px; align-items: start; }
+    .yrdate { grid-column: 1; grid-row: 1; font-size: 18px; }
+    .yrdate small { font-size: 13px; }
+    .yrkind { grid-column: 1; grid-row: 2; font-size: 13px; }
+    .yrtitle { grid-column: 2; grid-row: 1; }
+    .yrpeople { grid-column: 2; grid-row: 2; }
+    .yrchips { grid-column: 2; grid-row: 3; justify-content: flex-start; margin-top: 4px; }
     /* 편집 목록: 입력 표시를 넓게 쓰고 버튼은 아래 오른쪽으로 */
-    .edrow { flex-wrap: wrap; gap: 8px 10px; }
-    .eddate { flex-basis: 56px; }
-    .edinfo { flex: 1 1 calc(100% - 66px); }
-    .edbtns { margin-left: auto; }
+    .reslot { grid-template-columns: 56px minmax(0, 1fr); gap: 6px; }
+    .recard { flex-wrap: wrap; gap: 6px 8px; }
+    .recard .edinfo { flex: 1 1 calc(100% - 34px); }
+    .recard .edbtns { margin-left: auto; }
     /* 파트 링크 줄: 링크 칸을 넓게 */
     .partrow { grid-template-columns: 50px 1fr auto auto; gap: 6px; }
     .partrow .iconbtn { width: 34px; height: 34px; }
@@ -417,28 +426,23 @@
     <p class="eyebrow">EDIT</p>
     <h1>찬양 일정 편집</h1>
     <div id="edBody">
-      <p class="hint edhint">저장하거나 삭제하면 사이트에 바로 반영됩니다.<br>영상·악보 표시에서 색이 칠해진 것은 입력됨, 점선은 비어 있음입니다.</p>
+      <p class="hint edhint">저장하거나 삭제하면 사이트에 바로 반영됩니다.<br>영상·악보 표시에서 색이 칠해진 것은 입력됨, 점선은 비어 있음입니다.<br>
+        <b>순서 바꾸기:</b> 날짜는 그대로 두고 곡만 끌어서 다른 날짜에 놓으세요 (휴대폰은 ⠿를 잡고). 곡이 있는 날짜에 놓으면 사이의 곡들이 한 칸씩 밀립니다.
+        여러 곡은 한 번씩 눌러 파란색으로 고른 뒤 함께 끌면 됩니다. 옮긴 뒤 [저장]을 눌러야 반영돼요.</p>
       <div class="toolbar">
         <button type="button" class="btn primary" id="addBtn">+ 일정 추가</button>
-        <button type="button" class="btn" id="reorderBtn">순서 바꾸기</button>
         <button type="button" class="btn" id="noticeBtn">공지사항 수정</button>
         <button type="button" class="btn" id="pastBtn" hidden></button>
         <button type="button" class="btn" id="logoutBtn">로그아웃</button>
       </div>
       <p class="status" id="edStatus" role="status"></p>
-      <div id="edList"></div>
-      <!-- 순서 바꾸기: 날짜는 고정, 곡 내용만 끌어서 옮김 -->
-      <div id="rePanel" hidden>
-        <p class="hint edhint">날짜는 그대로 두고 <b>곡만</b> 옮깁니다. 곡을 잡고 원하는 날짜로 끌어다 놓으세요 (휴대폰은 ⠿를 잡고, ↑↓ 버튼도 됩니다).<br>
-          곡이 있는 날짜에 놓으면 사이의 곡들이 한 칸씩 밀리고, 빈 날짜에 놓으면 그 곡만 옮겨 갑니다. 옮긴 곡은 노란색입니다.<br>
-          <b>여러 곡을 함께 옮기려면</b> 곡을 한 번씩 눌러 파란색으로 고른 뒤, 그중 하나를 잡고 끄세요.</p>
-        <div class="reactions">
-          <span class="summary" id="reSummary"></span>
-          <button type="button" class="btn" id="reCancel">취소</button>
-          <button type="button" class="btn primary" id="reSave">저장</button>
-        </div>
-        <div id="reList"></div>
+      <!-- 곡을 옮기거나 골랐을 때만 나타나는 막대 -->
+      <div class="reactions" id="reBar" hidden>
+        <span class="summary" id="reSummary"></span>
+        <button type="button" class="btn" id="reCancel">되돌리기</button>
+        <button type="button" class="btn primary" id="reSave">저장</button>
       </div>
+      <div id="edList"></div>
     </div>
   </div>
 
@@ -807,25 +811,17 @@ const chip = (x, icon, caption) => {
   }, icon ? el('span', { 'aria-hidden': 'true' }, icon) : null, x.label);
 };
 
-// opts.compact: 목록용 간략 카드 (날짜·구분·제목·듣기만) / opts.toggle: '자세히 보기' 버튼 표시
-// 맨 위 강조 카드는 옵션 없이 불러 전체를 보여 줌
-function card(ev, badge, opts = {}) {
-  const { compact, toggle } = opts;
+// 일정 전체 카드 (맨 위 강조 카드, 목록에서 한 줄을 눌러 펼쳤을 때). toggle: '간단히 보기' 버튼 표시
+function card(ev, badge, toggle) {
   const past = ev.date < TODAY;
   // 제목 오른쪽: 듣기·반주·악보·참고연주
-  const headChips = compact
-    ? [
-      ...HEAD_PARTS.filter(h => h.part === '전체')
-        .map(h => ({ label: h.label, url: safeUrl(ev.parts?.[h.part]), hl: true })),
-      myPart && { label: myPart, url: safeUrl(ev.parts?.[myPart]), hl: true, icon: '▶' }, // 접힌 카드에도 내 파트
-    ].filter(x => x && x.url)
-    : [
-      ...HEAD_PARTS.map(h => ({ label: h.label, url: safeUrl(ev.parts?.[h.part]), hl: true })).filter(x => x.url),
-      ...linkList(ev.scores, '악보'),
-      ...linkList(ev.refs, '참고'),
-    ];
+  const headChips = [
+    ...HEAD_PARTS.map(h => ({ label: h.label, url: safeUrl(ev.parts?.[h.part]), hl: true })).filter(x => x.url),
+    ...linkList(ev.scores, '악보'),
+    ...linkList(ev.refs, '참고'),
+  ];
   // 아래: 파트 연습 (S·A·T·B)
-  const partChips = compact ? [] : PARTS.filter(p => !HEAD_PARTS.some(h => h.part === p))
+  const partChips = PARTS.filter(p => !HEAD_PARTS.some(h => h.part === p))
     .map(p => ({ label: PART_SHORT[p] || p, full: p, url: safeUrl(ev.parts?.[p]), hl: p === myPart })).filter(x => x.url);
 
   return el('article', { class: 'card' + (past ? ' past' : '') + (badge ? ' next' : '') },
@@ -833,7 +829,7 @@ function card(ev, badge, opts = {}) {
       el('span', { class: 'dow' }, DOW[dowOf(ev.date)]),
       el('strong', {}, `${+ev.date.slice(5, 7)}/${+ev.date.slice(8, 10)}`),
       el('span', { class: 'kind' }, typeLabel(typeOf(ev))),
-      !compact && (ev.conductor || ev.pianist) && el('div', { class: 'people' },
+      (ev.conductor || ev.pianist) && el('div', { class: 'people' },
         ev.conductor && el('span', {}, '지휘: ' + ev.conductor),
         ev.pianist && el('span', {}, '반주: ' + ev.pianist))),
     el('div', { class: 'body' },
@@ -844,15 +840,12 @@ function card(ev, badge, opts = {}) {
       partChips.length > 0 && el('div', { class: 'group' },
         el('p', { class: 'label' }, '파트 연습'),
         el('div', { class: 'chips' }, partChips.map(x => chip(x, '▶', ev.title)))),
-      !compact && ev.note && el('p', { class: 'note' }, ev.note),
-      !compact && !headChips.length && !partChips.length && !ev.note && el('p', { class: 'muted' }, '연습 자료 준비 중'),
+      ev.note && el('p', { class: 'note' }, ev.note),
+      !headChips.length && !partChips.length && !ev.note && el('p', { class: 'muted' }, '연습 자료 준비 중'),
       toggle && el('button', {
         type: 'button', class: 'detailbtn',
-        onclick: () => {
-          expanded.has(ev.id) ? expanded.delete(ev.id) : expanded.add(ev.id);
-          renderPublic();
-        },
-      }, compact ? '자세히 보기 ▾' : '간단히 보기 ▴')));
+        onclick: () => { expanded.delete(ev.id); renderPublic(); },
+      }, '간단히 보기 ▴')));
 }
 
 // 글 속의 주소를 눌러서 열 수 있게 바꿈 (문장부호는 링크 밖에 남김)
@@ -1015,8 +1008,7 @@ function renderPublic() {
       const separator = (i > 0 && month !== view.list[i - 1].date.slice(0, 7)) || (yearList && i === 0)
         ? [el('h3', { class: 'monthsep' }, yearList ? `${+month.slice(5)}월` : `${+month.slice(0, 4)}년 ${+month.slice(5)}월`)] : [];
       const b = e.date === nextDate ? badge : null;
-      return [...separator, yearList && !expanded.has(e.id) ? yearRow(e, b)
-        : card(e, b, { compact: !yearList && !expanded.has(e.id), toggle: true })];
+      return [...separator, expanded.has(e.id) ? card(e, b, true) : listRow(e, b)];
     })
     : [el('p', { class: 'empty' }, view.empty)]));
   // 일정이 하나도 없으면 "등록된 찬양이 없습니다" 안내만 보여 줌
@@ -1055,15 +1047,23 @@ function clearSearch() {
 }
 
 // 연도별 보기의 한 줄: 날짜 · 구분 · 제목 (지휘·반주). 누르면 카드로 펼쳐 영상·악보를 봄
-function yearRow(e, badge) {
+// 목록의 한 줄: 날짜 · 구분 · 제목 (지휘·반주) · [듣기][▶ 내 파트]. 줄을 누르면 전체 카드로 펼침
+function listRow(e, badge) {
   const people = [e.conductor && '지휘 ' + e.conductor, e.pianist && '반주 ' + e.pianist].filter(Boolean).join(' · ');
-  return el('button', {
-    type: 'button', class: 'yrow' + (e.date < TODAY ? ' past' : '') + (badge ? ' next' : ''),
-    onclick: () => { expanded.add(e.id); renderPublic(); },
+  const quick = [
+    { label: '듣기', url: safeUrl(e.parts?.['전체']), hl: true },
+    myPart && { label: myPart, url: safeUrl(e.parts?.[myPart]), hl: true, icon: '▶' },
+  ].filter(x => x && x.url);
+  const open = () => { expanded.add(e.id); renderPublic(); };
+  return el('div', {
+    class: 'yrow' + (e.date < TODAY ? ' past' : '') + (badge ? ' next' : ''), role: 'button', tabindex: '0',
+    onclick: ev => { if (!ev.target.closest('a')) open(); }, // 듣기 버튼을 누를 때는 펼치지 않음
+    onkeydown: ev => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); open(); } },
   },
-    el('span', { class: 'yrdate' }, `${+e.date.slice(5, 7)}/${+e.date.slice(8, 10)} (${DOW[dowOf(e.date)]})`),
-    el('span', { class: 'yrkind' }, typeLabel(typeOf(e))),
+    el('span', { class: 'yrdate' }, `${+e.date.slice(5, 7)}/${+e.date.slice(8, 10)}`, el('small', {}, ` (${DOW[dowOf(e.date)]})`)),
+    el('span', { class: 'yrkind' + (typeOf(e) !== '주일 찬양' ? ' special' : '') }, typeLabel(typeOf(e))),
     el('span', { class: 'yrtitle' }, e.title, badge && el('span', { class: 'badge' }, badge)),
+    quick.length > 0 && el('span', { class: 'yrchips' }, quick.map(x => chip(x, x.icon, e.title))),
     people && el('span', { class: 'yrpeople' }, people));
 }
 
@@ -1153,118 +1153,125 @@ async function mutate(body, applyNow, okMsg) {
   }
 }
 
-function renderEditor() {
-  $('rePanel').hidden = !reorder;
-  $('edList').hidden = !!reorder;
-  document.querySelector('#edBody .toolbar').hidden = !!reorder;
-  if (reorder) return renderReorder();
-  const pastCount = events.filter(e => e.date < TODAY).length;
-  const list = showPast ? events : events.filter(e => e.date >= TODAY);
-  $('pastBtn').hidden = !pastCount;
-  $('pastBtn').textContent = showPast ? '지난 일정 숨기기' : `지난 일정 ${pastCount}건 보기`;
-  const person = (label, name) => el('span', { class: name ? '' : 'missing' }, `${label} ${name || '없음'}`);
-  $('edList').replaceChildren(...(list.length ? list.flatMap((e, i) => {
-    const month = e.date.slice(0, 7);
-    const sep = i === 0 || month !== list[i - 1].date.slice(0, 7) // 월(해가 바뀌면 연도도)마다 구분선
-      ? [el('h3', { class: 'monthsep' }, `${i === 0 || month.slice(0, 4) !== list[i - 1].date.slice(0, 4) ? +month.slice(0, 4) + '년 ' : ''}${+month.slice(5)}월`)] : [];
-    const special = typeOf(e) !== '주일 찬양';
-    return [...sep, el('div', { class: 'edrow' + (e.date < TODAY ? ' past' : '') },
-      el('div', { class: 'eddate' + (special ? ' special' : '') },
-        el('strong', {}, `${+e.date.slice(5, 7)}/${+e.date.slice(8, 10)}`),
-        el('small', {}, `(${DOW[dowOf(e.date)]})`),
-        el('small', { class: 'kind' }, typeLabel(typeOf(e)))),
-      el('div', { class: 'edinfo' },
-        el('b', {}, e.title),
-        el('div', { class: 'edpeople' }, person('지휘', e.conductor), ' · ', person('반주', e.pianist)),
-        edTags(e)),
-      el('div', { class: 'edbtns' },
-        el('button', { type: 'button', class: 'btn', onclick: () => openForm(e) }, '수정'),
-        el('button', { type: 'button', class: 'btn', onclick: () => openForm(e, true) }, '복제'),
-        el('button', { type: 'button', class: 'btn danger', onclick: () => removeEvent(e) }, '삭제')))];
-  })
-    : [el('p', { class: 'empty' }, pastCount ? '앞으로 등록된 일정이 없습니다.' : '등록된 일정이 없습니다.')]));
-}
-
-/* ===== 순서 바꾸기 =====
-   오늘 이후 일정의 날짜(구분 포함)를 고정된 자리로 두고, 곡 내용만 끌어서 옮김. 빈 주일도 자리로 보여 줌 */
-let reorder = null; // { slots: [{date, type, id}], contents: [곡 내용 | null], sel: 고른 곡들 } — 순서 바꾸기 중일 때만
+/* ===== 편집 목록 (순서 바꾸기 포함) =====
+   오늘 이후 일정의 날짜(구분 포함)는 고정된 자리이고, 곡 내용만 끌어서 옮김.
+   빈 주일도 자리로 보여 주고 거기서 바로 추가. 옮긴 뒤에는 [저장]을 눌러야 반영 */
+let board = null;         // { slots: [{date, type, id}], contents: [곡 내용 | null] } — 옮긴 뒤 저장 전까지 유지
+const sel = new Set();    // 눌러서 고른 곡 (원래 일정 id)
+let dragged = false;      // 끌기 직후의 클릭은 고르기로 치지 않음
 const CONTENT_KEYS = ['title', 'conductor', 'pianist', 'parts', 'scores', 'refs', 'note'];
 
-function startReorder() {
+function buildBoard() {
   const up = events.filter(e => e.date >= TODAY);
   const last = up.length ? up[up.length - 1].date : TODAY;
   const end = dayKey(utc(last) + 14 * 864e5); // 맨 뒤로 밀 수 있게 마지막 일정 뒤 2주까지
-  const sundayTaken = new Set(up.map(e => e.date)); // 곡이 하나라도 있는 주일은 빈 자리를 따로 만들지 않음
+  const taken = new Set(up.map(e => e.date)); // 곡이 하나라도 있는 주일은 빈 자리를 따로 만들지 않음
   const slots = up.map(e => ({ date: e.date, type: typeOf(e), id: e.id }));
   for (let d = nextSunday(); d <= end; d = dayKey(utc(d) + 7 * 864e5)) {
-    if (!sundayTaken.has(d)) slots.push({ date: d, type: '주일 찬양', id: null });
+    if (!taken.has(d)) slots.push({ date: d, type: '주일 찬양', id: null });
   }
   slots.sort((a, b) => a.date.localeCompare(b.date));
   const byId = Object.fromEntries(up.map(e => [e.id, e]));
-  reorder = {
+  return {
     slots,
-    sel: new Set(),
     contents: slots.map(s => s.id ? { ...Object.fromEntries(CONTENT_KEYS.map(k => [k, byId[s.id][k]])), srcId: s.id, fromDate: s.date } : null),
   };
-  renderEditor();
+}
+
+const reChanged = () => board.slots.filter((s, i) => (board.contents[i]?.srcId || null) !== s.id);
+const pending = () => !!board && reChanged().length > 0;
+
+const md = key => `${+key.slice(5, 7)}/${+key.slice(8, 10)}`;
+const dateBox = (date, type) => el('div', { class: 'eddate' + (type !== '주일 찬양' ? ' special' : '') },
+  el('strong', {}, md(date)), el('small', {}, `(${DOW[dowOf(date)]})`), el('small', { class: 'kind' }, typeLabel(type)));
+const person = (label, name) => el('span', { class: name ? '' : 'missing' }, `${label} ${name || '없음'}`);
+const edInfo = (c, note) => el('div', { class: 'edinfo' },
+  el('b', {}, c.title),
+  el('div', { class: 'edpeople' }, person('지휘', c.conductor), ' · ', person('반주', c.pianist), note && el('span', { class: 'movednote' }, ` · ${note}`)),
+  edTags(c));
+const edBtns = (ev, locked) => el('div', { class: 'edbtns' },
+  el('button', { type: 'button', class: 'btn', disabled: locked || null, onclick: () => openForm(ev) }, '수정'),
+  el('button', { type: 'button', class: 'btn', disabled: locked || null, onclick: () => openForm(ev, true) }, '복제'),
+  el('button', { type: 'button', class: 'btn danger', disabled: locked || null, onclick: () => removeEvent(ev) }, '삭제'));
+
+function slotRow(i, locked) {
+  const s = board.slots[i], c = board.contents[i];
+  if (!c) {
+    return el('div', { class: 'reslot' }, dateBox(s.date, s.type),
+      el('button', { type: 'button', class: 'recard empty', disabled: locked || null, onclick: () => openForm(null, false, s) }, '비어 있음 · ＋ 이 날짜에 일정 추가'));
+  }
+  const moved = c.srcId !== s.id;
+  const ev = events.find(e => e.id === c.srcId);
+  return el('div', { class: 'reslot' + (moved ? ' moved' : '') + (sel.has(c.srcId) ? ' selected' : '') },
+    dateBox(s.date, s.type),
+    el('div', {
+      class: 'recard', onpointerdown: e => startDrag(e, i),
+      onclick: e => { // 한 번 누르면 고르기/풀기
+        if (dragged) { dragged = false; return; }
+        if (e.target.closest('button')) return;
+        sel.has(c.srcId) ? sel.delete(c.srcId) : sel.add(c.srcId);
+        renderEditor();
+      },
+    },
+      el('span', { class: 'handle', 'aria-hidden': 'true' }, '⠿'),
+      edInfo(c, moved && `원래 ${md(c.fromDate)}`),
+      ev && edBtns(ev, locked)));
+}
+
+function renderEditor() {
+  if (!pending()) board = buildBoard(); // 옮긴 게 없으면 늘 최신 일정으로 다시 그림
+  const locked = pending(); // 옮긴 뒤 저장 전에는 수정·삭제·추가를 막음 (서로 꼬이지 않게)
+  const pastCount = events.filter(e => e.date < TODAY).length;
+  $('pastBtn').hidden = !pastCount;
+  $('pastBtn').textContent = showPast ? '지난 일정 숨기기' : `지난 일정 ${pastCount}건 보기`;
+  $('addBtn').disabled = locked;
+
+  const changed = reChanged().length;
+  const picked = board.contents.filter(c => c && sel.has(c.srcId)).length;
+  $('reBar').hidden = !changed && !picked;
+  $('reSummary').replaceChildren(...[
+    changed && `${changed}개 날짜가 바뀝니다. [저장]을 눌러야 반영돼요 `,
+    picked > 0 && `${picked}곡 선택됨 `,
+    picked > 0 && el('button', { type: 'button', class: 'linkbtn', onclick: () => { sel.clear(); renderEditor(); } }, '선택 해제'),
+  ].filter(Boolean));
+  $('reCancel').hidden = $('reSave').hidden = !changed;
+
+  // 지난 일정(펼쳤을 때)은 옮길 수 없고, 오늘 이후는 날짜 자리 + 곡 카드
+  const items = [
+    ...(showPast ? events.filter(e => e.date < TODAY).map(e => ({ date: e.date, past: e })) : []),
+    ...board.slots.map((s, i) => ({ date: s.date, i })),
+  ];
+  $('edList').replaceChildren(...items.flatMap((it, k) => {
+    const month = it.date.slice(0, 7), prev = items[k - 1]?.date;
+    const sep = !prev || month !== prev.slice(0, 7) // 월(해가 바뀌면 연도도)마다 구분선
+      ? [el('h3', { class: 'monthsep' }, `${!prev || month.slice(0, 4) !== prev.slice(0, 4) ? +month.slice(0, 4) + '년 ' : ''}${+month.slice(5)}월`)] : [];
+    const row = it.past
+      ? el('div', { class: 'reslot past' }, dateBox(it.past.date, typeOf(it.past)),
+        el('div', { class: 'recard static' }, edInfo(it.past), edBtns(it.past, locked)))
+      : slotRow(it.i, locked);
+    return [...sep, row];
+  }));
 }
 
 // from 자리의 곡을 to 자리로: 빈 자리면 그냥 옮기고, 곡이 있으면 사이의 곡들이 한 칸씩 밀림
 function moveContent(from, to) {
-  const c = reorder.contents;
+  const c = board.contents;
   if (from === to || !c[from]) return;
   if (!c[to]) { c[to] = c[from]; c[from] = null; }
   else c.splice(to, 0, c.splice(from, 1)[0]);
-  renderReorder();
+  renderEditor();
 }
 
 // 고른 곡들을 한 덩어리로: 잡은 곡(grab)이 to 자리에 오도록 넣고, 나머지는 순서대로 채움
 function moveBlock(grab, to) {
-  const c = reorder.contents;
-  const idx = c.map((x, i) => x && reorder.sel.has(x) ? i : -1).filter(i => i >= 0);
+  const c = board.contents;
+  const idx = c.map((x, i) => x && sel.has(x.srcId) ? i : -1).filter(i => i >= 0);
   if (idx.length < 2 || !idx.includes(grab)) return moveContent(grab, to);
   const block = idx.map(i => c[i]);
   const rest = c.filter((x, i) => !idx.includes(i));
   const k = Math.max(0, Math.min(rest.length, to - idx.indexOf(grab)));
-  reorder.contents = [...rest.slice(0, k), ...block, ...rest.slice(k)];
-  renderReorder();
-}
-const moveAny = (i, to) => (reorder.contents[i] && reorder.sel.has(reorder.contents[i]) ? moveBlock : moveContent)(i, to);
-
-const reChanged = () => reorder.slots.filter((s, i) => (reorder.contents[i]?.srcId || null) !== s.id);
-
-function renderReorder() {
-  const { slots, contents } = reorder;
-  const changed = reChanged().length;
-  const picked = [...reorder.sel].filter(x => contents.includes(x)).length;
-  $('reSummary').replaceChildren(changed ? `${changed}개 날짜가 바뀝니다` : '바뀐 곳이 없습니다',
-    picked > 0 && ` · ${picked}곡 선택됨 `,
-    picked > 0 && el('button', { type: 'button', class: 'linkbtn', onclick: () => { reorder.sel.clear(); renderReorder(); } }, '선택 해제'));
-  $('reSave').disabled = !changed;
-  $('reList').replaceChildren(...slots.map((s, i) => {
-    const c = contents[i];
-    const moved = c && c.srcId !== s.id;
-    const people = c && [c.conductor && '지휘 ' + c.conductor, c.pianist && '반주 ' + c.pianist].filter(Boolean).join(' · ');
-    return el('div', { class: 'reslot' + (moved ? ' moved' : '') + (c && reorder.sel.has(c) ? ' selected' : '') },
-      el('div', { class: 'redate' }, `${+s.date.slice(5, 7)}/${+s.date.slice(8, 10)} (${DOW[dowOf(s.date)]})`,
-        el('small', {}, typeLabel(s.type))),
-      c ? el('div', {
-        class: 'recard', onpointerdown: e => startDrag(e, i),
-        onclick: e => { // 한 번 누르면 고르기/풀기 (끌고 난 뒤의 클릭은 무시)
-          if (reorder.dragged) { reorder.dragged = false; return; }
-          if (e.target.closest('button')) return;
-          reorder.sel.has(c) ? reorder.sel.delete(c) : reorder.sel.add(c);
-          renderReorder();
-        },
-      },
-        el('span', { class: 'handle', 'aria-hidden': 'true' }, '⠿'),
-        el('div', { class: 'info' }, el('b', {}, c.title),
-          el('small', {}, [people, moved && `원래 ${+c.fromDate.slice(5, 7)}/${+c.fromDate.slice(8, 10)}`].filter(Boolean).join(' · '))),
-        el('div', { class: 'rebtns' },
-          el('button', { type: 'button', class: 'iconbtn', 'aria-label': '한 칸 위로', disabled: i === 0 || null, onclick: () => moveAny(i, i - 1) }, '↑'),
-          el('button', { type: 'button', class: 'iconbtn', 'aria-label': '한 칸 아래로', disabled: i === slots.length - 1 || null, onclick: () => moveAny(i, i + 1) }, '↓')))
-        : el('div', { class: 'recard empty' }, '비어 있음'));
-  }));
+  board.contents = [...rest.slice(0, k), ...block, ...rest.slice(k)];
+  renderEditor();
 }
 
 // 끌어서 옮기기 (마우스는 카드 어디든, 휴대폰은 ⠿를 잡고). 6px 넘게 움직여야 끌기, 아니면 누르기(고르기)
@@ -1272,17 +1279,17 @@ function startDrag(e, from) {
   if (e.button > 0 || e.target.closest('button')) return;
   if (e.pointerType !== 'mouse' && !e.target.closest('.handle')) return; // 손가락은 ⠿에서만 (나머지는 화면 스크롤·고르기)
   e.preventDefault();
-  const rows = [...$('reList').children];
-  const grabbed = reorder.contents[from];
-  const together = reorder.sel.has(grabbed) && [...reorder.sel].filter(x => reorder.contents.includes(x)).length > 1;
-  const cards = together ? rows.filter((r, i) => reorder.contents[i] && reorder.sel.has(reorder.contents[i])).map(r => r.querySelector('.recard'))
-    : [rows[from].querySelector('.recard')];
+  const rows = [...$('edList').querySelectorAll('.reslot:not(.past)')]; // board.slots와 같은 순서
+  const grabbed = board.contents[from];
+  const together = sel.has(grabbed.srcId) && board.contents.filter(c => c && sel.has(c.srcId)).length > 1;
+  const cards = rows.filter((r, i) => i === from || (together && board.contents[i] && sel.has(board.contents[i].srcId)))
+    .map(r => r.querySelector('.recard'));
   const startX = e.pageX, startY = e.pageY;
-  let to = from, dragging = false;
+  let to = from, moving = false;
   const move = ev => {
-    if (!dragging) {
+    if (!moving) {
       if (Math.hypot(ev.pageX - startX, ev.pageY - startY) < 6) return;
-      dragging = reorder.dragged = true;
+      moving = dragged = true;
       cards.forEach(cd => cd.classList.add('dragging'));
     }
     cards.forEach(cd => { cd.style.transform = `translateY(${ev.pageY - startY}px)`; });
@@ -1294,10 +1301,10 @@ function startDrag(e, from) {
     removeEventListener('pointermove', move);
     removeEventListener('pointerup', end);
     removeEventListener('pointercancel', end);
-    if (!dragging) return; // 누르기만 했으면 아래 클릭에서 고르기
-    setTimeout(() => { reorder && (reorder.dragged = false); }, 0); // 손가락 끌기는 클릭이 안 생기므로 여기서 풀어 둠
-    if (!together && !reorder.sel.has(grabbed)) reorder.sel.clear(); // 안 고른 곡을 끌면 고른 것은 풂
-    if (to === from) return renderReorder();
+    if (!moving) return; // 누르기만 했으면 클릭에서 고르기
+    setTimeout(() => { dragged = false; }, 0); // 손가락 끌기는 클릭이 안 생기므로 여기서 풀어 둠
+    if (!together) sel.clear(); // 안 고른 곡(또는 한 곡)을 끌면 고른 것은 풂
+    if (to === from) return renderEditor();
     together ? moveBlock(from, to) : moveContent(from, to);
   };
   addEventListener('pointermove', move);
@@ -1305,9 +1312,9 @@ function startDrag(e, from) {
   addEventListener('pointercancel', end);
 }
 
-function saveReorder() {
-  const { slots, contents } = reorder;
-  const saves = [], deletes = [], keep = new Set(), saved = [];
+function saveBoard() {
+  const { slots, contents } = board;
+  const saves = [], deletes = [], saved = [];
   reChanged().forEach(s => {
     const c = contents[slots.indexOf(s)];
     if (!c) { deletes.push(s.id); return; } // 곡이 빠져나간 자리는 지움
@@ -1315,13 +1322,13 @@ function saveReorder() {
     const event = { date: s.date, type: s.type, ...Object.fromEntries(CONTENT_KEYS.map(k => [k, c[k] ?? (k === 'parts' ? {} : ['scores', 'refs'].includes(k) ? [] : '')])) };
     saves.push({ id, event });
     saved.push({ ...event, id });
-    keep.add(id);
   });
-  const touched = new Set([...deletes, ...keep]);
-  reorder = null;
+  const touched = new Set([...deletes, ...saved.map(x => x.id)]);
+  board = null;
+  sel.clear();
   mutate({ action: 'batch', token, saves, deletes },
     () => { events = sorted([...events.filter(e => !touched.has(e.id)), ...saved]); },
-    '순서를 저장했습니다.');
+    '바꾼 순서를 저장했습니다.');
 }
 
 // 영상·기타 항목의 입력 여부를 작은 표시로 (지휘·반주는 이름을 바로 위에 보여 주므로 제외)
@@ -1527,10 +1534,12 @@ form.type.onchange = () => {
 };
 
 // asCopy: 기존 일정을 그대로 베껴 새 일정으로 (날짜만 다음 주일로)
-function openForm(ev, asCopy) {
+// slot: 목록의 빈 자리에서 추가할 때 — 날짜·구분은 그 자리로 고정
+function openForm(ev, asCopy, slot = null) {
   editingId = ev && !asCopy ? ev.id : null;
-  const v = ev || { date: nextSunday(), type: TYPES[0], title: '', conductor: '', pianist: '', parts: {}, scores: [], refs: [], note: '' };
-  $('formTitle').textContent = asCopy ? '찬양 일정 복제' : ev ? '찬양 일정 수정' : '찬양 일정 추가';
+  const v = ev || { date: slot ? slot.date : nextSunday(), type: slot ? slot.type : TYPES[0], title: '', conductor: '', pianist: '', parts: {}, scores: [], refs: [], note: '' };
+  $('formTitle').textContent = slot ? `찬양 일정 추가 · ${fmtDate(slot.date)}` : asCopy ? '찬양 일정 복제' : ev ? '찬양 일정 수정' : '찬양 일정 추가';
+  form.date.closest('label').hidden = form.type.closest('label').hidden = !!slot;
 
   // 지휘·반주는 이미 쓴 이름을 골라 넣을 수 있게 함
   for (const [id, key] of [['conductorList', 'conductor'], ['pianistList', 'pianist']]) {
@@ -1543,7 +1552,7 @@ function openForm(ev, asCopy) {
   const t = String(v.type || '');
   form.type.value = !t ? '' : TYPES.includes(t) ? t : TYPE_CUSTOM;
   form.typeCustom.value = t && !TYPES.includes(t) ? t : '';
-  $('typeCustomRow').hidden = form.type.value !== TYPE_CUSTOM;
+  $('typeCustomRow').hidden = !!slot || form.type.value !== TYPE_CUSTOM;
   form.title.value = v.title;
   form.conductor.value = v.conductor || '';
   form.pianist.value = v.pianist || '';
@@ -1654,9 +1663,8 @@ $('logoutBtn').onclick = () => {
   location.hash = '';
 };
 $('addBtn').onclick = () => openForm(null);
-$('reorderBtn').onclick = startReorder;
-$('reCancel').onclick = () => { reorder = null; renderEditor(); };
-$('reSave').onclick = saveReorder;
+$('reCancel').onclick = () => { board = null; sel.clear(); renderEditor(); };
+$('reSave').onclick = saveBoard;
 $('cancelBtn').onclick = () => $('dlg').close();
 $('pastBtn').onclick = () => { showPast = !showPast; renderEditor(); };
 $('noticeBtn').onclick = () => openNoticeEdit(0);
@@ -1768,7 +1776,7 @@ if ('serviceWorker' in navigator) {
   const hadController = !!navigator.serviceWorker.controller;
   const reloadWhenIdle = () => {
     // 입력 창이 열려 있거나 저장 중이면 끝날 때까지 기다림 (쓰던 내용이 날아가지 않게)
-    if (saving || reorder || document.querySelector('dialog[open]')) return setTimeout(reloadWhenIdle, 3000);
+    if (saving || pending() || document.querySelector('dialog[open]')) return setTimeout(reloadWhenIdle, 3000);
     location.reload();
   };
   navigator.serviceWorker.addEventListener('controllerchange', () => { if (hadController) reloadWhenIdle(); });
