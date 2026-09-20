@@ -107,8 +107,13 @@
   .summary { color: var(--muted); font-size: 13px; }
 
   /* 조회 모드 선택 */
-  .modebar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+  .modebar { display: flex; gap: 8px; flex-wrap: nowrap; margin-bottom: 10px; }
+  .modebar .btn { white-space: nowrap; }
   .modebar .btn[aria-pressed="true"] { background: var(--navy); border-color: var(--navy); color: #fff; }
+  /* 연습 영상은 일정 보기와 성격이 달라서 오른쪽 끝에 초록색으로 */
+  #modeRehearsal { margin-left: auto; background: #eef7f2; border-color: #bcd8c9; color: #2f6d4f; }
+  #modeRehearsal:hover { background: #e0efe7; }
+  #modeRehearsal[aria-pressed="true"] { background: #2f6d4f; border-color: #2f6d4f; color: #fff; }
 
   /* 기간 이동 */
   .periodbar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
@@ -322,6 +327,9 @@
   }
   @media (max-width: 480px) {
     .periodmid { flex: 1; }
+    /* 좁은 화면에서도 보기 버튼 네 개가 한 줄에 들어가도록 */
+    .modebar { gap: 5px; }
+    .modebar .btn { padding: 8px 8px; font-size: 12.5px; }
     .body { padding: 12px 10px; }
     /* 휴대폰: 구분은 날짜 아래, 듣기 버튼은 오른쪽에 (줄을 따로 쓰지 않게) */
     .yrow { grid-template-columns: 72px minmax(0, 1fr) auto; gap: 2px 6px; padding: 10px 8px; align-items: start; }
@@ -397,9 +405,9 @@
 
       <div class="modebar" id="modeBar" role="group" aria-label="조회 모드">
         <button type="button" class="btn" id="modeUpcoming" aria-pressed="true"></button>
-        <button type="button" class="btn" id="modeRehearsal" aria-pressed="false">연습 영상</button>
         <button type="button" class="btn" id="modeMonth" aria-pressed="false">월별 보기</button>
         <button type="button" class="btn" id="modeYear" aria-pressed="false">연도별 보기</button>
+        <button type="button" class="btn" id="modeRehearsal" aria-pressed="false">연습 영상</button>
       </div>
 
       <div class="periodbar" id="periodBar">
