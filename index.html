@@ -311,14 +311,15 @@
   @media (max-width: 480px) {
     .periodmid { flex: 1; }
     .body { padding: 12px 10px; }
-    /* 휴대폰: 구분은 날짜 아래, 제목 아래에 지휘·반주, 그 아래 듣기 버튼 */
-    .yrow { grid-template-columns: 78px minmax(0, 1fr); gap: 2px 10px; padding: 10px; align-items: start; }
+    /* 휴대폰: 구분은 날짜 아래, 듣기 버튼은 오른쪽에 (줄을 따로 쓰지 않게) */
+    .yrow { grid-template-columns: 72px minmax(0, 1fr) auto; gap: 2px 6px; padding: 10px 8px; align-items: start; }
     .yrdate { grid-column: 1; grid-row: 1; font-size: 18px; }
     .yrdate small { font-size: 13px; }
     .yrkind { grid-column: 1; grid-row: 2; font-size: 13px; }
     .yrtitle { grid-column: 2; grid-row: 1; }
-    .yrpeople { grid-column: 2; grid-row: 2; }
-    .yrchips { grid-column: 2; grid-row: 3; justify-content: flex-start; margin-top: 4px; }
+    .yrpeople { grid-column: 2 / span 2; grid-row: 2; } /* 지휘·반주는 한 줄을 다 씀 */
+    .yrchips { grid-column: 3; grid-row: 1; align-self: start; justify-content: flex-end; }
+    .yrchips .chip { padding: 5px 9px; }
     /* 편집 목록: 입력 표시를 넓게 쓰고 버튼은 아래 오른쪽으로 */
     .reslot { grid-template-columns: 56px minmax(0, 1fr); gap: 6px; }
     .recard { flex-wrap: wrap; gap: 6px 8px; }
