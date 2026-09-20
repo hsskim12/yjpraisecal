@@ -185,6 +185,8 @@
   .note { margin: 10px 0 0; white-space: pre-line; font-size: 14px; color: #8c1d2e; font-weight: 600; border-left: 3px solid #8c1d2e; padding-left: 10px; }
   .muted { margin: 8px 0 0; color: var(--muted); font-size: 14px; }
   .empty { background: #fff; border: 1px dashed var(--line); border-radius: 14px; padding: 18px; text-align: center; color: var(--muted); margin: 0; }
+  .emptyadd { display: block; width: 100%; font-size: 15px; cursor: pointer; }
+  .emptyadd:hover { border-color: var(--navy); color: var(--navy); background: var(--navy-soft); }
   .emptySundays { margin: 12px 0 0; color: var(--muted); font-size: 14px; padding: 10px 14px; background: #fff; border: 1px dashed var(--line); border-radius: 10px; }
 
   /* 화면 아래 고정 유튜브 재생창 */
@@ -769,7 +771,7 @@ function api(body, query = {}) {
 function applyData(d) {
   events = sorted(d.events || []);
   notices = Array.isArray(d.notices) ? d.notices : [];
-  rehearsals = Array.isArray(d.rehearsals) ? d.rehearsals : [];
+  rehearsals = (Array.isArray(d.rehearsals) ? d.rehearsals : []).sort((a, b) => b.date.localeCompare(a.date));
 }
 
 function saveCache() {
@@ -1026,7 +1028,9 @@ function renderRehearsals() {
     token && el('div', { class: 'toolbar' },
       el('button', { type: 'button', class: 'btn primary', onclick: () => openRehearsal(null) }, '+ 연습 영상 추가')),
     ...(rehearsals.length ? rehearsals.map(rehearsalRow)
-      : [el('p', { class: 'empty' }, token ? '아직 올린 연습 영상이 없습니다. [+ 연습 영상 추가]로 넣어 주세요.' : '아직 올라온 연습 영상이 없습니다.')]),
+      : [token
+        ? el('button', { type: 'button', class: 'empty emptyadd', onclick: () => openRehearsal(null) }, '아직 올린 연습 영상이 없습니다. 눌러서 영상을 넣어 주세요.')
+        : el('p', { class: 'empty' }, '아직 올라온 연습 영상이 없습니다.')]),
   ].filter(Boolean));
 }
 
