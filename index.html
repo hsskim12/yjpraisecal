@@ -134,7 +134,8 @@
   .yrkind { font-size: 14px; color: var(--muted); white-space: nowrap; }
   .yrkind.special { color: var(--accent-dark); font-weight: 700; } /* 주일이 아닌 구분 (집회·특별집회 등) */
   .yrtitle { font-size: 17px; font-weight: 700; overflow-wrap: anywhere; }
-  .yrchips { grid-row: 1 / span 2; grid-column: 4; display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; }
+  .yrchips { grid-row: 1 / span 2; grid-column: 4; display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 6px; }
+  .rowedit { width: 32px; height: 32px; font-size: 15px; }
   .yrtitle .badge { margin-left: 6px; vertical-align: middle; }
   .yrpeople { grid-column: 3; font-size: 13px; color: var(--muted); }
 
@@ -883,6 +884,12 @@ const chip = (x, icon, caption, extra) => {
   }, icon ? el('span', { 'aria-hidden': 'true' }, icon) : null, x.label);
 };
 
+// 관리자로 로그인하면 목록에서 바로 수정 창을 여는 버튼 (편집 화면에 들어가지 않아도 됨)
+const editBtn = ev => el('button', {
+  type: 'button', class: 'iconbtn rowedit', title: '일정 수정', 'aria-label': `${ev.title} 수정`,
+  onclick: e => { e.stopPropagation(); openForm(ev); },
+}, '✎');
+
 // 일정 전체 카드 (맨 위 강조 카드, 목록에서 한 줄을 눌러 펼쳤을 때). toggle: '간단히 보기' 버튼 표시
 function card(ev, badge, toggle) {
   const past = ev.date < TODAY;
@@ -909,6 +916,7 @@ function card(ev, badge, toggle) {
       el('div', { class: 'titlerow' }, el('h3', {}, ev.title),
         badge && el('span', { class: 'badge' }, badge),
         past && el('span', { class: 'done' }, '지난 찬양'),
+        toggle && token && editBtn(ev),
         headChips.length > 0 && el('div', { class: 'headchips' }, headChips.map(x => chip(x, x.icon, ev.title, x.live && 'live')))),
       partChips.length > 0 && el('div', { class: 'group' },
         el('p', { class: 'label' }, '파트 연습'),
@@ -1231,13 +1239,15 @@ function listRow(e, badge) {
   const open = () => { expanded.add(e.id); renderPublic(); };
   return el('div', {
     class: 'yrow' + (e.date < TODAY ? ' past' : '') + (badge ? ' next' : ''), role: 'button', tabindex: '0',
-    onclick: ev => { if (!ev.target.closest('a')) open(); }, // 듣기 버튼을 누를 때는 펼치지 않음
+    onclick: ev => { if (!ev.target.closest('a, button')) open(); }, // 듣기·수정 버튼을 누를 때는 펼치지 않음
     onkeydown: ev => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); open(); } },
   },
     el('span', { class: 'yrdate' }, `${+e.date.slice(5, 7)}/${+e.date.slice(8, 10)}`, el('small', {}, ` (${DOW[dowOf(e.date)]})`)),
     el('span', { class: 'yrkind' + (typeOf(e) !== '주일 찬양' ? ' special' : '') }, typeLabel(typeOf(e))),
     el('span', { class: 'yrtitle' }, e.title, badge && el('span', { class: 'badge' }, badge)),
-    quick.length > 0 && el('span', { class: 'yrchips' }, quick.map(x => chip(x, x.icon, e.title, x.live && 'live'))),
+    (quick.length > 0 || token) && el('span', { class: 'yrchips' },
+      quick.map(x => chip(x, x.icon, e.title, x.live && 'live')),
+      token && editBtn(e)), // 관리자로 로그인했을 때만 보이는 수정 버튼
     people && el('span', { class: 'yrpeople' }, people));
 }
 
