@@ -164,6 +164,8 @@
   .group .chips .chip { font-size: 18px; padding: 7px 14px; }  /* 파트 연습 버튼 */
   .chip.hl { background: var(--accent); color: #fff; }         /* 듣기·반주·악보·참고연주·내 파트 */
   .chip.hl:hover { background: var(--accent-dark); }
+  .chip.live { background: #2f6d4f; }                          /* 실황 보기 */
+  .chip.live:hover { background: #255840; }
   .detailbtn { margin-top: 12px; background: #fff; border: 1px solid var(--line); border-radius: 9px; padding: 6px 12px; font-size: 14px; font-weight: 600; color: var(--navy); }
   .detailbtn:hover { background: var(--navy-soft); }
   /* 안내 메모 — 눈에 띄도록 버건디 계열 */
@@ -248,6 +250,8 @@
   /* 일정 추가·수정 창: 제목과 ✕가 스크롤해도 위에 붙어 있게 */
   .formhead { position: sticky; top: 0; z-index: 2; background: #fff; margin: -18px -18px 12px; padding: 18px 18px 10px; border-bottom: 1px solid var(--line); }
   .formhead h3 { margin: 0; align-self: center; }
+  .formhead .actions { flex-shrink: 0; }
+  .formhead .btn { padding: 7px 14px; }
   .iconbtn { border: 1px solid var(--line); background: #fff; border-radius: 9px; width: 34px; height: 34px; font-size: 16px; line-height: 1; flex-shrink: 0; }
   .iconbtn:hover { background: var(--navy-soft); }
   .noticefull { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 16px; line-height: 1.7; }
@@ -264,6 +268,7 @@
   .autorow .btn, .refsearch .btn { padding: 7px 12px; font-size: 14px; }
   .partrow input.autofilled { background: #fff8d6; border-color: #ecd67a; } /* 자동으로 채운 칸 — 고치면 원래 색 */
   .refsearch { margin: -6px 0 12px; }
+  .liverow { grid-template-columns: minmax(0, 1fr) auto auto; margin-bottom: 12px; }
   .partpreview { grid-column: 1 / -1; }
   .partpreview iframe { width: 100%; aspect-ratio: 16 / 9; border: 0; border-radius: 8px; display: block; }
   .partpreview .hint { margin: 0; }
@@ -518,7 +523,10 @@
   <form id="form" novalidate>
     <div class="dlghead formhead">
       <h3 id="formTitle"></h3>
-      <button type="button" class="iconbtn" id="formClose" aria-label="닫기" title="닫기">✕</button>
+      <div class="actions">
+        <button type="button" class="btn" id="cancelTop">취소</button>
+        <button type="submit" class="btn primary">저장</button>
+      </div>
     </div>
     <label class="field">날짜<input type="date" name="date" required></label>
     <label class="field">구분<select name="type" required></select></label>
@@ -540,6 +548,13 @@
       <textarea name="refs" rows="3" placeholder="https://youtu.be/...&#10;합창단 연주 https://youtu.be/..."></textarea>
     </label>
     <div class="refsearch"><button type="button" class="btn" id="refSearchBtn">🔍 유튜브에서 참고연주 찾기</button></div>
+    <label class="field" for="live">실황 보기 링크 <span class="hint">(선택 · 우리 찬양대가 실제로 부른 유튜브 영상)</span></label>
+    <div class="partrow liverow">
+      <input type="url" id="live" name="live" placeholder="https://youtu.be/...">
+      <button type="button" class="iconbtn" id="livePlay" title="실황 영상 들어 보기" aria-label="실황 영상 들어 보기">▶</button>
+      <button type="button" class="iconbtn" id="liveSearch" title="실황 영상 유튜브에서 찾기" aria-label="실황 영상 유튜브에서 찾기">🔍</button>
+      <div class="partpreview" id="pv-live" hidden></div>
+    </div>
     <label class="field">안내 메모 <span class="hint">(선택)</span><textarea name="note" rows="3" maxlength="2000" placeholder="연습 시 참고할 내용"></textarea></label>
     <p class="err" id="formErr" hidden></p>
     <div class="actions">
@@ -794,6 +809,9 @@ const embed = (id, start, title) => el('iframe', {
   allowfullscreen: '', referrerpolicy: 'strict-origin-when-cross-origin',
 });
 
+// 유튜브 영상 주소일 때만 그 주소를 돌려줌 (실황 보기 버튼은 유튜브 영상일 때만 보이게)
+const liveUrl = ev => { const u = safeUrl(ev.live); return youtube(u) ? u : ''; };
+
 function play(yt, url, caption) {
   $('playerFrame').replaceChildren(embed(yt.id, yt.start, caption));
   $('playerTitle').textContent = caption;
@@ -809,10 +827,10 @@ function closePlayer() {
 }
 
 // caption: 재생창 위에 보일 이름 (곡 제목). 유튜브 링크는 새 창 대신 아래 재생창에서 재생
-const chip = (x, icon, caption) => {
+const chip = (x, icon, caption, extra) => {
   const yt = youtube(x.url);
   return el('a', {
-    class: 'chip' + (x.hl ? ' hl' : ''), href: x.url, target: '_blank', rel: 'noopener',
+    class: 'chip' + (x.hl ? ' hl' : '') + (extra ? ' ' + extra : ''), href: x.url, target: '_blank', rel: 'noopener',
     'aria-label': x.full || x.label, title: x.full || x.label,
     onclick: yt && (e => { e.preventDefault(); play(yt, x.url, `${caption} · ${x.full || x.label}`); }),
   }, icon ? el('span', { 'aria-hidden': 'true' }, icon) : null, x.label);
@@ -824,6 +842,7 @@ function card(ev, badge, toggle) {
   // 제목 오른쪽: 듣기·반주·악보·참고연주
   const headChips = [
     ...HEAD_PARTS.map(h => ({ label: h.label, url: safeUrl(ev.parts?.[h.part]), hl: true })).filter(x => x.url),
+    ...(liveUrl(ev) ? [{ label: '실황 보기', url: liveUrl(ev), hl: true, live: true }] : []),
     ...linkList(ev.scores, '악보'),
     ...linkList(ev.refs, '참고'),
   ];
@@ -843,7 +862,7 @@ function card(ev, badge, toggle) {
       el('div', { class: 'titlerow' }, el('h3', {}, ev.title),
         badge && el('span', { class: 'badge' }, badge),
         past && el('span', { class: 'done' }, '지난 찬양'),
-        headChips.length > 0 && el('div', { class: 'headchips' }, headChips.map(x => chip(x, x.icon, ev.title)))),
+        headChips.length > 0 && el('div', { class: 'headchips' }, headChips.map(x => chip(x, x.icon, ev.title, x.live && 'live')))),
       partChips.length > 0 && el('div', { class: 'group' },
         el('p', { class: 'label' }, '파트 연습'),
         el('div', { class: 'chips' }, partChips.map(x => chip(x, '▶', ev.title)))),
@@ -907,7 +926,8 @@ async function shareEvents(list) {
       return url && `${p === '전체' ? '듣기' : p}: ${url}`;
     }).filter(Boolean),
     ...[...linkList(e.scores, '악보'), ...linkList(e.refs, '참고연주')].map(x => `${x.label}: ${x.url}`),
-  ].join('\n\n')).join('\n\n\n'); // 링크마다 빈 줄을 두어 누를 때 옆 링크가 눌리지 않게
+    liveUrl(e) && `실황 보기: ${liveUrl(e)}`,
+  ].filter(Boolean).join('\n\n')).join('\n\n\n'); // 링크마다 빈 줄을 두어 누를 때 옆 링크가 눌리지 않게
   const url = location.origin + '/';
   try {
     if (navigator.share) await navigator.share({ title: '찬양대 알리미', text, url });
@@ -1060,6 +1080,7 @@ function listRow(e, badge) {
   const quick = [
     { label: '듣기', url: safeUrl(e.parts?.['전체']), hl: true },
     myPart && { label: myPart, url: safeUrl(e.parts?.[myPart]), hl: true, icon: '▶' },
+    { label: '실황 보기', url: liveUrl(e), hl: true, live: true }, // 우리 찬양대가 부른 영상 (유튜브일 때만)
   ].filter(x => x && x.url);
   const open = () => { expanded.add(e.id); renderPublic(); };
   return el('div', {
@@ -1070,7 +1091,7 @@ function listRow(e, badge) {
     el('span', { class: 'yrdate' }, `${+e.date.slice(5, 7)}/${+e.date.slice(8, 10)}`, el('small', {}, ` (${DOW[dowOf(e.date)]})`)),
     el('span', { class: 'yrkind' + (typeOf(e) !== '주일 찬양' ? ' special' : '') }, typeLabel(typeOf(e))),
     el('span', { class: 'yrtitle' }, e.title, badge && el('span', { class: 'badge' }, badge)),
-    quick.length > 0 && el('span', { class: 'yrchips' }, quick.map(x => chip(x, x.icon, e.title))),
+    quick.length > 0 && el('span', { class: 'yrchips' }, quick.map(x => chip(x, x.icon, e.title, x.live && 'live'))),
     people && el('span', { class: 'yrpeople' }, people));
 }
 
@@ -1166,7 +1187,7 @@ async function mutate(body, applyNow, okMsg) {
 let board = null;         // { slots: [{date, type, id}], contents: [곡 내용 | null] } — 옮긴 뒤 저장 전까지 유지
 const sel = new Set();    // 눌러서 고른 곡 (원래 일정 id)
 let dragged = false;      // 끌기 직후의 클릭은 고르기로 치지 않음
-const CONTENT_KEYS = ['title', 'conductor', 'pianist', 'parts', 'scores', 'refs', 'note'];
+const CONTENT_KEYS = ['title', 'conductor', 'pianist', 'parts', 'scores', 'refs', 'note', 'live'];
 
 function buildBoard() {
   const up = events.filter(e => e.date >= TODAY);
@@ -1347,7 +1368,7 @@ function edTags(e) {
   const group = (name, ...tags) => el('span', { class: 'edgrp' }, el('span', { class: 'edgroup' }, name), ...tags);
   return el('div', { class: 'edtags' },
     group('영상', ...PARTS.map(p => tag(PART_SHORT[p] || p, safeUrl(e.parts?.[p]), `${p} 영상`))),
-    group('기타', tag('악보', e.scores?.length), tag('참고연주', e.refs?.length), tag('메모', e.note)));
+    group('기타', tag('악보', e.scores?.length), tag('참고연주', e.refs?.length), tag('실황', liveUrl(e)), tag('메모', e.note)));
 }
 
 function removeEvent(e) {
@@ -1382,17 +1403,20 @@ $('partFields').append(
 function closePartPreviews() {
   document.querySelectorAll('.partpreview').forEach(v => { v.hidden = true; v.replaceChildren(); });
 }
-function previewPart(p) {
+function previewPart(p) { // p: 파트 이름 또는 'live'(실황)
   const box = $('pv-' + p), open = box.hidden;
+  const input = p === 'live' ? form.live : form['part-' + p];
   closePartPreviews();
   if (!open) return;
-  const yt = youtube(safeUrl(form['part-' + p].value));
-  box.replaceChildren(yt ? embed(yt.id, yt.start, `${p} 영상`)
-    : el('p', { class: 'hint' }, form['part-' + p].value.trim() ? '유튜브 링크가 아니라서 여기서 재생할 수 없어요.' : '먼저 링크를 넣어 주세요.'));
+  const yt = youtube(safeUrl(input.value));
+  box.replaceChildren(yt ? embed(yt.id, yt.start, `${p === 'live' ? '실황' : p} 영상`)
+    : el('p', { class: 'hint' }, input.value.trim() ? '유튜브 링크가 아니라서 여기서 재생할 수 없어요.' : '먼저 링크를 넣어 주세요.'));
   box.hidden = false;
 }
 $('dlg').addEventListener('close', closePartPreviews); // 창을 닫으면 소리도 멈춤
 $('refSearchBtn').onclick = () => openYtSearch('refs');
+$('liveSearch').onclick = () => openYtSearch('live');
+$('livePlay').onclick = () => previewPart('live');
 
 /* ===== 유튜브 검색 → [추가]로 링크 넣기 =====
    먼저 이 사이트의 Vercel 함수(api/ytsearch.js)로 빠르게 찾고, 안 되면 Apps Script 검색으로 대신함 */
@@ -1412,12 +1436,12 @@ async function ytFetch(q) {
   return { items: res.items, source: 'api' };
 }
 
-function openYtSearch(target) {
+function openYtSearch(target) { // target: 파트 이름 / 'refs'(참고연주) / 'live'(실황)
   ytTarget = target;
-  const refs = target === 'refs';
-  $('ytTitle').textContent = refs ? '참고연주 영상 찾기' : `${target} 영상 찾기`;
-  // 기본 검색어: 찬양 제목 + 파트 이름 (전체·참고연주는 제목만)
-  $('ytQ').value = [form.title.value.trim(), refs || target === '전체' ? '' : target].filter(Boolean).join(' ');
+  const whole = target === 'refs' || target === 'live' || target === '전체';
+  $('ytTitle').textContent = { refs: '참고연주 영상 찾기', live: '실황 영상 찾기' }[target] || `${target} 영상 찾기`;
+  // 기본 검색어: 찬양 제목 + 파트 이름 (전체·참고연주·실황은 제목만)
+  $('ytQ').value = [form.title.value.trim(), whole ? '' : target].filter(Boolean).join(' ');
   $('ytList').replaceChildren();
   $('ytMsg').textContent = '';
   $('ytDlg').showModal();
@@ -1428,6 +1452,9 @@ function addYt(url) {
   if (ytTarget === 'refs') { // 참고연주는 여러 줄이라 맨 아래에 한 줄 추가
     form.refs.value = [form.refs.value.trim(), url].filter(Boolean).join('\n');
     form.refs.focus();
+  } else if (ytTarget === 'live') {
+    form.live.value = url;
+    form.live.focus();
   } else {
     const box = form['part-' + ytTarget];
     box.value = url;
@@ -1448,7 +1475,7 @@ async function ytSearch() {
     const { items, source } = await ytFetch(q);
     if (seq !== ytSeq) return;
     // 지금 칸(참고연주는 모든 줄)에 들어 있는 영상 번호
-    const current = new Set((ytTarget === 'refs' ? form.refs.value.split('\n') : [form['part-' + ytTarget].value])
+    const current = new Set((ytTarget === 'refs' ? form.refs.value.split('\n') : [(ytTarget === 'live' ? form.live : form['part-' + ytTarget]).value])
       .map(line => { const m = line.trim().match(URL_LINE); return m && youtube(m[2])?.id; }).filter(Boolean));
     $('ytMsg').textContent = !items.length ? '검색 결과가 없습니다. 검색어를 바꿔 보세요.'
       : source === 'api' ? '빠른 검색이 안 되어 대체 검색 결과를 보여 드려요. 결과가 정확하지 않을 수 있습니다.'
@@ -1544,7 +1571,7 @@ form.type.onchange = () => {
 // slot: 목록의 빈 자리에서 추가할 때 — 날짜·구분은 그 자리로 고정
 function openForm(ev, asCopy, slot = null) {
   editingId = ev && !asCopy ? ev.id : null;
-  const v = ev || { date: slot ? slot.date : nextSunday(), type: slot ? slot.type : TYPES[0], title: '', conductor: '', pianist: '', parts: {}, scores: [], refs: [], note: '' };
+  const v = ev || { date: slot ? slot.date : nextSunday(), type: slot ? slot.type : TYPES[0], title: '', conductor: '', pianist: '', parts: {}, scores: [], refs: [], note: '', live: '' };
   $('formTitle').textContent = slot ? `찬양 일정 추가 · ${fmtDate(slot.date)}` : asCopy ? '찬양 일정 복제' : ev ? '찬양 일정 수정' : '찬양 일정 추가';
   form.date.closest('label').hidden = form.type.closest('label').hidden = !!slot;
 
@@ -1568,6 +1595,8 @@ function openForm(ev, asCopy, slot = null) {
   form.scores.value = (v.scores || []).join('\n');
   form.refs.value = (v.refs || []).join('\n');
   form.note.value = v.note || '';
+  form.live.value = v.live || '';
+  closePartPreviews();
   $('formErr').hidden = true;
   $('dlg').showModal();
   $('dlg').scrollTop = 0; // 전에 아래로 내려 둔 채 닫았어도 맨 위부터
@@ -1588,7 +1617,13 @@ form.addEventListener('submit', async e => {
     scores: [],
     refs: [],
     note: fd.get('note').trim(),
+    live: '',
   };
+  const liveRaw = fd.get('live').trim();
+  if (liveRaw) {
+    const url = tidyUrl(liveRaw);
+    if (url && youtube(url)) ev.live = url; else bad.push('실황 보기 링크'); // 유튜브 영상만
+  }
   if (!/^\d{4}-\d{2}-\d{2}$/.test(ev.date)) bad.push('날짜');
   if (picked === TYPE_CUSTOM ? !ev.type : !TYPES.includes(ev.type)) bad.push('구분');
   if (!ev.title) bad.push('찬양 제목');
@@ -1610,7 +1645,8 @@ form.addEventListener('submit', async e => {
 
   if (bad.length) {
     const linkBad = bad.some(b => b.includes('링크') || b.startsWith('악보') || b.startsWith('참고연주'));
-    $('formErr').textContent = `확인해 주세요: ${bad.join(', ')}${linkBad ? ' (링크는 https:// 로 시작해야 해요)' : ''}`;
+    const liveBad = bad.includes('실황 보기 링크');
+    $('formErr').textContent = `확인해 주세요: ${bad.join(', ')}${liveBad ? ' (실황 보기는 유튜브 영상 주소만 넣을 수 있어요)' : linkBad ? ' (링크는 https:// 로 시작해야 해요)' : ''}`;
     $('formErr').hidden = false;
     return;
   }
@@ -1673,7 +1709,7 @@ $('logoutBtn').onclick = () => {
 $('addBtn').onclick = () => openForm(null);
 $('reCancel').onclick = () => { board = null; sel.clear(); renderEditor(); };
 $('reSave').onclick = saveBoard;
-$('cancelBtn').onclick = $('formClose').onclick = () => $('dlg').close();
+$('cancelBtn').onclick = $('cancelTop').onclick = () => $('dlg').close();
 $('pastBtn').onclick = () => { showPast = !showPast; renderEditor(); };
 $('noticeBtn').onclick = () => openNoticeEdit(0);
 $('noticeEditBtn').onclick = () => {   // 공지 전체 보기 창의 ✎ 버튼
