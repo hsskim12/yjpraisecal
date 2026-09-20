@@ -133,6 +133,16 @@
   .yrtitle .badge { margin-left: 6px; vertical-align: middle; }
   .yrpeople { grid-column: 3; font-size: 13px; color: var(--muted); }
 
+  /* 연습 영상 목록 */
+  .rrow { display: flex; align-items: center; gap: 12px; background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 8px 12px 8px 8px; }
+  .list > .rrow + .rrow { margin-top: 8px; }
+  .rthumb { width: 112px; flex-shrink: 0; aspect-ratio: 16 / 9; border-radius: 8px; overflow: hidden; background: var(--navy-soft); display: grid; place-items: center; color: var(--navy); font-size: 22px; text-decoration: none; }
+  .rthumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .rinfo { flex: 1; min-width: 0; }
+  .rname { display: block; font-size: 17px; font-weight: 700; color: var(--ink); text-decoration: none; overflow-wrap: anywhere; }
+  .rname:hover { text-decoration: underline; }
+  .rinfo small { color: var(--muted); font-size: 13px; }
+
   /* 월이 바뀌는 지점 구분선 */
   .monthsep { margin: 0; display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 14px; font-weight: 700; }
   .monthsep::before, .monthsep::after { content: ""; flex: 1; height: 1px; background: var(--line); }
@@ -387,6 +397,7 @@
 
       <div class="modebar" id="modeBar" role="group" aria-label="조회 모드">
         <button type="button" class="btn" id="modeUpcoming" aria-pressed="true"></button>
+        <button type="button" class="btn" id="modeRehearsal" aria-pressed="false">연습 영상</button>
         <button type="button" class="btn" id="modeMonth" aria-pressed="false">월별 보기</button>
         <button type="button" class="btn" id="modeYear" aria-pressed="false">연도별 보기</button>
       </div>
@@ -513,6 +524,34 @@
     <p class="hint" id="ytMsg"></p>
     <div class="ytlist" id="ytList"></div>
   </div>
+</dialog>
+
+<!-- 연습 영상 추가·수정 (관리자) -->
+<dialog id="rDlg">
+  <form id="rForm" novalidate>
+    <div class="dlghead formhead">
+      <h3 id="rTitle">연습 영상 추가</h3>
+      <div class="actions">
+        <button type="button" class="btn" id="rCancel">취소</button>
+        <button type="submit" class="btn primary">저장</button>
+      </div>
+    </div>
+    <label class="field">연습한 날짜<input type="date" name="date" required></label>
+    <label class="field">제목 <span class="hint">(선택 · 비우면 "9월 20일 (토) 연습"으로 표시)</span>
+      <input name="title" maxlength="100" placeholder="예: 토요 연습 - 노아의 기도">
+    </label>
+    <label class="field" for="rUrl">유튜브 영상 링크</label>
+    <div class="partrow liverow">
+      <input type="url" id="rUrl" name="url" placeholder="https://youtu.be/..." required>
+      <button type="button" class="iconbtn" id="rPlay" title="들어 보기" aria-label="들어 보기">▶</button>
+    </div>
+    <div class="partpreview" id="pv-rehearsal" hidden></div>
+    <p class="err" id="rErr" hidden></p>
+    <div class="actions">
+      <button type="button" class="btn" id="rCancel2">취소</button>
+      <button type="submit" class="btn primary">저장</button>
+    </div>
+  </form>
 </dialog>
 
 <!-- 일정 추가·수정 -->
@@ -643,10 +682,10 @@ function busy(btn, on, label) {
 }
 
 /* ===== 화면 상태 ===== */
-let events = [], notices = [];
+let events = [], notices = [], rehearsals = [];
 let loadState = 'loading', loadMsg = '', staleMsg = '', refreshing = false, lastLoadAt = 0;
 let viewY = +TODAY.slice(0, 4), viewM = +TODAY.slice(5, 7);
-let mode = 'upcoming';  // 'upcoming'(다가오는 8주) / 'month'(고른 달) / 'year'(고른 해 한 줄 목록)
+let mode = 'upcoming';  // 'upcoming'(8주) / 'rehearsal'(연습 영상) / 'month'(고른 달) / 'year'(고른 해)
 let upcomingStart = nextSunday();
 let query = '';         // 검색어
 let showPast = false;   // 편집 화면에서 지난 일정 펼침
@@ -722,10 +761,11 @@ function api(body, query = {}) {
 function applyData(d) {
   events = sorted(d.events || []);
   notices = Array.isArray(d.notices) ? d.notices : [];
+  rehearsals = Array.isArray(d.rehearsals) ? d.rehearsals : [];
 }
 
 function saveCache() {
-  try { localStorage.setItem(CACHE_KEY, JSON.stringify({ events, notices })); } catch {}
+  try { localStorage.setItem(CACHE_KEY, JSON.stringify({ events, notices, rehearsals })); } catch {}
 }
 
 function readCache() {
@@ -951,6 +991,84 @@ function renderMyPart() {
     el('span', { class: 'mphint' }, '파트를 선택하면 연습 영상 버튼이 바로 보여요'));
 }
 
+/* ===== 연습 영상 =====
+   곡과 별개로 쌓이는 목록. 누구나 보고, 관리자로 로그인하면 이 화면에서 바로 추가·수정·삭제 */
+const rehearsalName = r => r.title || `${fmtDate(r.date)} 연습`;
+
+function rehearsalRow(r) {
+  const yt = youtube(safeUrl(r.url));
+  return el('div', { class: 'rrow' },
+    el('a', {
+      class: 'rthumb', href: r.url, target: '_blank', rel: 'noopener',
+      onclick: yt && (e => { e.preventDefault(); play(yt, r.url, rehearsalName(r)); }),
+    }, yt ? el('img', { src: `https://i.ytimg.com/vi/${yt.id}/mqdefault.jpg`, alt: '', loading: 'lazy' }) : el('span', {}, '▶')),
+    el('div', { class: 'rinfo' },
+      el('a', {
+        class: 'rname', href: r.url, target: '_blank', rel: 'noopener',
+        onclick: yt && (e => { e.preventDefault(); play(yt, r.url, rehearsalName(r)); }),
+      }, rehearsalName(r)),
+      el('small', {}, `${r.date.slice(0, 4)}년 ${fmtDate(r.date)}`)),
+    token && el('div', { class: 'edbtns' },
+      el('button', { type: 'button', class: 'btn', onclick: () => openRehearsal(r) }, '수정'),
+      el('button', { type: 'button', class: 'btn danger', onclick: () => removeRehearsal(r) }, '삭제')));
+}
+
+function renderRehearsals() {
+  $('list').replaceChildren(...[
+    token && el('div', { class: 'toolbar' },
+      el('button', { type: 'button', class: 'btn primary', onclick: () => openRehearsal(null) }, '+ 연습 영상 추가')),
+    ...(rehearsals.length ? rehearsals.map(rehearsalRow)
+      : [el('p', { class: 'empty' }, token ? '아직 올린 연습 영상이 없습니다. [+ 연습 영상 추가]로 넣어 주세요.' : '아직 올라온 연습 영상이 없습니다.')]),
+  ].filter(Boolean));
+}
+
+let editingRehearsal = null;
+function openRehearsal(r) {
+  editingRehearsal = r;
+  const f = $('rForm');
+  $('rTitle').textContent = r ? '연습 영상 수정' : '연습 영상 추가';
+  f.date.value = r ? r.date : TODAY;
+  f.title.value = r ? r.title || '' : '';
+  f.url.value = r ? r.url : '';
+  $('rErr').hidden = true;
+  closePartPreviews();
+  $('rDlg').showModal();
+}
+
+function removeRehearsal(r) {
+  if (!confirm(`「${rehearsalName(r)}」 연습 영상을 목록에서 지울까요?\n유튜브 영상은 지워지지 않습니다.`)) return;
+  mutate({ action: 'rdelete', token, id: r.id },
+    () => { rehearsals = rehearsals.filter(x => x.id !== r.id); },
+    '연습 영상을 지웠습니다.');
+}
+
+$('rForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const f = e.target;
+  const item = { date: f.date.value, title: f.title.value.trim(), url: tidyUrl(f.url.value.trim()) };
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(item.date) || !item.url || !youtube(item.url)) {
+    $('rErr').textContent = '연습한 날짜와 유튜브 영상 주소를 확인해 주세요.';
+    $('rErr').hidden = false;
+    return;
+  }
+  const id = editingRehearsal ? editingRehearsal.id : newId();
+  $('rDlg').close();
+  mutate({ action: 'rsave', token, id, item },
+    () => { rehearsals = [...rehearsals.filter(x => x.id !== id), { ...item, id }].sort((a, b) => b.date.localeCompare(a.date)); },
+    '연습 영상을 저장했습니다.');
+});
+$('rCancel').onclick = $('rCancel2').onclick = () => $('rDlg').close();
+$('rPlay').onclick = () => { // 넣은 주소를 창 안에서 바로 확인
+  const box = $('pv-rehearsal'), open = box.hidden;
+  closePartPreviews();
+  if (!open) return;
+  const yt = youtube(safeUrl($('rForm').url.value));
+  box.replaceChildren(yt ? embed(yt.id, yt.start, '연습 영상')
+    : el('p', { class: 'hint' }, '유튜브 영상 주소를 먼저 넣어 주세요.'));
+  box.hidden = false;
+};
+$('rDlg').addEventListener('close', closePartPreviews);
+
 // 지금 화면에 보여 줄 목록과 제목을 정함 (검색 / 다가오는 8주 / 고른 달)
 function buildView(heroEvents = []) {
   if (query) {
@@ -1013,7 +1131,7 @@ function renderPublic() {
   const badge = gap === 0 ? '오늘' : gap < 7 ? '이번 주' : '다음 찬양';
 
   // 맨 위 강조 카드 (검색 중에는 결과만 보이도록 숨김)
-  const showHero = !!nextDate && !query;
+  const showHero = !!nextDate && !query && mode !== 'rehearsal';
   $('hero').hidden = !showHero;
   const heroEvents = showHero ? events.filter(e => e.date === nextDate) : [];
   if (showHero) {
@@ -1022,10 +1140,14 @@ function renderPublic() {
     $('shareBtn').onclick = () => shareEvents(heroEvents);
   }
 
-  const view = buildView(heroEvents);
+  const rehearsalMode = mode === 'rehearsal' && !query;
+  const view = rehearsalMode
+    ? { list: [], title: '연습 영상', summary: `${rehearsals.length}개`, empty: '', emptySundays: [] }
+    : buildView(heroEvents);
   $('viewTitle').textContent = view.title;
   $('summary').textContent = view.summary;
-  $('list').replaceChildren(...(view.list.length
+  if (rehearsalMode) renderRehearsals();
+  else $('list').replaceChildren(...(view.list.length
     ? view.list.flatMap((e, i) => {
       const month = e.date.slice(0, 7);
       const yearList = mode === 'year' && !query;
@@ -1042,10 +1164,13 @@ function renderPublic() {
   $('periodBar').hidden = !!query;
   $('searchSummary').hidden = !query;
   $('searchSummary').textContent = query ? view.summary : '';
-  $('modeUpcoming').textContent = `다가오는 ${UPCOMING_WEEKS}주 보기`;
+  $('modeUpcoming').textContent = `${UPCOMING_WEEKS}주 일정`;
   $('modeUpcoming').setAttribute('aria-pressed', String(mode === 'upcoming'));
+  $('modeRehearsal').setAttribute('aria-pressed', String(mode === 'rehearsal'));
   $('modeMonth').setAttribute('aria-pressed', String(mode === 'month'));
   $('modeYear').setAttribute('aria-pressed', String(mode === 'year'));
+  $('periodBar').hidden = !!query || rehearsalMode; // 연습 영상에는 기간 이동이 없음
+  $('emptySundays').hidden = $('emptySundays').hidden || rehearsalMode;
   $('ympick').hidden = mode === 'upcoming';
   $('monthSel').hidden = mode === 'year';
   $('printBtn').hidden = mode !== 'year';
@@ -1159,7 +1284,7 @@ function applyResult(res, msg) {
 // 구글 응답이 느려도 기다리지 않도록, 화면에 먼저 반영하고 저장은 뒤에서 처리.
 // 실패하면 원래대로 되돌리고 알려 줌 (같은 요청을 다시 보내도 중복되지 않음)
 async function mutate(body, applyNow, okMsg) {
-  const prevEvents = events, prevNotices = notices;
+  const prevEvents = events, prevNotices = notices, prevRehearsals = rehearsals;
   saving = true; // 저장이 끝날 때까지 자동 새로고침을 멈춤 (방금 넣은 내용이 깜빡이지 않도록)
   applyNow();
   saveCache();
@@ -1170,6 +1295,7 @@ async function mutate(body, applyNow, okMsg) {
   } catch (err) {
     events = prevEvents;
     notices = prevNotices;
+    rehearsals = prevRehearsals;
     saveCache();
     route();
     handleErr(err);
@@ -1742,6 +1868,7 @@ $('next').onclick = () => movePeriod(1);
 $('yearSel').onchange = e => mode === 'year' ? showYear(+e.target.value) : showMonth(+e.target.value, viewM);
 $('monthSel').onchange = e => showMonth(viewY, +e.target.value);
 $('modeMonth').onclick = () => showMonth(viewY, viewM);
+$('modeRehearsal').onclick = () => { clearSearch(); mode = 'rehearsal'; renderPublic(); };
 $('modeYear').onclick = () => showYear(viewY);
 $('printBtn').onclick = () => print();
 // 모드를 다시 고르면 오늘 기준으로 돌아옴
