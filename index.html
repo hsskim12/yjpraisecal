@@ -122,7 +122,6 @@
   /* 일정 목록의 한 줄 (다가오는 8주·월별·연도별 공통) */
   .yrow { display: grid; grid-template-columns: 92px 56px minmax(0, 1fr) auto; gap: 2px 10px; align-items: center; width: 100%; text-align: left; background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 12px 12px; cursor: pointer; }
   .yrow:hover { border-color: var(--navy); }
-  .yrow.past { opacity: .55; }
   .yrow.next { border: 2px solid var(--accent); }
   .list > .yrow + .yrow { margin-top: 6px; }
   .yrdate { font-size: 20px; font-weight: 800; color: var(--navy); white-space: nowrap; line-height: 1.2; }
@@ -143,7 +142,6 @@
   .list > * + * { margin-top: 12px; }   /* 카드 사이 간격 (구분선이 끼어도 동일) */
   .list > .monthsep { margin-top: 18px; }
   .card.next { border: 2px solid var(--accent); }
-  .card.past { opacity: .55; }
   .date { background: var(--navy-soft); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; padding: 12px 4px; text-align: center; }
   .date .dow { font-size: 14px; color: var(--muted); }
   .date strong { font-size: 25px; color: var(--navy); line-height: 1.15; white-space: nowrap; }
@@ -306,7 +304,6 @@
     .list > .monthsep { margin: 10px 0 4px; break-after: avoid; }
     .yrchips { display: none !important; }
     .yrow { grid-template-columns: 64px 42px minmax(0, 1fr); gap: 0 8px; border: 0; border-bottom: 1px solid #ccc; border-radius: 0; padding: 5px 0; break-inside: avoid; }
-    .yrow.past { opacity: 1; }
     .yrow.next { border: 0; border-bottom: 1px solid #ccc; }
     .yrdate, .yrdate small { font-size: 13px; }
     .yrkind, .yrpeople { font-size: 11px; }
