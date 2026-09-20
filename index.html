@@ -547,8 +547,8 @@
       </div>
     </div>
     <label class="field">연습한 날짜<input type="date" name="date" required></label>
-    <label class="field">제목 <span class="hint">(선택 · 비우면 "9월 20일 (토) 연습"으로 표시)</span>
-      <input name="title" maxlength="100" placeholder="예: 토요 연습 - 노아의 기도">
+    <label class="field">제목 <span class="hint" id="rTitleHint">(선택)</span>
+      <input name="title" maxlength="100" placeholder="예: 파트 연습 - 노아의 기도">
     </label>
     <label class="field" for="rUrl">유튜브 영상 링크</label>
     <div class="partrow liverow">
@@ -1003,7 +1003,10 @@ function renderMyPart() {
 
 /* ===== 연습 영상 =====
    곡과 별개로 쌓이는 목록. 누구나 보고, 관리자로 로그인하면 이 화면에서 바로 추가·수정·삭제 */
-const rehearsalName = r => r.title || `${fmtDate(r.date)} 연습`;
+// 제목을 비우면 날짜에서 자동으로: 일요일=주일 연습, 토요일=토요 연습, 월~금=평일 연습
+const rehearsalKind = date => [null, '평일', '평일', '평일', '평일', '평일', '토요'][dowOf(date)] || '주일';
+const autoRehearsalName = date => `${fmtDate(date)} ${rehearsalKind(date)} 연습`;
+const rehearsalName = r => r.title || autoRehearsalName(r.date);
 
 function rehearsalRow(r) {
   const yt = youtube(safeUrl(r.url));
@@ -1042,10 +1045,19 @@ function openRehearsal(r) {
   f.date.value = r ? r.date : TODAY;
   f.title.value = r ? r.title || '' : '';
   f.url.value = r ? r.url : '';
+  showRehearsalHint();
   $('rErr').hidden = true;
   closePartPreviews();
   $('rDlg').showModal();
 }
+
+// 고른 날짜에 맞춰 "비우면 …으로 표시" 안내를 바꿔 줌
+function showRehearsalHint() {
+  const d = $('rForm').date.value;
+  $('rTitleHint').textContent = /^\d{4}-\d{2}-\d{2}$/.test(d)
+    ? `(선택 · 비우면 "${autoRehearsalName(d)}"으로 표시)` : '(선택)';
+}
+$('rForm').date.oninput = showRehearsalHint;
 
 function removeRehearsal(r) {
   if (!confirm(`「${rehearsalName(r)}」 연습 영상을 목록에서 지울까요?\n유튜브 영상은 지워지지 않습니다.`)) return;
