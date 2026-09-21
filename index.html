@@ -146,7 +146,8 @@
   .yrmore .detailbtn { margin-top: 4px; }
   .yrchips .rowedit, .headchips .rowedit { width: 44px; height: 44px; font-size: 16px; }
   .yrtitle .badge { margin-left: 6px; vertical-align: middle; }
-  .yrpeople { grid-column: 2; grid-row: 2; font-size: 14px; color: var(--muted); word-break: keep-all; }
+  .yrpeople { grid-column: 2; grid-row: 2; font-size: 14px; color: var(--muted); }
+  .nowrap { white-space: nowrap; }   /* 지휘·반주 이름이 가운데서 잘리지 않게 */
 
   /* 연습 영상 목록 */
   .rrow { display: flex; align-items: center; gap: 12px; background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 8px 12px 8px 8px; }
@@ -358,15 +359,15 @@
     .group .chips .chip { font-size: 16px; min-width: 0; flex: 1 1 0; padding: 8px 2px; order: 0; }
     .group .chips::after { content: ''; flex: 0 0 100%; height: 0; order: 1; } /* 여기서 줄바꿈 */
     .group .chips .detailbtn { order: 2; flex: 0 0 auto; margin: 6px 0 0 auto; }
-    /* 휴대폰: 구분은 날짜 아래, 듣기 버튼은 오른쪽에 (줄을 따로 쓰지 않게) */
+    /* 휴대폰: 제목·지휘·반주가 가로 전체를 쓰고, 버튼은 아랫줄로 */
     .yrow { grid-template-columns: auto minmax(0, 1fr) auto; gap: 2px 8px; padding: 8px; align-items: start; }
-    .yrdatebox { min-width: 68px; padding: 8px 4px; }
+    .yrdatebox { grid-row: 1 / span 3; min-width: 68px; padding: 8px 4px; }
     .yrdate { font-size: 18px; }
     .yrdow, .yrkind { font-size: 12px; }
-    .yrtitle { grid-column: 2; grid-row: 1; }
-    .yrpeople { grid-column: 2; grid-row: 2; }
-    .yrchips { grid-column: 3; grid-row: 1; align-self: start; justify-content: flex-end; }
-    .yrmore { grid-column: 3; grid-row: 2; align-self: center; justify-content: flex-end; }
+    .yrtitle { grid-column: 2 / span 2; grid-row: 1; }
+    .yrpeople { grid-column: 2 / span 2; grid-row: 2; }
+    .yrchips { grid-column: 2 / span 2; grid-row: 3; justify-content: flex-start; margin-top: 6px; }
+    .yrmore { grid-column: 2 / span 2; grid-row: 4; justify-content: flex-end; margin-top: 4px; }
     .yrchips .chip { padding: 8px 10px; }
     /* 편집 목록: 입력 표시를 넓게 쓰고 버튼은 아래 오른쪽으로 */
     .reslot { grid-template-columns: 56px minmax(0, 1fr); gap: 6px; }
@@ -928,9 +929,13 @@ const editBtn = ev => el('button', {
 const detailBtn = (label, onclick) => el('button', { type: 'button', class: 'detailbtn', onclick }, label);
 
 // 일정 전체 카드 (맨 위 강조 카드, 목록에서 한 줄을 눌러 펼쳤을 때). toggle: '간단히 보기' 버튼 표시
+// "지휘 김흥수" / "반주 심가영"을 각각 묶어서, 줄이 바뀌면 사람 단위로 나뉘게 함
+const peopleEls = e => [e.conductor && `지휘 ${e.conductor}`, e.pianist && `반주 ${e.pianist}`]
+  .filter(Boolean).flatMap((t, i) => (i ? [' · '] : []).concat(el('span', { class: 'nowrap' }, t)));
+
 function card(ev, badge, toggle) {
   const past = ev.date < TODAY;
-  const people = [ev.conductor && '지휘 ' + ev.conductor, ev.pianist && '반주 ' + ev.pianist].filter(Boolean).join(' · ');
+  const people = peopleEls(ev);
   const collapse = detailBtn('간단히 보기 ▴', () => { expanded.delete(ev.id); renderPublic(); });
   // 제목 오른쪽: 듣기·반주·악보·참고연주
   const headChips = [
@@ -955,9 +960,9 @@ function card(ev, badge, toggle) {
         (headChips.length > 0 || (toggle && token)) && el('div', { class: 'headchips' },
           headChips.map(x => chip(x, x.icon, ev.title)),
           toggle && token && editBtn(ev))),
-      people && el('p', { class: 'label' }, people),   // 지휘·반주를 곡 제목 아래로
+      people.length > 0 && el('p', { class: 'label' }, people),   // 지휘·반주를 곡 제목 아래로
       partChips.length > 0 && el('div', { class: 'group' + (people ? ' tight' : '') },
-        !people && el('p', { class: 'label' }, '파트 연습'),
+        !people.length && el('p', { class: 'label' }, '파트 연습'),
         el('div', { class: 'chips' }, partChips.map(x => chip(x, '▶', ev.title)),
           toggle && collapse)), // 파트 연습 버튼과 같은 줄 오른쪽 끝
       ev.note && el('p', { class: 'note' }, ev.note),
@@ -1267,7 +1272,7 @@ function clearSearch() {
 // 연도별 보기의 한 줄: 날짜 · 구분 · 제목 (지휘·반주). 누르면 카드로 펼쳐 영상·악보를 봄
 // 목록의 한 줄: 날짜 · 구분 · 제목 (지휘·반주) · [듣기][▶ 내 파트]. 줄을 누르면 전체 카드로 펼침
 function listRow(e, badge) {
-  const people = [e.conductor && '지휘 ' + e.conductor, e.pianist && '반주 ' + e.pianist].filter(Boolean).join(' · ');
+  const people = peopleEls(e);
   const quick = [
     { label: '듣기', url: safeUrl(e.parts?.['전체']), hl: true },
     myPart && { label: PART_SHORT[myPart] || myPart, full: myPart, url: safeUrl(e.parts?.[myPart]), hl: true, icon: '▶' },
@@ -1284,7 +1289,7 @@ function listRow(e, badge) {
       quick.map(x => chip(x, x.icon, e.title, x.live && 'live')),
       token && editBtn(e)), // 관리자로 로그인했을 때만 보이는 수정 버튼
     el('span', { class: 'yrmore' }, detailBtn('자세히 보기 ▾', open)),
-    people && el('span', { class: 'yrpeople' }, people));
+    people.length > 0 && el('span', { class: 'yrpeople' }, people));
 }
 
 function showYear(y) {
