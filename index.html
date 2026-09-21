@@ -129,21 +129,24 @@
 
   /* 연도별 보기: 한 줄 목록 */
   /* 일정 목록의 한 줄 (다가오는 8주·월별·연도별 공통) */
-  .yrow { display: grid; grid-template-columns: 72px 56px minmax(0, 1fr) auto; gap: 2px 10px; align-items: center; width: 100%; text-align: left; background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 12px; }
+  .yrow { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 2px 12px; align-items: center; width: 100%; text-align: left; background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
   .yrow:hover { border-color: #c3cddd; }
   .yrow.next { border: 2px solid var(--accent); }
   .list > .yrow + .yrow { margin-top: 6px; }
-  .yrdate { font-size: 20px; font-weight: 800; color: var(--navy); white-space: nowrap; line-height: 1.2; text-align: center; } /* 요일을 날짜 가운데에 */
-  .yrdate small { display: block; font-size: 14px; font-weight: 700; color: var(--muted); } /* 요일은 날짜 아래 줄에 */
-  .yrkind { font-size: 14px; color: var(--muted); white-space: nowrap; }
-  .yrkind.special { color: var(--accent-dark); font-weight: 700; } /* 주일이 아닌 구분 (집회·특별집회 등) */
-  .yrtitle { font-size: 17px; font-weight: 700; overflow-wrap: anywhere; }
-  .yrchips { grid-row: 1; grid-column: 4; display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 6px; }
-  .yrmore { grid-row: 2; grid-column: 4; display: flex; justify-content: flex-end; }
+  /* 날짜·요일·구분을 한 상자로 묶어 음영 */
+  .yrdatebox { grid-column: 1; grid-row: 1 / span 2; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; min-width: 86px; padding: 8px; background: var(--navy-soft); border-radius: 10px; }
+  .yrdatebox.special { background: #fbeee0; }   /* 주일이 아닌 일정 (집회·특별집회 등) */
+  .yrdate { font-size: 20px; font-weight: 800; color: var(--navy); white-space: nowrap; line-height: 1.2; }
+  .yrdow { font-size: 13px; font-weight: 700; color: var(--muted); }
+  .yrkind { margin-top: 2px; font-size: 13px; font-weight: 700; color: var(--navy); white-space: nowrap; }
+  .yrdatebox.special .yrdate, .yrdatebox.special .yrkind { color: var(--accent-dark); }
+  .yrtitle { grid-column: 2; grid-row: 1; font-size: 17px; font-weight: 700; overflow-wrap: anywhere; }
+  .yrchips { grid-row: 1; grid-column: 3; display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 6px; }
+  .yrmore { grid-row: 2; grid-column: 3; display: flex; justify-content: flex-end; }
   .yrmore .detailbtn { margin-top: 4px; }
   .yrchips .rowedit, .headchips .rowedit { width: 44px; height: 44px; font-size: 16px; }
   .yrtitle .badge { margin-left: 6px; vertical-align: middle; }
-  .yrpeople { grid-column: 3; font-size: 13px; color: var(--muted); }
+  .yrpeople { grid-column: 2; grid-row: 2; font-size: 14px; color: var(--muted); word-break: keep-all; }
 
   /* 연습 영상 목록 */
   .rrow { display: flex; align-items: center; gap: 12px; background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 8px 12px 8px 8px; }
@@ -333,10 +336,11 @@
     .list > * + * { margin-top: 0; }
     .list > .monthsep { margin: 10px 0 4px; break-after: avoid; }
     .yrchips { display: none !important; }
-    .yrow { grid-template-columns: 64px 42px minmax(0, 1fr); gap: 0 8px; border: 0; border-bottom: 1px solid #ccc; border-radius: 0; padding: 5px 0; break-inside: avoid; }
+    .yrow { grid-template-columns: auto minmax(0, 1fr); gap: 0 10px; border: 0; border-bottom: 1px solid #ccc; border-radius: 0; padding: 5px 0; break-inside: avoid; }
+    .yrdatebox, .yrdatebox.special { background: none; padding: 0; min-width: 64px; }
     .yrow.next { border: 0; border-bottom: 1px solid #ccc; }
-    .yrdate, .yrdate small { font-size: 13px; }
-    .yrkind, .yrpeople { font-size: 11px; }
+    .yrdate { font-size: 13px; }
+    .yrdow, .yrkind, .yrpeople { font-size: 11px; }
     .yrtitle { font-size: 14px; }
     .card { break-inside: avoid; }
   }
@@ -355,12 +359,12 @@
     .group .chips::after { content: ''; flex: 0 0 100%; height: 0; order: 1; } /* 여기서 줄바꿈 */
     .group .chips .detailbtn { order: 2; flex: 0 0 auto; margin: 6px 0 0 auto; }
     /* 휴대폰: 구분은 날짜 아래, 듣기 버튼은 오른쪽에 (줄을 따로 쓰지 않게) */
-    .yrow { grid-template-columns: 58px minmax(0, 1fr) auto; gap: 2px 8px; padding: 10px 8px; align-items: start; }
-    .yrdate { grid-column: 1; grid-row: 1; font-size: 18px; }
-    .yrdate small { font-size: 13px; }
-    .yrkind { grid-column: 1; grid-row: 2; font-size: 13px; text-align: center; } /* 날짜 아래 가운데 */
+    .yrow { grid-template-columns: auto minmax(0, 1fr) auto; gap: 2px 8px; padding: 8px; align-items: start; }
+    .yrdatebox { min-width: 68px; padding: 8px 4px; }
+    .yrdate { font-size: 18px; }
+    .yrdow, .yrkind { font-size: 12px; }
     .yrtitle { grid-column: 2; grid-row: 1; }
-    .yrpeople { grid-column: 2; grid-row: 2; word-break: keep-all; }
+    .yrpeople { grid-column: 2; grid-row: 2; }
     .yrchips { grid-column: 3; grid-row: 1; align-self: start; justify-content: flex-end; }
     .yrmore { grid-column: 3; grid-row: 2; align-self: center; justify-content: flex-end; }
     .yrchips .chip { padding: 8px 10px; }
@@ -1271,8 +1275,10 @@ function listRow(e, badge) {
   ].filter(x => x && x.url);
   const open = () => { expanded.add(e.id); renderPublic(); };
   return el('div', { class: 'yrow' + (e.date < TODAY ? ' past' : '') + (badge ? ' next' : '') },
-    el('span', { class: 'yrdate' }, `${+e.date.slice(5, 7)}/${+e.date.slice(8, 10)}`, el('small', {}, `(${DOW[dowOf(e.date)]})`)),
-    el('span', { class: 'yrkind' + (typeOf(e) !== '주일 찬양' ? ' special' : '') }, typeLabel(typeOf(e))),
+    el('span', { class: 'yrdatebox' + (typeOf(e) !== '주일 찬양' ? ' special' : '') },
+      el('strong', { class: 'yrdate' }, `${+e.date.slice(5, 7)}/${+e.date.slice(8, 10)}`),
+      el('small', { class: 'yrdow' }, `(${DOW[dowOf(e.date)]})`),
+      el('span', { class: 'yrkind' }, typeLabel(typeOf(e)))),
     el('span', { class: 'yrtitle' }, e.title, badge && el('span', { class: 'badge' }, badge)),
     (quick.length > 0 || token) && el('span', { class: 'yrchips' },
       quick.map(x => chip(x, x.icon, e.title, x.live && 'live')),
