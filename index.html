@@ -1276,7 +1276,7 @@ function listRow(e, badge) {
   const quick = [
     { label: '듣기', url: safeUrl(e.parts?.['전체']), hl: true },
     myPart && { label: PART_SHORT[myPart] || myPart, full: myPart, url: safeUrl(e.parts?.[myPart]), hl: true, icon: '▶' },
-    { label: '실황 보기', url: liveUrl(e), hl: true, live: true }, // 우리 찬양대가 부른 영상 (유튜브일 때만)
+    { label: '실황', full: '실황 보기', url: liveUrl(e), hl: true, live: true }, // 우리 찬양대가 부른 영상 (유튜브일 때만)
   ].filter(x => x && x.url);
   const open = () => { expanded.add(e.id); renderPublic(); };
   return el('div', { class: 'yrow' + (e.date < TODAY ? ' past' : '') + (badge ? ' next' : '') },
