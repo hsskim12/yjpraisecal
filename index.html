@@ -391,7 +391,7 @@
     </button>
     <nav class="topnav">
       <button type="button" class="btn" id="fontBtn" aria-pressed="false" title="글자 크기 확대" aria-label="글자 크기 확대">크게 보기</button>
-      <a class="btn" href="#" id="toPublic" hidden>일정 보기</a>
+      <button type="button" class="btn" id="toPublic" hidden>일정 보기</button>
       <a class="btn" href="#edit" id="toEdit">일정 편집</a>
     </nav>
   </div>
@@ -735,7 +735,8 @@ function busy(btn, on, label) {
 let events = [], notices = [], rehearsals = [];
 let loadState = 'loading', loadMsg = '', staleMsg = '', refreshing = false, lastLoadAt = 0;
 let viewY = +TODAY.slice(0, 4), viewM = +TODAY.slice(5, 7);
-let viewB = Math.floor((+TODAY.slice(5, 7) - 1) / 2); // 집회특송의 2개월 구간 (0=1·2월 … 5=11·12월)
+const thisPeriod = () => Math.floor((+TODAY.slice(5, 7) - 1) / 2); // 오늘이 속한 2개월 구간 (0=1·2월 … 5=11·12월)
+let viewB = thisPeriod(); // 집회특송·연습 영상에서 보고 있는 구간
 let mode = 'upcoming';  // 'upcoming'(8주) / 'month'(고른 달) / 'year'(고른 해) / 'assembly'(집회특송) / 'rehearsal'(연습 영상)
 let upcomingStart = nextSunday();
 let query = '';         // 검색어
@@ -829,11 +830,15 @@ function readCache() {
 
 // 지난번에 받은 내용을 먼저 보여 주고, 뒤에서 최신 내용을 받아 바꿈
 async function load() {
-  // 날짜가 바뀌었으면 '오늘'을 새로 잡고, 보던 8주도 현재 기준이었다면 함께 옮김
+  // 날짜가 바뀌었으면 '오늘'을 새로 잡고, 이번 달·이번 기간을 보고 있었다면 새 달로 함께 옮김
   if (todayKey() !== TODAY) {
     const wasNow = upcomingStart === nextSunday();
+    const wasThisMonth = viewY === +TODAY.slice(0, 4) && viewM === +TODAY.slice(5, 7);
+    const wasThisPeriod = viewY === +TODAY.slice(0, 4) && viewB === thisPeriod();
     TODAY = todayKey();
     if (wasNow) upcomingStart = nextSunday();
+    if (wasThisMonth) { viewY = +TODAY.slice(0, 4); viewM = +TODAY.slice(5, 7); }
+    if (wasThisPeriod) { viewY = +TODAY.slice(0, 4); viewB = thisPeriod(); }
   }
   if (loadState !== 'ok') {
     const c = readCache();
@@ -1929,11 +1934,17 @@ function applyBig(on) {
 }
 
 /* ===== 버튼 연결 ===== */
-$('loginCancel').onclick = () => { location.hash = ''; };
+// 편집 화면에서 나올 때 주소 끝에 빈 '#'이 남지 않게 지움
+function goPublic() {
+  history.replaceState(null, '', location.pathname + location.search);
+  route();
+}
+$('toPublic').onclick = goPublic;
+$('loginCancel').onclick = goPublic;
 $('logoutBtn').onclick = () => {
   if (token) api({ action: 'logout', token }).catch(() => {});
   setToken(null);
-  location.hash = '';
+  goPublic();
 };
 $('addBtn').onclick = () => openForm(null);
 $('reCancel').onclick = () => { board = null; sel.clear(); renderEditor(); };
