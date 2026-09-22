@@ -2162,8 +2162,16 @@ $('yearSel').onchange = e => {
 };
 $('monthSel').onchange = e => showMonth(viewY, +e.target.value);
 $('modeMonth').onclick = () => showMonth(viewY, viewM);
-$('modeAssembly').onclick = () => { clearSearch(); mode = 'assembly'; renderPublic(); };
-$('modeRehearsal').onclick = () => { clearSearch(); mode = 'rehearsal'; renderPublic(); };
+// 버튼을 다시 누르면 오늘이 속한 기간으로 돌아옴 (앞서 옮겨 둔 기간은 잊음)
+const showPeriod = m => {
+  clearSearch();
+  mode = m;
+  viewY = +TODAY.slice(0, 4);
+  viewB = thisPeriod();
+  renderPublic();
+};
+$('modeAssembly').onclick = () => showPeriod('assembly');
+$('modeRehearsal').onclick = () => showPeriod('rehearsal');
 $('modeYear').onclick = () => showYear(viewY);
 $('printBtn').onclick = () => print();
 // 모드를 다시 고르면 오늘 기준으로 돌아옴
