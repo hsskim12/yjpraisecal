@@ -114,9 +114,10 @@
   .modebar .btn { white-space: nowrap; }
   .modebar .btn[aria-pressed="true"] { background: var(--navy); border-color: var(--navy); color: #fff; }
   /* 연습 영상은 일정 보기와 성격이 달라서 오른쪽 끝에 초록색으로 */
-  #modeRehearsal { margin-left: auto; background: var(--navy-soft); border-color: #c3cddd; color: var(--navy); }
-  #modeRehearsal:hover { background: #dbe4f3; }
-  #modeRehearsal[aria-pressed="true"] { background: var(--navy); border-color: var(--navy); color: #fff; }
+  #modeAssembly { margin-left: auto; }                 /* 집회특송·연습 영상은 오른쪽 끝에 나란히 */
+  #modeAssembly, #modeRehearsal { background: var(--navy-soft); border-color: #c3cddd; color: var(--navy); }
+  #modeAssembly:hover, #modeRehearsal:hover { background: #dbe4f3; }
+  #modeAssembly[aria-pressed="true"], #modeRehearsal[aria-pressed="true"] { background: var(--navy); border-color: var(--navy); color: #fff; }
 
   /* 기간 이동 */
   .periodbar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
@@ -125,7 +126,7 @@
   .periodbar .arrow:hover { background: var(--navy-soft); }
   .periodmid { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; min-width: 0; }
   .ympick { display: flex; gap: 6px; min-width: 0; }
-  .ympick select { font: inherit; font-size: 16px; font-weight: 700; color: var(--ink); padding: 8px; border: 1px solid var(--line); border-radius: 10px; background: #fff; min-width: 0; }
+  .ympick select { font: inherit; font-size: 16px; font-weight: 700; color: var(--ink); padding: 8px 4px 8px 10px; border: 1px solid var(--line); border-radius: 10px; background: #fff; min-width: 0; } /* 오른쪽 화살표를 글자 가까이 */
 
   /* 연도별 보기: 한 줄 목록 */
   /* 일정 목록의 한 줄 (다가오는 8주·월별·연도별 공통) */
@@ -350,7 +351,7 @@
     /* 좁은 화면에서도 보기 버튼 네 개가 한 줄에 들어가도록 */
     .mypart { gap: 5px; }
     .mypart .mphint { flex: 0 0 100%; }   /* 안내 문구만 아랫줄로, 파트 버튼은 한 줄에 */
-    .modebar { gap: 5px; }
+    .modebar { gap: 5px; flex-wrap: wrap; }
     .modebar .btn { padding: 8px 8px; font-size: 12.5px; }
     .body { padding: 12px 10px; }
     /* 파트 연습 S·A·T·B는 한 줄에, [간단히 보기]는 아랫줄 오른쪽 */
@@ -441,6 +442,7 @@
         <button type="button" class="btn" id="modeUpcoming" aria-pressed="true"></button>
         <button type="button" class="btn" id="modeMonth" aria-pressed="false">월별 보기</button>
         <button type="button" class="btn" id="modeYear" aria-pressed="false">연도별 보기</button>
+        <button type="button" class="btn" id="modeAssembly" aria-pressed="false">집회특송</button>
         <button type="button" class="btn" id="modeRehearsal" aria-pressed="false">연습 영상</button>
       </div>
 
@@ -451,6 +453,7 @@
           <div class="ympick" id="ympick" hidden>
             <select id="yearSel" aria-label="연도"></select>
             <select id="monthSel" aria-label="월"></select>
+            <select id="bimonthSel" aria-label="기간(2개월)" hidden></select>
           </div>
         </div>
         <button type="button" class="arrow" id="next" aria-label="다음 기간">›</button>
@@ -732,7 +735,8 @@ function busy(btn, on, label) {
 let events = [], notices = [], rehearsals = [];
 let loadState = 'loading', loadMsg = '', staleMsg = '', refreshing = false, lastLoadAt = 0;
 let viewY = +TODAY.slice(0, 4), viewM = +TODAY.slice(5, 7);
-let mode = 'upcoming';  // 'upcoming'(8주) / 'rehearsal'(연습 영상) / 'month'(고른 달) / 'year'(고른 해)
+let viewB = Math.floor((+TODAY.slice(5, 7) - 1) / 2); // 집회특송의 2개월 구간 (0=1·2월 … 5=11·12월)
+let mode = 'upcoming';  // 'upcoming'(8주) / 'month'(고른 달) / 'year'(고른 해) / 'assembly'(집회특송) / 'rehearsal'(연습 영상)
 let upcomingStart = nextSunday();
 let query = '';         // 검색어
 let showPast = false;   // 편집 화면에서 지난 일정 펼침
@@ -1076,14 +1080,14 @@ function rehearsalRow(r) {
       el('button', { type: 'button', class: 'btn danger', onclick: () => removeRehearsal(r) }, '삭제')));
 }
 
-function renderRehearsals() {
+function renderRehearsals(list) {
   $('list').replaceChildren(...[
     token && el('div', { class: 'toolbar' },
       el('button', { type: 'button', class: 'btn primary', onclick: () => openRehearsal(null) }, '+ 연습 영상 추가')),
-    ...(rehearsals.length ? rehearsals.map(rehearsalRow)
+    ...(list.length ? list.map(rehearsalRow)
       : [token
-        ? el('button', { type: 'button', class: 'empty emptyadd', onclick: () => openRehearsal(null) }, '아직 올린 연습 영상이 없습니다. 눌러서 영상을 넣어 주세요.')
-        : el('p', { class: 'empty' }, '아직 올라온 연습 영상이 없습니다.')]),
+        ? el('button', { type: 'button', class: 'empty emptyadd', onclick: () => openRehearsal(null) }, '이 기간에 올린 연습 영상이 없습니다. 눌러서 영상을 넣어 주세요.')
+        : el('p', { class: 'empty' }, '이 기간에 올라온 연습 영상이 없습니다.')]),
   ].filter(Boolean));
 }
 
@@ -1143,6 +1147,10 @@ $('rPlay').onclick = () => { // 넣은 주소를 창 안에서 바로 확인
 };
 $('rDlg').addEventListener('close', closePartPreviews);
 
+// 집회특송·연습 영상에서 보고 있는 2개월 구간
+const periodMonths = () => [viewB * 2 + 1, viewB * 2 + 2];
+const inPeriod = date => +date.slice(0, 4) === viewY && periodMonths().includes(+date.slice(5, 7));
+
 // 지금 화면에 보여 줄 목록과 제목을 정함 (검색 / 다가오는 8주 / 고른 달)
 function buildView(heroEvents = []) {
   if (query) {
@@ -1169,6 +1177,17 @@ function buildView(heroEvents = []) {
       empty: heroEvents.some(e => e.date >= start && e.date < end)
         ? '위 찬양 외에 선택한 기간에 등록된 일정이 없습니다.'
         : '선택한 기간에 등록된 찬양이 없습니다.',
+      emptySundays: [],
+    };
+  }
+  if (mode === 'assembly') { // 구분이 '집회'인 일정만, 2개월씩
+    const [from, to] = periodMonths();
+    const list = events.filter(e => typeOf(e) === '대집회 특송' && inPeriod(e.date));
+    return {
+      list,
+      title: `${viewY}년 ${from}-${to}월 집회 특송`,
+      summary: `${list.length}곡 등록`,
+      empty: '이 기간에 등록된 집회 특송이 없습니다.',
       emptySundays: [],
     };
   }
@@ -1215,12 +1234,13 @@ function renderPublic() {
   }
 
   const rehearsalMode = mode === 'rehearsal' && !query;
+  const shownRehearsals = rehearsals.filter(r => inPeriod(r.date));
   const view = rehearsalMode
-    ? { list: [], title: '연습 영상', summary: `${rehearsals.length}개`, empty: '', emptySundays: [] }
+    ? { list: [], title: `${viewY}년 ${periodMonths().join('-')}월 연습 영상`, summary: `${shownRehearsals.length}개`, empty: '', emptySundays: [] }
     : buildView(heroEvents);
   $('viewTitle').textContent = view.title;
   $('summary').textContent = view.summary;
-  if (rehearsalMode) renderRehearsals();
+  if (rehearsalMode) renderRehearsals(shownRehearsals);
   else $('list').replaceChildren(...(view.list.length
     ? view.list.flatMap((e, i) => {
       const month = e.date.slice(0, 7);
@@ -1240,19 +1260,23 @@ function renderPublic() {
   $('searchSummary').textContent = query ? view.summary : '';
   $('modeUpcoming').textContent = `${UPCOMING_WEEKS}주 일정`;
   $('modeUpcoming').setAttribute('aria-pressed', String(mode === 'upcoming'));
+  $('modeAssembly').setAttribute('aria-pressed', String(mode === 'assembly'));
   $('modeRehearsal').setAttribute('aria-pressed', String(mode === 'rehearsal'));
   $('modeMonth').setAttribute('aria-pressed', String(mode === 'month'));
   $('modeYear').setAttribute('aria-pressed', String(mode === 'year'));
-  $('periodBar').hidden = !!query || rehearsalMode; // 연습 영상에는 기간 이동이 없음
+  $('periodBar').hidden = !!query;
   $('emptySundays').hidden = $('emptySundays').hidden || rehearsalMode;
   $('ympick').hidden = mode === 'upcoming';
-  $('monthSel').hidden = mode === 'year';
+  $('bimonthSel').hidden = mode !== 'assembly' && mode !== 'rehearsal';
+  $('bimonthSel').value = viewB;
+  $('monthSel').hidden = mode !== 'month';
   $('printBtn').hidden = mode !== 'year';
   // '현재 8주' 버튼은 기간을 옮겼을 때만 보여 줌
   $('nowBtn').hidden = mode !== 'upcoming' || upcomingStart === nextSunday();
   $('nowBtn').textContent = `현재 ${UPCOMING_WEEKS}주`;
-  $('prev').setAttribute('aria-label', mode === 'upcoming' ? `이전 ${UPCOMING_WEEKS}주` : mode === 'year' ? '이전 해' : '이전 달');
-  $('next').setAttribute('aria-label', mode === 'upcoming' ? `다음 ${UPCOMING_WEEKS}주` : mode === 'year' ? '다음 해' : '다음 달');
+  const periodName = mode === 'upcoming' ? `${UPCOMING_WEEKS}주` : mode === 'year' ? '해' : mode === 'month' ? '달' : '기간';
+  $('prev').setAttribute('aria-label', `이전 ${periodName}`);
+  $('next').setAttribute('aria-label', `다음 ${periodName}`);
   $('searchClear').hidden = !query;
 
   // 연도 선택지: 일정이 있는 해 ~ 올해 앞뒤 1년
@@ -1934,12 +1958,19 @@ $('searchInput').onkeydown = e => { if (e.key === 'Enter') { e.preventDefault();
 $('searchClear').onclick = () => { clearSearch(); renderPublic(); };
 
 $('monthSel').append(...Array.from({ length: 12 }, (_, i) => el('option', { value: i + 1 }, `${i + 1}월`)));
+$('bimonthSel').append(...Array.from({ length: 6 }, (_, i) => el('option', { value: i }, `${i * 2 + 1}-${i * 2 + 2}월`)));
+$('bimonthSel').onchange = e => { viewB = +e.target.value; renderPublic(); };
 function movePeriod(direction) {
   if (mode === 'upcoming') {
     upcomingStart = dayKey(utc(upcomingStart) + direction * UPCOMING_WEEKS * 7 * 864e5);
     renderPublic();
   } else if (mode === 'year') {
     showYear(viewY + direction);
+  } else if (mode === 'assembly' || mode === 'rehearsal') { // 2개월씩 이동 (해를 넘어가면 연도도 바뀜)
+    const n = viewY * 6 + viewB + direction;
+    viewY = Math.floor(n / 6);
+    viewB = ((n % 6) + 6) % 6;
+    renderPublic();
   } else {
     const date = new Date(Date.UTC(viewY, viewM - 1 + direction, 1));
     showMonth(date.getUTCFullYear(), date.getUTCMonth() + 1);
@@ -1947,9 +1978,14 @@ function movePeriod(direction) {
 }
 $('prev').onclick = () => movePeriod(-1);
 $('next').onclick = () => movePeriod(1);
-$('yearSel').onchange = e => mode === 'year' ? showYear(+e.target.value) : showMonth(+e.target.value, viewM);
+$('yearSel').onchange = e => {
+  if (mode === 'year') return showYear(+e.target.value);
+  if (mode === 'assembly' || mode === 'rehearsal') { viewY = +e.target.value; return renderPublic(); }
+  showMonth(+e.target.value, viewM);
+};
 $('monthSel').onchange = e => showMonth(viewY, +e.target.value);
 $('modeMonth').onclick = () => showMonth(viewY, viewM);
+$('modeAssembly').onclick = () => { clearSearch(); mode = 'assembly'; renderPublic(); };
 $('modeRehearsal').onclick = () => { clearSearch(); mode = 'rehearsal'; renderPublic(); };
 $('modeYear').onclick = () => showYear(viewY);
 $('printBtn').onclick = () => print();
