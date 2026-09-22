@@ -302,6 +302,15 @@
   .partrow input.autofilled { background: #fff8d6; border-color: #ecd67a; } /* 자동으로 채운 칸 — 고치면 원래 색 */
   .refsearch { margin: -6px 0 12px; }
   .liverow { grid-template-columns: minmax(0, 1fr) auto auto; margin-bottom: 12px; }
+  /* 집회 일정 한 번에 추가 */
+  .bulkday { border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; margin-bottom: 10px; }
+  .bulkhead { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .bulkhead b { flex: 0 0 74px; font-size: 15px; color: var(--navy); }
+  .bulkhead input { flex: 1; min-width: 0; font: inherit; padding: 9px 10px; border: 1px solid var(--line); border-radius: 9px; color: #1a56db; }
+  .bulkpeople { margin-bottom: 8px; }
+  .bulkpeople input { font: inherit; padding: 8px 10px; border: 1px solid var(--line); border-radius: 9px; min-width: 0; color: #1a56db; }
+  .bulkday summary { cursor: pointer; font-size: 14px; font-weight: 600; color: var(--navy); padding: 4px 0; }
+  .bulkday textarea { color: #1a56db; }
   .partpreview { grid-column: 1 / -1; }
   .partpreview iframe { width: 100%; aspect-ratio: 16 / 9; border: 0; border-radius: 8px; display: block; }
   .partpreview .hint { margin: 0; }
@@ -496,6 +505,7 @@
       </details>
       <div class="toolbar">
         <button type="button" class="btn primary" id="addBtn">+ 일정 추가</button>
+        <button type="button" class="btn primary" id="bulkBtn">+ 집회 일정 추가</button>
         <button type="button" class="btn" id="noticeBtn">공지사항 수정</button>
         <button type="button" class="btn" id="pastBtn" hidden></button>
         <button type="button" class="btn logout" id="logoutBtn">로그아웃</button>
@@ -572,6 +582,31 @@
     <p class="hint" id="ytMsg"></p>
     <div class="ytlist" id="ytList"></div>
   </div>
+</dialog>
+
+<!-- 집회 일정 한 번에 추가 (관리자) -->
+<dialog id="bulkDlg">
+  <form id="bulkForm" novalidate>
+    <div class="dlghead formhead">
+      <h3>집회 일정 한 번에 추가</h3>
+      <div class="actions">
+        <button type="button" class="btn" id="bulkCancel">취소</button>
+        <button type="submit" class="btn primary">저장</button>
+      </div>
+    </div>
+    <div class="tworow">
+      <label class="field">구분<select name="type" id="bulkType"></select></label>
+      <label class="field">첫날 날짜<input type="date" name="start" id="bulkStart" required></label>
+    </div>
+    <label class="field">며칠 동안<select name="days" id="bulkDaysSel"></select></label>
+    <p class="hint">첫날부터 하루씩 이어지는 집회 일정입니다. 고른 기간의 <b>모든 날이 저장</b>되고, 제목을 비워 둔 날은 <b>'미정'</b>으로 저장돼 나중에 채울 수 있습니다.</p>
+    <div id="bulkDays"></div>
+    <p class="err" id="bulkErr" hidden></p>
+    <div class="actions">
+      <button type="button" class="btn" id="bulkCancel2">취소</button>
+      <button type="submit" class="btn primary">저장</button>
+    </div>
+  </form>
 </dialog>
 
 <!-- 연습 영상 추가·수정 (관리자) -->
@@ -659,8 +694,9 @@ const HEAD_PARTS = [{ part: '전체', label: '듣기' }, { part: '반주', label
 const PART_SHORT = { '소프라노': 'S', '알토': 'A', '테너': 'T', '베이스': 'B' }; // 파트 버튼 표시
 const MY_PARTS = [...Object.keys(PART_SHORT), '반주'];  // '내 파트'로 고를 수 있는 것
 const DOW = ['일', '월', '화', '수', '목', '금', '토'];
-const TYPES = ['주일 찬양', '대집회 특송', '모두회 특송', '구역모임 특송']; // 새 구분은 여기에만 추가
-const typeLabel = type => ({ '주일 찬양': '주일', '대집회 특송': '집회', '모두회 특송': '모두회', '구역모임 특송': '구역' })[type] || type;
+const TYPES = ['주일 찬양', '대집회 특송', '중집회 특송', '모두회 특송', '구역모임 특송']; // 새 구분은 여기에만 추가
+const ASSEMBLY_TYPES = ['대집회 특송', '중집회 특송'];  // [집회특송] 화면에 모아 보는 구분
+const typeLabel = type => ({ '주일 찬양': '주일', '대집회 특송': '집회', '중집회 특송': '중집회', '모두회 특송': '모두회', '구역모임 특송': '구역' })[type] || type;
 const TYPE_CUSTOM = '__custom__'; // 목록에 없는 구분을 직접 적을 때
 const NOTICE_HEAD = 30;   // 첫 화면에 보이는 공지 글자 수
 const UPCOMING_WEEKS = 8; // 첫 화면에 보여 줄 기간
@@ -1187,7 +1223,7 @@ function buildView(heroEvents = []) {
   }
   if (mode === 'assembly') { // 구분이 '집회'인 일정만, 2개월씩
     const [from, to] = periodMonths();
-    const list = events.filter(e => typeOf(e) === '대집회 특송' && inPeriod(e.date));
+    const list = events.filter(e => ASSEMBLY_TYPES.includes(typeOf(e)) && inPeriod(e.date));
     return {
       list,
       title: `${viewY}년 ${from}-${to}월 집회 특송`,
@@ -1479,7 +1515,7 @@ function renderEditor() {
   const pastCount = events.filter(e => e.date < TODAY).length;
   $('pastBtn').hidden = !pastCount;
   $('pastBtn').textContent = showPast ? '지난 일정 숨기기' : `지난 일정 ${pastCount}건 보기`;
-  $('addBtn').disabled = locked;
+  $('addBtn').disabled = $('bulkBtn').disabled = locked;
 
   const changed = reChanged().length;
   const picked = board.contents.filter(c => c && sel.has(c.srcId)).length;
@@ -1618,36 +1654,44 @@ $('partFields').append(
   el('div', { class: 'autorow' },
     el('button', { type: 'button', class: 'btn', id: 'autoBtn', onclick: autoFillParts }, '🔍 파트 영상 자동 찾기'),
     el('span', { class: 'hint', id: 'autoMsg' }, AUTO_HINT)),
-  ...PARTS.map(p =>
-    el('div', { class: 'partrow' },
-      el('label', { for: 'part-' + p }, p),
-      el('input', { type: 'url', id: 'part-' + p, name: 'part-' + p, placeholder: 'https://youtu.be/...', oninput: e => e.target.classList.remove('autofilled') }),
-      el('button', { type: 'button', class: 'iconbtn', title: `${p} 영상 들어 보기`, 'aria-label': `${p} 영상 들어 보기`, onclick: () => previewPart(p) }, '▶'),
-      el('button', { type: 'button', class: 'iconbtn', title: `${p} 영상 유튜브에서 찾기`, 'aria-label': `${p} 영상 유튜브에서 찾기`, onclick: () => openYtSearch(p) }, '🔍'),
-      el('div', { class: 'partpreview', id: 'pv-' + p, hidden: '' }))));
+  ...PARTS.map(p => linkRow(`${p} 영상`, el('input', {
+    type: 'url', id: 'part-' + p, name: 'part-' + p, placeholder: 'https://youtu.be/...',
+    oninput: e => e.target.classList.remove('autofilled'),
+  }), { part: p, label2: p })));
 
 // ▶: 칸에 들어 있는 영상을 그 줄 아래에서 재생 (한 번에 하나, 다시 누르면 닫힘)
 function closePartPreviews() {
   document.querySelectorAll('.partpreview').forEach(v => { v.hidden = true; v.replaceChildren(); });
 }
-function previewPart(p) { // p: 파트 이름 또는 'live'(실황)
-  const box = $('pv-' + p), open = box.hidden;
-  const input = p === 'live' ? form.live : form['part-' + p];
+// box: 줄 아래 재생 자리 / input: 주소 칸 (한 번에 하나만 열림)
+function previewLink(box, input, label) {
+  const open = box.hidden;
   closePartPreviews();
   if (!open) return;
   const yt = youtube(safeUrl(input.value));
-  box.replaceChildren(yt ? embed(yt.id, yt.start, `${p === 'live' ? '실황' : p} 영상`)
+  box.replaceChildren(yt ? embed(yt.id, yt.start, `${label} 영상`)
     : el('p', { class: 'hint' }, input.value.trim() ? '유튜브 링크가 아니라서 여기서 재생할 수 없어요.' : '먼저 링크를 넣어 주세요.'));
   box.hidden = false;
 }
+
+// 링크 한 줄: [이름] [주소 칸] [▶] [🔍] + 아래 재생 자리
+function linkRow(label, input, opts = {}) {
+  const box = el('div', { class: 'partpreview', hidden: '' });
+  return el('div', { class: 'partrow' + (opts.wide ? ' liverow' : '') },
+    opts.wide ? null : el('label', { for: input.id }, opts.label2 || label),
+    input,
+    el('button', { type: 'button', class: 'iconbtn', title: `${label} 들어 보기`, 'aria-label': `${label} 들어 보기`, onclick: () => previewLink(box, input, label) }, '▶'),
+    el('button', { type: 'button', class: 'iconbtn', title: `${label} 유튜브에서 찾기`, 'aria-label': `${label} 유튜브에서 찾기`, onclick: () => openYtSearch(input, { label, part: opts.part, song: opts.song?.() }) }, '🔍'),
+    box);
+}
 $('dlg').addEventListener('close', closePartPreviews); // 창을 닫으면 소리도 멈춤
-$('refSearchBtn').onclick = () => openYtSearch('refs');
-$('liveSearch').onclick = () => openYtSearch('live');
-$('livePlay').onclick = () => previewPart('live');
+$('refSearchBtn').onclick = () => openYtSearch(form.refs, { label: '참고연주 영상', append: true });
+$('liveSearch').onclick = () => openYtSearch(form.live, { label: '실황 영상' });
+$('livePlay').onclick = () => previewLink($('pv-live'), form.live, '실황');
 
 /* ===== 유튜브 검색 → [추가]로 링크 넣기 =====
    먼저 이 사이트의 Vercel 함수(api/ytsearch.js)로 빠르게 찾고, 안 되면 Apps Script 검색으로 대신함 */
-let ytTarget = '', ytSeq = 0; // ytTarget: 파트 이름 또는 'refs'(참고연주) / ytSeq: 가장 최근 검색 번호 (늦게 온 앞 검색 결과는 버림)
+let ytTarget = null, ytSeq = 0; // ytTarget: { input, append } / ytSeq: 가장 최근 검색 번호 (늦게 온 앞 검색 결과는 버림)
 const decodeHtml = s => new DOMParser().parseFromString(String(s || ''), 'text/html').documentElement.textContent; // 대체 검색(API) 제목의 &#39; 등을 글자로
 
 // 결과: { items, source } — source가 'api'면 대체 검색
@@ -1663,12 +1707,13 @@ async function ytFetch(q) {
   return { items: res.items, source: 'api' };
 }
 
-function openYtSearch(target) { // target: 파트 이름 / 'refs'(참고연주) / 'live'(실황)
-  ytTarget = target;
-  const whole = target === 'refs' || target === 'live' || target === '전체';
-  $('ytTitle').textContent = { refs: '참고연주 영상 찾기', live: '실황 영상 찾기' }[target] || `${target} 영상 찾기`;
+// input: 주소를 넣을 칸 / opts: { label 창 제목, part 파트 이름, song 곡 제목, append 여러 줄에 덧붙이기 }
+function openYtSearch(input, opts = {}) {
+  ytTarget = { input, append: !!opts.append };
+  const part = opts.part && opts.part !== '전체' ? opts.part : '';
+  $('ytTitle').textContent = `${opts.label || '영상'} 찾기`;
   // 기본 검색어: 찬양 제목 + 파트 이름 (전체·참고연주·실황은 제목만)
-  $('ytQ').value = [form.title.value.trim(), whole ? '' : target].filter(Boolean).join(' ');
+  $('ytQ').value = [(opts.song ?? form.title.value).trim(), part].filter(Boolean).join(' ');
   $('ytList').replaceChildren();
   $('ytMsg').textContent = '';
   $('ytDlg').showModal();
@@ -1676,18 +1721,10 @@ function openYtSearch(target) { // target: 파트 이름 / 'refs'(참고연주) 
 }
 
 function addYt(url) {
-  if (ytTarget === 'refs') { // 참고연주는 여러 줄이라 맨 아래에 한 줄 추가
-    form.refs.value = [form.refs.value.trim(), url].filter(Boolean).join('\n');
-    form.refs.focus();
-  } else if (ytTarget === 'live') {
-    form.live.value = url;
-    form.live.focus();
-  } else {
-    const box = form['part-' + ytTarget];
-    box.value = url;
-    box.classList.remove('autofilled');
-    box.focus();
-  }
+  const { input, append } = ytTarget;
+  if (append) input.value = [input.value.trim(), url].filter(Boolean).join('\n'); // 참고연주는 한 줄 덧붙임
+  else { input.value = url; input.classList.remove('autofilled'); }
+  input.focus();
   $('ytDlg').close();
 }
 
@@ -1702,7 +1739,7 @@ async function ytSearch() {
     const { items, source } = await ytFetch(q);
     if (seq !== ytSeq) return;
     // 지금 칸(참고연주는 모든 줄)에 들어 있는 영상 번호
-    const current = new Set((ytTarget === 'refs' ? form.refs.value.split('\n') : [(ytTarget === 'live' ? form.live : form['part-' + ytTarget]).value])
+    const current = new Set(ytTarget.input.value.split('\n')
       .map(line => { const m = line.trim().match(URL_LINE); return m && youtube(m[2])?.id; }).filter(Boolean));
     $('ytMsg').textContent = !items.length ? '검색 결과가 없습니다. 검색어를 바꿔 보세요.'
       : source === 'api' ? '빠른 검색이 안 되어 대체 검색 결과를 보여 드려요. 결과가 정확하지 않을 수 있습니다.'
@@ -1753,14 +1790,16 @@ const hasWord = (t, p) => PART_WORDS[p].some(w => t.includes(w));
 const fitsPart = (t, p) => hasWord(t, p) && PARTS.every(o => o === p || o === '전체' || !hasWord(t, o));
 const autoMsg = t => { $('autoMsg').textContent = t; };
 
-async function autoFillParts() {
-  const title = form.title.value.trim();
-  if (!title) return autoMsg('찬양 제목을 먼저 입력해 주세요.');
-  const empty = PARTS.filter(p => !form['part-' + p].value.trim());
-  if (!empty.length) return autoMsg('모든 칸이 이미 채워져 있어요.');
+function autoFillParts() { return fillParts(form.title.value.trim(), p => form['part-' + p], $('autoBtn'), autoMsg); }
+
+// title 곡의 파트 영상을 찾아 비어 있는 칸에 넣음 (본문 창과 집회 창이 함께 씀)
+async function fillParts(title, inputOf, btn, say) {
+  if (!title) return say('찬양 제목을 먼저 입력해 주세요.');
+  const empty = PARTS.filter(p => !inputOf(p).value.trim());
+  if (!empty.length) return say('모든 칸이 이미 채워져 있어요.');
   const key = squash(title);
-  busy($('autoBtn'), true, '찾는 중…');
-  autoMsg('');
+  busy(btn, true, '찾는 중…');
+  say('');
   try {
     const found = await Promise.all(empty.map(async p => {
       const { items } = await ytFetch(`${title} ${p === '전체' ? '합창' : p}`);
@@ -1775,15 +1814,15 @@ async function autoFillParts() {
     empty.forEach((p, i) => {
       const pick = found[i].find(x => x.channel === best) || found[i][0];
       if (!pick) return;
-      form['part-' + p].value = `https://youtu.be/${pick.id}`;
-      form['part-' + p].classList.add('autofilled');
+      inputOf(p).value = `https://youtu.be/${pick.id}`;
+      inputOf(p).classList.add('autofilled');
       n++;
     });
-    autoMsg(n ? `${n}칸을 채웠어요 (노란 칸). 저장 전에 🔍로 맞는 영상인지 확인해 주세요.` : '맞는 영상을 찾지 못했어요. 🔍로 직접 찾아 주세요.');
+    say(n ? `${n}칸을 채웠어요 (노란 칸). 저장 전에 🔍로 맞는 영상인지 확인해 주세요.` : '맞는 영상을 찾지 못했어요. 🔍로 직접 찾아 주세요.');
   } catch (err) {
-    autoMsg(err.message);
+    say(err.message);
   } finally {
-    busy($('autoBtn'), false);
+    busy(btn, false);
   }
 }
 form.type.append(el('option', { value: '' }, '선택하세요'), ...TYPES.map(t => el('option', { value: t }, typeLabel(t))),
@@ -1898,6 +1937,132 @@ form.addEventListener('submit', async e => {
     '저장되었습니다.');
 });
 
+/* ===== 집회 일정 한 번에 추가 =====
+   집회는 보통 월~토처럼 며칠 이어지므로, 날짜별 칸을 한 창에서 채워 한 번에 저장 */
+let bulkRows = [];   // [{ date, title, conductor, pianist, parts:{}, scores, live }] — 칸(입력 요소)들
+
+const nextMonday = () => dayKey(utc(TODAY) + ((8 - dowOf(TODAY)) % 7 || 7) * 864e5);
+
+function bulkRow(date) {
+  const titleInput = el('input', { maxlength: 100, placeholder: '찬양 제목 (비우면 미정으로 저장됨)' });
+  const song = () => titleInput.value.trim();
+  const conductor = el('input', { maxlength: 30, list: 'conductorList', placeholder: '지휘자' });
+  const pianist = el('input', { maxlength: 30, list: 'pianistList', placeholder: '반주자' });
+  const parts = Object.fromEntries(PARTS.map(p => [p, el('input', {
+    type: 'url', placeholder: 'https://youtu.be/...', oninput: e => e.target.classList.remove('autofilled'),
+  })]));
+  const scores = el('textarea', { rows: 2, placeholder: 'https://drive.google.com/...' });
+  const live = el('input', { type: 'url', placeholder: '실황 https://youtu.be/...' });
+  const autoBtn = el('button', { type: 'button', class: 'btn' }, '🔍 파트 영상 자동 찾기');
+  const autoSay = el('span', { class: 'hint' }, '');
+  autoBtn.onclick = () => fillParts(song(), p => parts[p], autoBtn, t => { autoSay.textContent = t; });
+
+  const node = el('div', { class: 'bulkday' },
+    el('div', { class: 'bulkhead' },
+      el('b', {}, `${md(date)} (${DOW[dowOf(date)]})`),
+      titleInput),
+    el('div', { class: 'tworow bulkpeople' }, conductor, pianist),
+    el('details', {},
+      el('summary', {}, '영상 · 악보 · 실황 링크'),
+      el('div', { class: 'autorow' }, autoBtn, autoSay),
+      ...PARTS.map(p => linkRow(`${p} 영상`, parts[p], { part: p, label2: p, song })),
+      el('label', { class: 'field' }, '악보 링크 ', el('span', { class: 'hint' }, '(한 줄에 하나)'), scores),
+      linkRow('실황 영상', live, { wide: true, song })));
+
+  return { date, node, title: titleInput, conductor, pianist, parts, scores, live };
+}
+
+function renderBulkDays() {
+  const start = $('bulkStart').value, n = +$('bulkDaysSel').value;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(start)) return;
+  const keep = bulkRows; // 날짜·일수를 바꿔도 적어 둔 내용은 그대로 둠
+  bulkRows = Array.from({ length: n }, (_, i) => {
+    const row = bulkRow(dayKey(utc(start) + i * 864e5));
+    const old = keep[i];
+    if (old) {
+      row.title.value = old.title.value;
+      row.conductor.value = old.conductor.value;
+      row.pianist.value = old.pianist.value;
+      PARTS.forEach(p => { row.parts[p].value = old.parts[p].value; });
+      row.scores.value = old.scores.value;
+      row.live.value = old.live.value;
+    }
+    return row;
+  });
+  $('bulkDays').replaceChildren(...bulkRows.map(r => r.node));
+}
+
+function openBulk() {
+  bulkRows = [];
+  $('bulkType').value = ASSEMBLY_TYPES[0];
+  $('bulkStart').value = nextMonday();
+  $('bulkDaysSel').value = '6';
+  $('bulkErr').hidden = true;
+  renderBulkDays();
+  // 지휘·반주 이름 고르기 목록은 본문 창과 같이 씀
+  for (const [id, key] of [['conductorList', 'conductor'], ['pianistList', 'pianist']]) {
+    const names = [...new Set(events.map(e => String(e[key] || '').trim()).filter(Boolean))];
+    $(id).replaceChildren(...names.map(n => el('option', { value: n })));
+  }
+  $('bulkDlg').showModal();
+  $('bulkDlg').scrollTop = 0;
+}
+
+$('bulkForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const type = $('bulkType').value;
+  const bad = [];
+  const saves = [], saved = [];
+  const anyTitle = bulkRows.some(r => r.title.value.trim());
+  bulkRows.forEach(r => {
+    const title = r.title.value.trim() || '미정'; // 비워 둔 날도 '미정'으로 함께 저장
+    const parts = {};
+    PARTS.forEach(p => {
+      const raw = r.parts[p].value.trim();
+      if (!raw) return;
+      const url = tidyUrl(raw);
+      if (url) parts[p] = url; else bad.push(`${md(r.date)} ${p} 링크`);
+    });
+    const scores = r.scores.value.split('\n').map(x => x.trim()).filter(Boolean).map((line, i) => {
+      const m = line.match(URL_LINE), url = m && tidyUrl(m[2]);
+      if (!url) { bad.push(`${md(r.date)} 악보 ${i + 1}번째 줄`); return line; }
+      return (m[1] ? m[1] + ' ' : '') + url;
+    });
+    let live = '';
+    const liveRaw = r.live.value.trim();
+    if (liveRaw) {
+      const url = tidyUrl(liveRaw);
+      if (url && youtube(url)) live = url; else bad.push(`${md(r.date)} 실황 링크`);
+    }
+    const id = newId();
+    const event = { date: r.date, type, title, conductor: r.conductor.value.trim(), pianist: r.pianist.value.trim(), parts, scores, refs: [], note: '', live };
+    saves.push({ id, event });
+    saved.push({ ...event, id });
+  });
+  if (bad.length) {
+    $('bulkErr').textContent = `확인해 주세요: ${bad.join(', ')} (링크는 https:// 로 시작해야 해요)`;
+    $('bulkErr').hidden = false;
+    return;
+  }
+  if (!anyTitle) {
+    $('bulkErr').textContent = '찬양 제목을 한 곳 이상 적어 주세요. 나머지 날은 미정으로 저장됩니다.';
+    $('bulkErr').hidden = false;
+    return;
+  }
+  const dup = events.find(e => saved.some(x => x.date === e.date && typeOf(e) === type));
+  if (dup && !confirm(`${fmtDate(dup.date)}에 이미 "${dup.title}"(${typeLabel(type)}) 일정이 있습니다.\n그래도 저장할까요?`)) return;
+  $('bulkDlg').close();
+  mutate({ action: 'batch', token, saves, deletes: [] },
+    () => { events = sorted([...events, ...saved]); },
+    `${saves.length}곡을 저장했습니다.`);
+});
+$('bulkCancel').onclick = $('bulkCancel2').onclick = () => $('bulkDlg').close();
+$('bulkDlg').addEventListener('close', closePartPreviews);
+$('bulkStart').onchange = renderBulkDays;
+$('bulkDaysSel').onchange = renderBulkDays;
+$('bulkType').append(...ASSEMBLY_TYPES.map(t => el('option', { value: t }, typeLabel(t))));
+$('bulkDaysSel').append(...Array.from({ length: 7 }, (_, i) => el('option', { value: i + 1 }, `${i + 1}일`)));
+
 /* ===== 공지사항 수정 창 ===== */
 let openNotice = 0; // 전체 보기 창에서 열어 둔 공지 번호 (수정 창에서 그 칸으로 커서를 보냄)
 
@@ -1947,6 +2112,7 @@ $('logoutBtn').onclick = () => {
   goPublic();
 };
 $('addBtn').onclick = () => openForm(null);
+$('bulkBtn').onclick = openBulk;
 $('reCancel').onclick = () => { board = null; sel.clear(); renderEditor(); };
 $('reSave').onclick = saveBoard;
 $('cancelBtn').onclick = $('cancelTop').onclick = () => $('dlg').close();
