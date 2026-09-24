@@ -382,7 +382,7 @@
   .themebtn .dots i { display: block; width: 13px; height: 13px; border-radius: 999px; box-shadow: 0 0 0 1.5px #fff; }
   .themebtn .dots i + i { margin-left: -5px; }
   .themebtn[aria-pressed="true"] { border-color: var(--navy); box-shadow: inset 0 0 0 1px var(--navy); }
-  /* 연도별 목록 인쇄: 목록만 깔끔하게 */
+  /* 인쇄 (예비): 종이용 쪽을 만들지 못했을 때 화면 목록을 간단히 */
   @media print {
     .top, .kakaobar, .staleMsg, .notices, .searchrow, .hero, .modebar, .periodbar, .emptySundays, footer, .player { display: none !important; }
     body { background: #fff; zoom: 1; }
@@ -395,10 +395,35 @@
     .card, .card.next { grid-template-columns: 64px minmax(0, 1fr); gap: 0 8px; padding: 5px 0; border: 0; border-bottom: 1px solid #ccc; border-radius: 0; break-inside: avoid; }
     .card .date, .card .date.special { min-width: 0; background: none; padding: 0; }
     .card .body { padding: 0; }
-    .card .headchips, .card .group, .card .note, .card .muted, .card .badge { display: none !important; }
+    .card .headchips, .card .group, .card .note, .card .muted, .card .badge, .card .done { display: none !important; }
     .date strong { font-size: 13px; }
     .date .dow, .date .kind, .card .label { font-size: 11px; margin: 0; }
     .titlerow h3 { font-size: 14px; }
+  }
+  /* 인쇄 — A4 한 장에 2단 목록 (시안 B). 화면에서는 숨기고, 인쇄할 때만 이 쪽만 보임 */
+  #printSheet { display: none; }
+  @media print {
+    @page { size: A4; margin: 12mm; }
+    html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    body.pssheet > *:not(#printSheet) { display: none !important; }
+    body.pssheet #printSheet { display: block; color: #111; }
+    .pshead { display: flex; align-items: flex-end; justify-content: space-between; gap: 8mm; border-bottom: 2.2px solid var(--navy); padding-bottom: 2.5mm; margin-bottom: 3.5mm; }
+    .psorg { font-size: 8.5pt; font-weight: 700; color: var(--navy); letter-spacing: .06em; }
+    .pshead h1 { margin: 1mm 0 0; font-size: 19pt; letter-spacing: -.02em; line-height: 1.1; }
+    .psmeta { font-size: 8pt; color: #555; text-align: right; line-height: 1.5; }
+    .pscols { column-count: 2; column-gap: 7mm; column-rule: .6px solid #cfcfcf; }
+    .psmon { display: flex; justify-content: space-between; align-items: baseline; margin: 2.5mm 0 1mm; padding-bottom: .8mm; border-bottom: 1.4px solid var(--navy); color: var(--navy); font-weight: 800; font-size: 10.5pt; break-after: avoid; }
+    .psmon:first-child { margin-top: 0; }
+    .psmon small { font-size: 7.5pt; color: #666; font-weight: 600; }
+    .psrow { display: grid; grid-template-columns: 15mm 1fr; column-gap: 2.5mm; padding: 1.3mm 0; border-bottom: .5px dotted #bbb; break-inside: avoid; }
+    .psd { font-weight: 800; font-size: 10pt; line-height: 1.2; }
+    .psd small { display: block; font-size: 7.5pt; font-weight: 600; color: #666; }
+    .pst { font-weight: 700; font-size: 9.6pt; line-height: 1.3; }
+    .psp { font-size: 7.8pt; color: #555; }
+    .pskind { display: inline-block; margin-left: 1.5mm; padding: 0 1.2mm; border: .7px solid var(--accent-dark); color: var(--accent-dark); border-radius: 1mm; font-size: 7pt; font-weight: 800; vertical-align: .3mm; }
+    .psrow.next { background: #fff4c7; box-shadow: -1.5mm 0 0 #fff4c7, 1.5mm 0 0 #fff4c7; }
+    .pslegend { font-size: 7.5pt; color: #555; margin-top: 3mm; }
+    .pslegend b { display: inline-block; width: 3mm; height: 3mm; border-radius: 1mm; background: #fff4c7; vertical-align: -.4mm; margin-right: 1mm; }
   }
   @media (max-width: 480px) {
     /* 연도·기간 칸이 찌그러지지 않게 — 자리가 모자라면 [최근부터 보기]·[인쇄]가 아랫줄로 */
@@ -746,6 +771,9 @@
     </div>
   </form>
 </dialog>
+
+<!-- 인쇄할 때만 보이는 종이용 쪽 (연도별 [인쇄]) — 내용은 인쇄 직전에 채움 -->
+<div id="printSheet"></div>
 
 <script>
 /* ===== 설정 ===== */
@@ -1308,9 +1336,11 @@ function buildView(heroEvents = []) {
     const start = upcomingStart;
     const end = dayKey(utc(start) + UPCOMING_WEEKS * 7 * 864e5);
     // 맨 위 강조 카드에 이미 보여 준 일정은 목록에서 뺌
-    const list = events.filter(e => e.date >= start && e.date < end && !heroEvents.includes(e));
+    const all = events.filter(e => e.date >= start && e.date < end);
+    const list = all.filter(e => !heroEvents.includes(e));
     return {
       list,
+      all, // 인쇄에는 맨 위에 따로 보여 준 이번 주 찬양도 넣음
       title: '찬양 일정 미리보기',
       summary: `${periodDate(start)} – ${periodDate(dayKey(utc(end) - 864e5), start.slice(0, 4))} · ${list.length}곡 등록`,
       empty: heroEvents.some(e => e.date >= start && e.date < end)
@@ -1381,6 +1411,7 @@ function renderPublic() {
     ? { list: [], title: `${yearLabel(viewY)} ${periodMonths().join('-')}월 연습 영상`, summary: `${shownRehearsals.length}개`, empty: '', emptySundays: [] }
     : buildView(heroEvents);
   $('viewTitle').textContent = view.title;
+  printView = rehearsalMode ? null : { title: view.title, list: view.all || view.list }; // 인쇄할 목록
   $('summary').textContent = view.summary;
   if (rehearsalMode) renderRehearsals(shownRehearsals);
   else $('list').replaceChildren(...(view.list.length
@@ -2395,6 +2426,34 @@ $('modeAssembly').onclick = () => showPeriod('assembly');
 $('modeRehearsal').onclick = () => showPeriod('rehearsal');
 $('modeYear').onclick = () => showYear(viewY);
 $('printBtn').onclick = () => print();
+
+/* ===== 인쇄 — A4 한 장에 2단 목록 (시안 B) =====
+   인쇄 직전에 지금 보고 있는 목록으로 종이용 쪽을 만들고, 나머지 화면은 인쇄에서 뺌.
+   연습 영상처럼 목록이 없는 화면에서는 예전처럼 화면을 그대로 간단히 인쇄 */
+let printView = null; // { title, list } — renderPublic에서 채움
+function buildPrintSheet() {
+  document.body.classList.toggle('pssheet', !!printView?.list.length);
+  if (!printView?.list.length) return;
+  const { title, list } = printView;
+  const next = events.find(e => e.date >= TODAY)?.date;
+  const multiYear = new Set(list.map(e => e.date.slice(0, 4))).size > 1; // 해가 섞이면 월 앞에 연도도
+  const months = new Map();
+  list.forEach(e => { const k = e.date.slice(0, 7); months.has(k) || months.set(k, []); months.get(k).push(e); });
+  $('printSheet').replaceChildren(
+    el('div', { class: 'pshead' },
+      el('div', {}, el('div', { class: 'psorg' }, '인천영종교회 찬양대'), el('h1', {}, title)),
+      el('div', { class: 'psmeta' }, `${list.length}곡 · ${TODAY.slice(2, 4)}. ${+TODAY.slice(5, 7)}. ${+TODAY.slice(8, 10)}. 기준`, el('br'), location.host)),
+    el('div', { class: 'pscols' }, [...months].flatMap(([k, rows]) => [
+      el('div', { class: 'psmon' }, `${multiYear ? yearLabel(k.slice(0, 4)) + ' ' : ''}${+k.slice(5)}월`, el('small', {}, `${rows.length}곡`)),
+      ...rows.map(e => el('div', { class: 'psrow' + (e.date === next ? ' next' : '') },
+        el('div', { class: 'psd' }, md(e.date), el('small', {}, `${DOW[dowOf(e.date)]}요일`)),
+        el('div', {},
+          el('div', { class: 'pst' }, e.title, typeOf(e) !== '주일 찬양' && el('span', { class: 'pskind' }, typeLabel(typeOf(e)))),
+          el('div', { class: 'psp' }, [e.conductor && `지휘 ${e.conductor}`, e.pianist && `반주 ${e.pianist}`].filter(Boolean).join(' · ') || '\u00a0')))),
+    ])),
+    el('div', { class: 'pslegend' }, el('b'), '이번 주 찬양 · 테두리 표시 = 주일이 아닌 일정'));
+}
+addEventListener('beforeprint', buildPrintSheet); // [인쇄] 버튼이든 브라우저 메뉴의 인쇄든 모두
 // 모드를 다시 고르면 오늘 기준으로 돌아옴
 $('modeUpcoming').onclick = () => { mode = 'upcoming'; upcomingStart = nextSunday(); renderPublic(); };
 $('nowBtn').onclick = () => {
