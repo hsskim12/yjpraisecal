@@ -713,7 +713,7 @@ const PARTS = ['전체', '소프라노', '알토', '테너', '베이스', '반�
 // 제목 오른쪽 버튼 (데이터 키인 part 값은 그대로 두고 표시 이름만 정함)
 const HEAD_PARTS = [{ part: '전체', label: '듣기' }, { part: '반주', label: '반주' }];
 const PART_SHORT = { '소프라노': 'S', '알토': 'A', '테너': 'T', '베이스': 'B' }; // 파트 버튼 표시
-const MY_PARTS = [...Object.keys(PART_SHORT), '반주'];  // '내 파트'로 고를 수 있는 것
+const MY_PARTS = Object.keys(PART_SHORT);  // '내 파트'로 고를 수 있는 것 (반주는 제목 옆 [반주] 버튼으로 따로 봄)
 const DOW = ['일', '월', '화', '수', '목', '금', '토'];
 const TYPES = ['주일 찬양', '대집회 특송', '중집회 특송', '모두회 특송', '구역모임 특송']; // 새 구분은 여기에만 추가
 const ASSEMBLY_TYPES = ['대집회 특송', '중집회 특송'];  // [집회특송] 화면에 모아 보는 구분
