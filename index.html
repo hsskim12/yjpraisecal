@@ -1064,7 +1064,12 @@ function heroSong(ev) {
     el('h3', {}, ev.title),
     people.length > 0 && el('p', { class: 'heroppl' }, people),
     links.length > 0 && el('div', { class: 'herolinks' }, links.map(x => chip(x, null, ev.title, x.hi && 'hi'))),
-    parts.length > 0 && el('div', { class: 'heroparts' }, parts.map(x => chip(x, '▶', ev.title, x.mine && 'hl'))),
+    // 누른 파트는 재생하면서 '내 파트'로도 기억 (하얗게 바뀜). 같은 파트를 다시 눌러도 풀리지 않음
+    parts.length > 0 && el('div', { class: 'heroparts' }, parts.map(x => {
+      const a = chip(x, '▶', ev.title, x.mine && 'hl');
+      a.addEventListener('click', () => setMyPart(x.full));
+      return a;
+    })),
     !links.length && !parts.length && !ev.note && el('p', { class: 'heroppl' }, '연습 자료 준비 중'),
     ev.note && el('p', { class: 'note' }, ev.note),
     token && el('div', { class: 'heroedit' }, editBtn(ev)));
@@ -1177,16 +1182,19 @@ async function shareEvents(list) {
   }
 }
 
+// 내 파트를 바꾸고 이 기기에 기억함 ('' 이면 선택 해제)
+function setMyPart(p) {
+  myPart = p;
+  try { myPart ? localStorage.setItem(PART_KEY, myPart) : localStorage.removeItem(PART_KEY); } catch {}
+  renderPublic();
+}
+
 function renderMyPart() {
   $('myPart').replaceChildren(
     el('span', { class: 'mplabel' }, '내 파트'),
     ...MY_PARTS.map(p => el('button', {
       type: 'button', class: 'btn', 'aria-pressed': String(p === myPart), title: p, 'aria-label': p,
-      onclick: () => { // 같은 파트를 다시 누르면 선택 해제
-        myPart = p === myPart ? '' : p;
-        try { myPart ? localStorage.setItem(PART_KEY, myPart) : localStorage.removeItem(PART_KEY); } catch {}
-        renderPublic();
-      },
+      onclick: () => setMyPart(p === myPart ? '' : p), // 같은 파트를 다시 누르면 선택 해제
     }, PART_SHORT[p] || p)),
     el('span', { class: 'mphint' }, '파트를 선택하면 연습 영상 버튼이 바로 보여요'));
 }
