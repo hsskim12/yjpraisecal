@@ -105,9 +105,9 @@
   body:has(#topZone:not([hidden]) #hero:not([hidden])) .topnav .btn:hover { background: rgb(255 255 255 / .26); }
   body:has(#topZone:not([hidden]) #hero:not([hidden])) #fontBtn[aria-pressed="true"] { background: #fff; color: var(--navy); }
   .hero .eyebrow { color: rgb(255 255 255 / .75); margin: 0 0 8px; font-size: 12px; letter-spacing: .12em; }
-  .herodate { margin: 0; font-size: 25px; font-weight: 800; letter-spacing: -.02em; line-height: 1.15; }
-  .herowhen { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin: 9px 0 0; font-size: 14px; color: rgb(255 255 255 / .8); }
-  .herowhen em { font-style: normal; font-weight: 700; color: #fff; background: rgb(255 255 255 / .18); border-radius: 7px; padding: 2px 10px; }
+  /* 날짜 줄: '9월 27일 [일요일]' — 요일 알약은 날짜와 같은 줄 */
+  .herodate { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin: 0; font-size: 25px; font-weight: 800; letter-spacing: -.02em; line-height: 1.15; }
+  .herodate em { font-style: normal; font-size: 14px; font-weight: 700; letter-spacing: 0; background: rgb(255 255 255 / .18); border-radius: 7px; padding: 3px 10px; }
   .herosong + .herosong { margin-top: 22px; padding-top: 18px; border-top: 1px solid rgb(255 255 255 / .2); }
   .herosong h3 { margin: 20px 0 6px; font-size: 38px; font-weight: 800; letter-spacing: -.03em; line-height: 1.18; text-wrap: balance; overflow-wrap: anywhere; }
   .heroppl { margin: 0; font-size: 14px; color: rgb(255 255 255 / .8); }
@@ -127,7 +127,7 @@
   .heroparts a i { font-style: normal; font-size: 15.5px; font-weight: 500; color: #fff; } /* 12px의 1.3배 · 흐리게 하면 밝은 테마에서 대비가 모자라 흰색 그대로 */
   .heroparts a.hl { background: #fff; color: var(--navy); }
   .heroparts a.hl i { color: var(--muted); }
-  .heroshare { display: block; margin: 14px auto 0; min-height: 40px; padding: 6px 14px; border: 0; background: none; color: rgb(255 255 255 / .85); font-size: 14px; font-weight: 600; }
+  .heroshare { display: block; margin: 14px auto 0; min-height: 40px; padding: 6px 14px; border: 0; background: none; color: rgb(255 255 255 / .85); font-size: 18px; font-weight: 600; } /* 14px의 약 1.3배 */
   .heroshare:hover { color: #fff; text-decoration: underline; }
   .hero .note { color: #ffe0e4; border-left-color: rgb(255 224 228 / .7); }
   .heroedit { display: flex; justify-content: flex-end; margin-top: 10px; }
@@ -458,7 +458,6 @@
     <div class="wrap">
       <h2 class="eyebrow" id="heroLabel"></h2>
       <p class="herodate" id="heroDate"></p>
-      <p class="herowhen" id="heroWhen"></p>
       <div id="heroCards"></div>
       <button type="button" class="heroshare" id="shareBtn">↗ 파트연습 공유하기</button>
     </div>
@@ -1368,11 +1367,9 @@ function renderPublic() {
   $('hero').hidden = !showHero;
   const heroEvents = showHero ? events.filter(e => e.date === nextDate) : [];
   if (showHero) {
-    $('heroLabel').textContent = badge === '다음 찬양' ? badge : badge + ' 찬양';
-    $('heroDate').textContent = `${+nextDate.slice(5, 7)}월 ${+nextDate.slice(8, 10)}일`;
-    // 요일 알약 + '주일 찬양 · 오늘부터 3일 뒤'
-    $('heroWhen').replaceChildren(el('em', {}, `${DOW[dowOf(nextDate)]}요일`),
-      `${typeOf(heroEvents[0])} · ${gap === 0 ? '오늘' : gap === 1 ? '내일' : `오늘부터 ${gap}일 뒤`}`);
+    // 두 줄로: '주일 찬양 · 3일 뒤' / '9월 27일 [일요일]' (예전 '이번 주'와 '오늘부터 N일 뒤'는 뜻이 겹쳐 하나로)
+    $('heroLabel').textContent = `${typeOf(heroEvents[0])} · ${gap === 0 ? '오늘' : gap === 1 ? '내일' : `${gap}일 뒤`}`;
+    $('heroDate').replaceChildren(`${+nextDate.slice(5, 7)}월 ${+nextDate.slice(8, 10)}일`, el('em', {}, `${DOW[dowOf(nextDate)]}요일`));
     $('heroCards').replaceChildren(...heroEvents.map(heroSong));
     $('shareBtn').onclick = () => shareEvents(heroEvents);
   }
