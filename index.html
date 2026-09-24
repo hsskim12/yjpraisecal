@@ -211,8 +211,10 @@
   .chip { display: inline-flex; align-items: center; justify-content: center; gap: 5px; min-height: 44px; padding: 8px 14px; border-radius: 10px; background: var(--navy-soft); color: var(--navy); text-decoration: none; font-size: 15px; font-weight: 600; }
   .chip:hover { background: #dbe4f3; }
   .group .chips .chip { font-size: 17px; min-width: 60px; }    /* 파트 연습 버튼 */
-  .chip.hl { background: var(--accent); color: #fff; }         /* 듣기·반주·악보·참고연주·내 파트 */
+  .chip.hl { background: var(--accent); color: #fff; }         /* 듣기·반주·악보·참고연주·실황 */
   .chip.hl:hover { background: var(--accent-dark); }
+  /* 내 파트: '고른 것'은 어디서나 남색 — 듣기·악보(강조색)와 한눈에 구분 */
+  .chip.mine, .chip.mine:hover { background: var(--navy); color: #fff; box-shadow: 0 0 0 2px var(--card), 0 0 0 4px var(--navy); }
   /* 안내 메모 — 눈에 띄도록 버건디 계열 */
   .note { margin: 10px 0 0; white-space: pre-line; font-size: 14px; color: #8c1d2e; font-weight: 600; border-left: 3px solid #8c1d2e; padding-left: 10px; }
   .muted { margin: 8px 0 0; color: var(--muted); font-size: 14px; }
@@ -1048,6 +1050,13 @@ const editBtn = ev => el('button', {
 const peopleEls = e => [e.conductor && `지휘 ${e.conductor}`, e.pianist && `반주 ${e.pianist}`]
   .filter(Boolean).flatMap((t, i) => (i ? [' · '] : []).concat(el('span', { class: 'nowrap' }, t)));
 
+// 파트 버튼: 누르면 재생하면서 '내 파트'로 기억 (같은 파트를 다시 눌러도 풀리지 않음)
+const partChip = (x, caption, extra) => {
+  const a = chip(x, '▶', caption, extra);
+  a.addEventListener('click', () => setMyPart(x.full));
+  return a;
+};
+
 // 이번 주 찬양 한 곡 — 목록의 카드와 달리 곡 제목을 가장 크게 보여 줌
 function heroSong(ev) {
   const people = peopleEls(ev);
@@ -1064,12 +1073,7 @@ function heroSong(ev) {
     el('h3', {}, ev.title),
     people.length > 0 && el('p', { class: 'heroppl' }, people),
     links.length > 0 && el('div', { class: 'herolinks' }, links.map(x => chip(x, null, ev.title, x.hi && 'hi'))),
-    // 누른 파트는 재생하면서 '내 파트'로도 기억 (하얗게 바뀜). 같은 파트를 다시 눌러도 풀리지 않음
-    parts.length > 0 && el('div', { class: 'heroparts' }, parts.map(x => {
-      const a = chip(x, '▶', ev.title, x.mine && 'hl');
-      a.addEventListener('click', () => setMyPart(x.full));
-      return a;
-    })),
+    parts.length > 0 && el('div', { class: 'heroparts' }, parts.map(x => partChip(x, ev.title, x.mine && 'hl'))), // 고른 파트는 하얗게
     !links.length && !parts.length && !ev.note && el('p', { class: 'heroppl' }, '연습 자료 준비 중'),
     ev.note && el('p', { class: 'note' }, ev.note),
     token && el('div', { class: 'heroedit' }, editBtn(ev)));
@@ -1088,7 +1092,7 @@ function card(ev, badge) {
   ];
   // 아래: 파트 연습 (S·A·T·B)
   const partChips = PARTS.filter(p => !HEAD_PARTS.some(h => h.part === p))
-    .map(p => ({ label: PART_SHORT[p] || p, full: p, url: safeUrl(ev.parts?.[p]), hl: p === myPart })).filter(x => x.url);
+    .map(p => ({ label: PART_SHORT[p] || p, full: p, url: safeUrl(ev.parts?.[p]), mine: p === myPart })).filter(x => x.url);
 
   return el('article', { class: 'card' + (past ? ' past' : '') + (badge ? ' next' : '') + (justSaved(ev.id) ? ' justsaved' : ''), 'data-id': ev.id },
     el('div', { class: 'date' + (typeOf(ev) !== '주일 찬양' ? ' special' : '') },
@@ -1105,7 +1109,7 @@ function card(ev, badge) {
       people.length > 0 && el('p', { class: 'label' }, people),   // 지휘·반주를 곡 제목 아래로
       partChips.length > 0 && el('div', { class: 'group' + (people.length ? ' tight' : '') },
         !people.length && el('p', { class: 'label' }, '파트 연습'),
-        el('div', { class: 'chips' }, partChips.map(x => chip(x, '▶', ev.title)))),
+        el('div', { class: 'chips' }, partChips.map(x => partChip(x, ev.title, x.mine && 'mine')))), // 고른 파트는 남색
       ev.note && el('p', { class: 'note' }, ev.note),
       !headChips.length && !partChips.length && !ev.note && el('p', { class: 'muted' }, '연습 자료 준비 중')));
 }
