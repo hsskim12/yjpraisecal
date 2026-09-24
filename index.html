@@ -237,6 +237,11 @@
   .playerframe { width: min(356px, 100vw); aspect-ratio: 16 / 9; margin-inline: max(-12px, calc((100% - min(356px, 100vw)) / 2)); }
   .playerframe iframe { width: 100%; height: 100%; border: 0; border-radius: 8px; display: block; }
 
+  .footbrand { display: flex; align-items: center; gap: 9px; }
+  .footbrand img { height: 27px; width: auto; opacity: .85; }
+  .footbrand b { display: block; color: var(--ink); font-size: 14px; line-height: 18px; }
+  .footbrand small { display: block; font-size: 11.5px; line-height: 15px; }
+  .ver { align-self: center; margin-left: 2px; padding: 2px 8px; border-radius: 999px; background: var(--surface-sunken); color: var(--muted); font-size: 11.5px; font-weight: 700; font-variant-numeric: tabular-nums; }
   footer.wrap { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; padding-block: 18px 32px; color: var(--muted); font-size: 13px; border-top: 1px solid var(--line); }
 
   /* 관리자 화면 */
@@ -616,7 +621,11 @@
 </main>
 
 <footer class="wrap">
-  <span>♪ 인천영종교회 찬양대 알리미</span>
+  <div class="footbrand">
+    <img src="logo.png" alt="" width="29" height="27">
+    <span><b>찬양대 알리미</b><small>인천영종교회</small></span>
+    <span class="ver" id="appVer" hidden></span>
+  </div>
   <div class="themepick" id="themePick" role="group" aria-label="화면 색 고르기"><span class="tplabel">화면 색</span></div>
 </footer>
 
@@ -2472,7 +2481,13 @@ function buildPrintSheet() {
     ))),
     el('div', { class: 'pslegend' }, el('b'), '이번 주 찬양 · 테두리 표시 = 주일이 아닌 일정'));
 }
-addEventListener('beforeprint', buildPrintSheet); // [인쇄] 버튼이든 브라우저 메뉴의 인쇄든 모두
+addEventListener('beforeprint', buildPrintSheet);
+
+// 화면 맨 아래 버전 표시: sw.js의 캐시 이름(choir-notice-vNN)을 그대로 읽음 — 버전은 sw.js 한 곳에서만 올리면 됨
+fetch('sw.js', { cache: 'no-store' }).then(r => r.text()).then(t => {
+  const v = t.match(/choir-notice-(v\d+)/)?.[1];
+  if (v) { $('appVer').textContent = v; $('appVer').hidden = false; }
+}).catch(() => {}); // [인쇄] 버튼이든 브라우저 메뉴의 인쇄든 모두
 // 모드를 다시 고르면 오늘 기준으로 돌아옴
 $('modeUpcoming').onclick = () => { mode = 'upcoming'; upcomingStart = nextSunday(); renderPublic(); };
 $('nowBtn').onclick = () => {
