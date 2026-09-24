@@ -413,7 +413,9 @@
     .psmeta { font-size: 8pt; color: #555; text-align: right; line-height: 1.5; }
     .pscols { column-count: 2; column-gap: 7mm; column-rule: .6px solid #cfcfcf; }
     .psmon { display: flex; justify-content: space-between; align-items: baseline; margin: 2.5mm 0 1mm; padding-bottom: .8mm; border-bottom: 1.4px solid var(--navy); color: var(--navy); font-weight: 800; font-size: 10.5pt; break-after: avoid; }
-    .psmon:first-child { margin-top: 0; }
+    /* 한 달치는 한 덩어리 — 쪽이나 단 끝에 자리가 모자라면 그 달을 통째로 다음 단·쪽으로 */
+    .psmonth { break-inside: avoid; }
+    .psmonth:first-child .psmon { margin-top: 0; }
     .psmon small { font-size: 7.5pt; color: #666; font-weight: 600; }
     .psrow { display: grid; grid-template-columns: 15mm 1fr; column-gap: 2.5mm; padding: 1.3mm 0; border-bottom: .5px dotted #bbb; break-inside: avoid; }
     .psd { font-weight: 800; font-size: 10pt; line-height: 1.2; }
@@ -2443,14 +2445,14 @@ function buildPrintSheet() {
     el('div', { class: 'pshead' },
       el('div', {}, el('div', { class: 'psorg' }, '인천영종교회 찬양대'), el('h1', {}, title)),
       el('div', { class: 'psmeta' }, `${list.length}곡 · ${TODAY.slice(2, 4)}. ${+TODAY.slice(5, 7)}. ${+TODAY.slice(8, 10)}. 기준`, el('br'), location.host)),
-    el('div', { class: 'pscols' }, [...months].flatMap(([k, rows]) => [
+    el('div', { class: 'pscols' }, [...months].map(([k, rows]) => el('div', { class: 'psmonth' }, // 한 달치를 한 덩어리로
       el('div', { class: 'psmon' }, `${multiYear ? yearLabel(k.slice(0, 4)) + ' ' : ''}${+k.slice(5)}월`, el('small', {}, `${rows.length}곡`)),
       ...rows.map(e => el('div', { class: 'psrow' + (e.date === next ? ' next' : '') },
         el('div', { class: 'psd' }, md(e.date), el('small', {}, `${DOW[dowOf(e.date)]}요일`)),
         el('div', {},
           el('div', { class: 'pst' }, e.title, typeOf(e) !== '주일 찬양' && el('span', { class: 'pskind' }, typeLabel(typeOf(e)))),
           el('div', { class: 'psp' }, [e.conductor && `지휘 ${e.conductor}`, e.pianist && `반주 ${e.pianist}`].filter(Boolean).join(' · ') || '\u00a0')))),
-    ])),
+    ))),
     el('div', { class: 'pslegend' }, el('b'), '이번 주 찬양 · 테두리 표시 = 주일이 아닌 일정'));
 }
 addEventListener('beforeprint', buildPrintSheet); // [인쇄] 버튼이든 브라우저 메뉴의 인쇄든 모두
