@@ -2485,8 +2485,8 @@ addEventListener('beforeprint', buildPrintSheet);
 
 // 화면 맨 아래 버전 표시: sw.js의 캐시 이름(choir-notice-vNN)을 그대로 읽음 — 버전은 sw.js 한 곳에서만 올리면 됨
 fetch('sw.js', { cache: 'no-store' }).then(r => r.text()).then(t => {
-  const v = t.match(/choir-notice-(v\d+)/)?.[1];
-  if (v) { $('appVer').textContent = v; $('appVer').hidden = false; }
+  const n = +t.match(/choir-notice-v(\d+)/)?.[1]; // 81 → v8.1, 80 → v8 (끝자리 0은 뺌)
+  if (n) { $('appVer').textContent = `v${Math.floor(n / 10)}${n % 10 ? '.' + n % 10 : ''}`; $('appVer').hidden = false; }
 }).catch(() => {}); // [인쇄] 버튼이든 브라우저 메뉴의 인쇄든 모두
 // 모드를 다시 고르면 오늘 기준으로 돌아옴
 $('modeUpcoming').onclick = () => { mode = 'upcoming'; upcomingStart = nextSunday(); renderPublic(); };
