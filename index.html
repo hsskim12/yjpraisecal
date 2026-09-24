@@ -152,15 +152,12 @@
   .viewhead h2 { margin: 0; font-size: 20px; line-height: 1.3; }
   .summary { color: var(--muted); font-size: 13px; }
 
-  /* 조회 모드 선택 */
-  .modebar { display: flex; gap: 8px; flex-wrap: nowrap; margin-bottom: 10px; }
-  .modebar .btn { white-space: nowrap; }
-  .modebar .btn[aria-pressed="true"] { background: var(--navy); border-color: var(--navy); color: #fff; }
-  /* 연습 영상은 일정 보기와 성격이 달라서 오른쪽 끝에 초록색으로 */
-  #modeAssembly { margin-left: auto; }                 /* 집회특송·연습 영상은 오른쪽 끝에 나란히 */
-  #modeAssembly, #modeRehearsal { background: var(--navy-soft); border-color: var(--line-strong); color: var(--navy); }
-  #modeAssembly:hover, #modeRehearsal:hover { background: #dbe4f3; }
-  #modeAssembly[aria-pressed="true"], #modeRehearsal[aria-pressed="true"] { background: var(--navy); border-color: var(--navy); color: #fff; }
+  /* 보기 고르기: 흰 알약, 고른 것만 남색 (집회 특송·연습 영상은 오른쪽 끝에 나란히) */
+  .modebar { display: flex; gap: 6px; flex-wrap: nowrap; margin-bottom: 10px; }
+  .modebar .btn { white-space: nowrap; min-height: 40px; padding: 8px 16px; border: 0; border-radius: 999px; background: #fff; color: #3d4757; font-size: 15px; font-weight: 700; box-shadow: 0 1px 2px rgb(16 24 40 / .06); }
+  .modebar .btn:hover { background: var(--navy-soft); }
+  .modebar .btn[aria-pressed="true"] { background: var(--navy); color: #fff; }
+  #modeAssembly { margin-left: auto; }
 
   /* 기간 이동 */
   .periodbar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
@@ -171,27 +168,7 @@
   .ympick { display: flex; gap: 6px; min-width: 0; }
   .ympick select { font: inherit; font-size: 16px; font-weight: 700; color: var(--ink); padding: 8px 4px 8px 10px; border: 1px solid var(--line); border-radius: 10px; background: #fff; min-width: 0; } /* 오른쪽 화살표를 글자 가까이 */
 
-  /* 연도별 보기: 한 줄 목록 */
-  /* 일정 목록의 한 줄 (다가오는 8주·월별·연도별 공통) */
-  .yrow { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 2px 12px; align-items: center; width: 100%; text-align: left; background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
-  .yrow:hover { border-color: var(--line-strong); }
-  /* '다음 찬양' 표시는 남색 — 주황은 누를 수 있는 링크(듣기·악보·실황)만 뜻하게 */
-  .yrow.next { border: 2px solid var(--navy); }
-  .list > .yrow + .yrow { margin-top: 6px; }
-  /* 날짜·요일·구분을 한 상자로 묶어 음영 */
-  .yrdatebox { grid-column: 1; grid-row: 1 / span 2; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; min-width: 86px; padding: 8px; background: var(--navy-soft); border-radius: 10px; }
-  .yrdatebox.special { background: var(--accent-soft); }   /* 주일이 아닌 일정 (집회·특별집회 등) */
-  .yrdate { font-size: 20px; font-weight: 800; color: var(--navy); white-space: nowrap; line-height: 1.2; }
-  .yrdow { font-size: 13px; font-weight: 700; color: var(--muted); }
-  .yrkind { margin-top: 2px; font-size: 13px; font-weight: 700; color: var(--navy); white-space: nowrap; }
-  .yrdatebox.special .yrdate, .yrdatebox.special .yrkind { color: var(--accent-dark); }
-  .yrtitle { grid-column: 2; grid-row: 1; font-size: 17px; font-weight: 700; overflow-wrap: anywhere; }
-  .yrchips { grid-row: 1; grid-column: 3; display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 6px; }
-  .yrmore { grid-row: 2; grid-column: 3; display: flex; justify-content: flex-end; }
-  .yrmore .detailbtn { margin-top: 4px; }
-  .yrchips .rowedit, .headchips .rowedit { width: 44px; height: 44px; font-size: 16px; }
-  .yrtitle .badge { margin-left: 6px; vertical-align: middle; }
-  .yrpeople { grid-column: 2; grid-row: 2; font-size: 14px; color: var(--muted); }
+  .headchips .rowedit { width: 44px; height: 44px; font-size: 16px; }
   .nowrap { white-space: nowrap; }   /* 지휘·반주 이름이 가운데서 잘리지 않게 */
 
   /* 연습 영상 목록 */
@@ -209,16 +186,19 @@
   .monthsep::before, .monthsep::after { content: ""; flex: 1; height: 1px; background: var(--line); }
 
   /* 일정 카드 */
-  .card { display: grid; grid-template-columns: 92px minmax(0, 1fr); background: var(--card); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+  .card { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 12px; padding: 10px 12px; background: var(--card); border: 1px solid var(--line); border-radius: 14px; }
   .list > * + * { margin-top: 12px; }   /* 카드 사이 간격 (구분선이 끼어도 동일) */
   .list > .monthsep { margin-top: 18px; }
   .card.next { border: 2px solid var(--navy); }
-  .date { background: var(--navy-soft); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; padding: 12px 4px; text-align: center; }
-  .date .dow { font-size: 14px; color: var(--muted); }
-  .date strong { font-size: 26px; color: var(--navy); line-height: 1.15; white-space: nowrap; }
-  .date .kind { font-size: 14px; background: #fff; border-radius: 6px; padding: 1px 6px; color: var(--navy); word-break: keep-all; line-height: 1.3; }
+  /* 날짜·요일·구분을 한 상자로 묶어 음영 (카드 안쪽 위에 붙음) */
+  .date { align-self: start; min-width: 86px; display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 8px; border-radius: 10px; background: var(--navy-soft); text-align: center; }
+  .date strong { font-size: 20px; font-weight: 800; color: var(--navy); line-height: 1.2; white-space: nowrap; }
+  .date .dow { font-size: 13px; font-weight: 700; color: var(--muted); }
+  .date .kind { margin-top: 2px; font-size: 13px; font-weight: 700; color: var(--navy); white-space: nowrap; }
+  .date.special { background: var(--accent-soft); }   /* 주일이 아닌 일정 (집회·특별집회 등) */
+  .date.special strong, .date.special .kind { color: var(--accent-dark); }
   .group.tight { margin-top: 6px; }  /* 지휘·반주 줄 바로 아래 파트 연습 버튼 */
-  .body { padding: 14px 16px; min-width: 0; }
+  .body { padding: 2px 0; min-width: 0; }
   .titlerow { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; }
   .titlerow h3 { margin: 0; font-size: 22px; overflow-wrap: anywhere; }
   .headchips .chip { max-width: 100%; overflow-wrap: anywhere; }
@@ -228,17 +208,11 @@
   .group { margin-top: 10px; }
   .label { margin: 0 0 6px; font-size: 16px; color: var(--muted); }
   .chips { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
-  .chips .detailbtn { margin-top: 0; margin-left: auto; }   /* 간단히 보기 — 파트 연습 줄 오른쪽 끝 */
   .chip { display: inline-flex; align-items: center; justify-content: center; gap: 5px; min-height: 44px; padding: 8px 14px; border-radius: 10px; background: var(--navy-soft); color: var(--navy); text-decoration: none; font-size: 15px; font-weight: 600; }
   .chip:hover { background: #dbe4f3; }
   .group .chips .chip { font-size: 17px; min-width: 60px; }    /* 파트 연습 버튼 */
   .chip.hl { background: var(--accent); color: #fff; }         /* 듣기·반주·악보·참고연주·내 파트 */
   .chip.hl:hover { background: var(--accent-dark); }
-  .cardfoot { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
-  .cardfoot .muted { margin: 0; }
-  .cardfoot .detailbtn { margin-top: 0; margin-left: auto; }
-  .detailbtn { margin-top: 12px; min-height: 44px; background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 8px 14px; font-size: 15px; font-weight: 600; color: var(--navy); }
-  .detailbtn:hover { background: var(--navy-soft); }
   /* 안내 메모 — 눈에 띄도록 버건디 계열 */
   .note { margin: 10px 0 0; white-space: pre-line; font-size: 14px; color: #8c1d2e; font-weight: 600; border-left: 3px solid #8c1d2e; padding-left: 10px; }
   .muted { margin: 8px 0 0; color: var(--muted); font-size: 14px; }
@@ -263,9 +237,16 @@
   .login { max-width: 420px; }
   .hint { font-weight: 400; color: var(--muted); font-size: 12px; }
   .login .hint, .edhint { margin: 0 0 12px; font-size: 14px; }
-  .status { font-size: 14px; margin: 0 0 12px; min-height: 1.5em; font-weight: 700; }
-  .status.ok { color: var(--ok); }
-  .status.err { color: var(--danger); }
+  /* 저장·삭제 결과 알림: 화면 위 가운데에 떠 있음 (아래쪽은 재생창·순서 저장 막대 자리) */
+  .status { position: fixed; top: calc(12px + env(safe-area-inset-top)); left: 50%; transform: translateX(-50%); z-index: 20;
+    width: max-content; max-width: calc(100% - 32px); display: flex; align-items: center; gap: 12px;
+    margin: 0; padding: 11px 14px 11px 16px; border-radius: 12px; background: var(--ink); color: #fff;
+    font-size: 14px; font-weight: 700; line-height: 1.45; box-shadow: 0 8px 24px rgb(0 0 0 / .22); }
+  .status:empty { display: none; }
+  .status.err { background: var(--danger); }
+  .status button { flex-shrink: 0; min-height: 36px; border: 1px solid rgb(255 255 255 / .5); border-radius: 9px; background: rgb(255 255 255 / .14); color: #fff; font-size: 14px; font-weight: 700; padding: 5px 12px; }
+  .status button:hover { background: rgb(255 255 255 / .26); }
+  .status .toastx { min-width: 36px; padding: 5px 0; }
   .toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 10px; }
   .toolbar .logout { margin-left: auto; color: var(--muted); }   /* 실수로 누르지 않게 멀리 */
   .help { margin: 0 0 12px; font-size: 14px; color: var(--muted); }
@@ -292,8 +273,11 @@
   .edtags { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; margin-top: 6px; }
   .edtags .edtag { font-size: 12px; line-height: 1.5; padding: 0 7px; border-radius: 6px; border: 1px solid transparent; background: var(--navy-soft); color: var(--navy); font-weight: 600; }
   .edtags .edtag.off { background: #fff; color: #707780; border: 1px dashed #cfd6e0; font-weight: 400; }
-  .edtags .edgrp { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px; }
-  .edtags .edgroup { font-size: 12px; color: var(--muted); }
+  .edtags .edtag.part { background: var(--warn-bg); color: var(--ink); border-color: var(--warn-line); } /* 일부만 입력됨 */
+  /* 방금 저장한 줄 */
+  .card.justsaved, .rrow.justsaved, .reslot.justsaved .recard { box-shadow: 0 0 0 3px var(--accent); }
+  .pasthead { margin: 28px 0 4px; font-size: 17px; }
+  #edSearchSummary { margin: -8px 0 10px; }
   .edbtns { display: flex; gap: 6px; flex-shrink: 0; }
   /* 순서 바꾸기 */
   /* 곡을 옮기거나 골랐을 때 화면 아래에 뜨는 막대 (목록이 밀리지 않게 아래에 고정) */
@@ -393,47 +377,42 @@
   .themebtn[aria-pressed="true"] { border-color: var(--navy); box-shadow: inset 0 0 0 1px var(--navy); }
   /* 연도별 목록 인쇄: 목록만 깔끔하게 */
   @media print {
-    .top, .kakaobar, .staleMsg, .notices, .searchrow, .mypart, .hero, .modebar, .periodbar, .emptySundays, footer, .player, .detailbtn { display: none !important; }
+    .top, .kakaobar, .staleMsg, .notices, .searchrow, .mypart, .hero, .modebar, .periodbar, .emptySundays, footer, .player { display: none !important; }
     body { background: #fff; zoom: 1; }
     main.wrap { padding: 0; }
     /* 2단 인쇄: 목록을 왼쪽 단부터 채우고, 한 곡이 두 단에 걸쳐 잘리지 않게 */
     .list { column-count: 2; column-gap: 28px; column-rule: 1px solid #ddd; }
     .list > * + * { margin-top: 0; }
     .list > .monthsep { margin: 10px 0 4px; break-after: avoid; }
-    .yrchips { display: none !important; }
-    .yrow { grid-template-columns: auto minmax(0, 1fr); gap: 0 10px; border: 0; border-bottom: 1px solid #ccc; border-radius: 0; padding: 5px 0; break-inside: avoid; }
-    .yrdatebox, .yrdatebox.special { background: none; padding: 0; min-width: 64px; }
-    .yrow.next { border: 0; border-bottom: 1px solid #ccc; }
-    .yrdate { font-size: 13px; }
-    .yrdow, .yrkind, .yrpeople { font-size: 11px; }
-    .yrtitle { font-size: 14px; }
-    .card { break-inside: avoid; }
+    /* 카드는 날짜·제목·지휘반주만 (버튼·메모는 종이에서 쓸모없음) */
+    .card, .card.next { grid-template-columns: 64px minmax(0, 1fr); gap: 0 8px; padding: 5px 0; border: 0; border-bottom: 1px solid #ccc; border-radius: 0; break-inside: avoid; }
+    .card .date, .card .date.special { min-width: 0; background: none; padding: 0; }
+    .card .body { padding: 0; }
+    .card .headchips, .card .group, .card .note, .card .muted, .card .badge { display: none !important; }
+    .date strong { font-size: 13px; }
+    .date .dow, .date .kind, .card .label { font-size: 11px; margin: 0; }
+    .titlerow h3 { font-size: 14px; }
   }
   @media (max-width: 480px) {
-    .periodmid { flex: 1; }
+    /* 연도·기간 칸이 찌그러지지 않게 — 자리가 모자라면 [최근부터 보기]·[인쇄]가 아랫줄로 */
+    .periodmid { flex: 1; min-width: max-content; }
     /* 좁은 화면에서도 보기 버튼 네 개가 한 줄에 들어가도록 */
     .mypart { gap: 5px; }
     .mypart .mphint { flex: 0 0 100%; }   /* 안내 문구만 아랫줄로, 파트 버튼은 한 줄에 */
     /* 다섯 개가 360px 화면에서도 한 줄에 들어가도록 좌우 여백과 글자를 줄임 */
     .modebar { gap: 4px; flex-wrap: wrap; }
-    .modebar .btn { padding: 8px 5px; font-size: 12px; }
-    .body { padding: 12px 10px; }
-    /* 파트 연습 S·A·T·B는 한 줄에, [간단히 보기]는 아랫줄 오른쪽 */
-    .card { grid-template-columns: 76px minmax(0, 1fr); }
+    .modebar .btn { padding: 8px 9px; font-size: 13px; }
+    /* 파트 연습 S·A·T·B는 한 줄에 */
+    .card { gap: 8px; padding: 8px; }
+    .date { min-width: 68px; padding: 8px 4px; }
+    .date strong { font-size: 17px; }
+    .date .dow, .date .kind { font-size: 12px; }
     .group .chips { gap: 5px; }
     .group .chips .chip { font-size: 16px; min-width: 0; flex: 1 1 0; padding: 8px 2px; order: 0; }
-    .group .chips::after { content: ''; flex: 0 0 100%; height: 0; order: 1; } /* 여기서 줄바꿈 */
-    .group .chips .detailbtn { order: 2; flex: 0 0 auto; margin: 6px 0 0 auto; }
-    /* 휴대폰: 제목·지휘·반주가 가로 전체를 쓰고, 버튼은 아랫줄로 */
-    .yrow { grid-template-columns: auto minmax(0, 1fr) auto; gap: 2px 8px; padding: 8px; align-items: start; }
-    .yrdatebox { grid-row: 1 / span 3; min-width: 68px; padding: 8px 4px; }
-    .yrdate { font-size: 17px; }
-    .yrdow, .yrkind { font-size: 12px; }
-    .yrtitle { grid-column: 2 / span 2; grid-row: 1; }
-    .yrpeople { grid-column: 2 / span 2; grid-row: 2; }
-    .yrchips { grid-column: 2 / span 2; grid-row: 3; justify-content: flex-start; margin-top: 6px; }
-    .yrmore { grid-column: 2 / span 2; grid-row: 4; justify-content: flex-end; margin-top: 4px; }
-    .yrchips .chip { padding: 8px 10px; }
+    /* 연습 영상 줄: 썸네일을 줄이고 [수정][삭제]는 아랫줄 오른쪽으로 (제목이 눌리지 않게) */
+    .rrow { flex-wrap: wrap; }
+    .rthumb { width: 96px; }
+    .rrow .edbtns { flex: 0 0 100%; justify-content: flex-end; }
     /* 편집 목록: 입력 표시를 넓게 쓰고 버튼은 아래 오른쪽으로 */
     .reslot { grid-template-columns: 56px minmax(0, 1fr); gap: 6px; }
     .recard { flex-wrap: wrap; gap: 6px 8px; }
@@ -515,8 +494,8 @@
 
       <div class="modebar" id="modeBar" role="group" aria-label="조회 모드">
         <button type="button" class="btn" id="modeUpcoming" aria-pressed="true"></button>
-        <button type="button" class="btn" id="modeMonth" aria-pressed="false">월별 보기</button>
-        <button type="button" class="btn" id="modeYear" aria-pressed="false">연도별 보기</button>
+        <button type="button" class="btn" id="modeMonth" aria-pressed="false">월별</button>
+        <button type="button" class="btn" id="modeYear" aria-pressed="false">연도별</button>
         <button type="button" class="btn" id="modeAssembly" aria-pressed="false">집회 특송</button>
         <button type="button" class="btn" id="modeRehearsal" aria-pressed="false">연습 영상</button>
       </div>
@@ -566,7 +545,8 @@
     <div id="edBody">
       <details class="help">
         <summary>도움말 — 편집·순서 바꾸기 방법</summary>
-        <p>저장하거나 삭제하면 사이트에 바로 반영됩니다. 영상·악보 표시에서 색이 칠해진 것은 입력됨, 점선은 비어 있음입니다.</p>
+        <p>저장하거나 삭제하면 사이트에 바로 반영됩니다. 삭제한 뒤 잠깐 뜨는 [되돌리기]로 살릴 수 있어요.
+          영상·악보 표시에서 색이 칠해진 것은 입력됨, 노란색은 일부만 입력됨, 점선은 비어 있음입니다.</p>
         <p><b>순서 바꾸기:</b> 날짜는 그대로 두고 곡만 끌어서 다른 날짜에 놓으세요 (휴대폰은 ⠿를 잡고). 곡이 있는 날짜에 놓으면 사이의 곡들이 한 칸씩 밀립니다.
           여러 곡은 한 번씩 눌러 파란색으로 고른 뒤 함께 끌면 됩니다. 옮긴 뒤 [저장]을 눌러야 반영돼요.</p>
         <p><b>키보드로 옮기기:</b> Tab으로 ⠿까지 간 뒤 <b>Alt+↑ / Alt+↓</b>로 한 칸씩 옮기고, <b>스페이스</b>로 고르거나 풀 수 있습니다.</p>
@@ -578,13 +558,22 @@
         <button type="button" class="btn" id="pastBtn" hidden></button>
         <button type="button" class="btn logout" id="logoutBtn">로그아웃</button>
       </div>
-      <p class="status" id="edStatus" role="status"></p>
       <!-- 곡을 옮기거나 골랐을 때만 나타나는 막대 -->
       <div class="reactions" id="reBar" hidden>
         <span class="summary" id="reSummary"></span>
         <button type="button" class="btn" id="reCancel">되돌리기</button>
         <button type="button" class="btn primary" id="reSave">저장</button>
       </div>
+      <div class="searchrow">
+        <span class="glass" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.6-3.6"></path>
+          </svg>
+        </span>
+        <input type="search" id="edSearch" placeholder="고칠 곡 찾기 · 제목 · 지휘자 · 반주자" aria-label="편집할 일정 찾기 (지난 일정 포함)" autocomplete="off" enterkeyhint="search">
+        <button type="button" class="clearbtn" id="edSearchClear" aria-label="검색어 지우기" title="검색어 지우기" hidden>✕</button>
+      </div>
+      <p class="summary" id="edSearchSummary" hidden></p>
       <div id="edList"></div>
     </div>
   </div>
@@ -599,6 +588,9 @@
   <span>♪ 인천영종교회 찬양대 알리미</span>
   <div class="themepick" id="themePick" role="group" aria-label="화면 색 고르기"><span class="tplabel">화면 색</span></div>
 </footer>
+
+<!-- 저장·삭제 결과 알림 — 어디까지 내려가 있든 화면 위에 떠서 보임 -->
+<div class="status" id="edStatus" role="status"></div>
 
 <!-- 영상 재생창 (유튜브 버튼을 누르면 열림) -->
 <div class="player" id="player" hidden>
@@ -710,7 +702,7 @@
 <dialog id="dlg">
   <form id="form" novalidate>
     <div class="dlghead formhead">
-      <h3 id="formTitle"></h3>
+      <h3 id="formTitle" tabindex="-1"></h3>
       <div class="actions">
         <button type="button" class="btn" id="cancelTop">취소</button>
         <button type="submit" class="btn primary">저장</button>
@@ -736,7 +728,7 @@
       <textarea name="refs" rows="3" placeholder="https://youtu.be/...&#10;합창단 연주 https://youtu.be/..."></textarea>
     </label>
     <div class="refsearch"><button type="button" class="btn" id="refSearchBtn">🔍 유튜브에서 참고연주 찾기</button></div>
-    <label class="field" for="live">실황 보기 링크 <span class="hint">(선택 · 우리 찬양대가 실제로 부른 유튜브 영상)</span></label>
+    <label class="field" for="live">실황 링크 <span class="hint">(선택 · 우리 찬양대가 실제로 부른 유튜브 영상)</span></label>
     <div class="partrow liverow">
       <input type="url" id="live" name="live" placeholder="https://youtu.be/...">
       <button type="button" class="iconbtn" id="livePlay" title="실황 영상 들어 보기" aria-label="실황 영상 들어 보기">▶</button>
@@ -784,8 +776,15 @@ const utc = key => Date.UTC(+key.slice(0, 4), +key.slice(5, 7) - 1, +key.slice(8
 const dayKey = ms => new Date(ms).toISOString().slice(0, 10);
 const dowOf = key => new Date(utc(key)).getUTCDay();
 const fmtDate = key => `${+key.slice(5, 7)}월 ${+key.slice(8, 10)}일 (${DOW[dowOf(key)]})`;
+const yearLabel = y => `${String(y).slice(-2)}년`; // 화면의 연도는 두 자리로 (2026년 → 26년)
 const periodDate = (key, year = '') => `${key.slice(0, 4) === year ? '' : +key.slice(0, 4) + '. '}${+key.slice(5, 7)}. ${+key.slice(8, 10)}.`;
 const nextSunday = () => dayKey(utc(TODAY) + ((7 - dowOf(TODAY)) % 7) * 864e5); // 오늘이 일요일이면 오늘
+// 곡이 아직 없는 가장 가까운 주일 (새 일정·복제의 기본 날짜 — 저장할 때 중복 경고가 뜨지 않게)
+function freeSunday() {
+  let d = nextSunday();
+  while (events.some(e => e.date === d)) d = dayKey(utc(d) + 7 * 864e5);
+  return d;
+}
 const typeOf = ev => ev.type || (dowOf(ev.date) === 0 ? '주일 찬양' : '평일 일정'); // 구분이 없는 예전 일정
 
 function sundays(y, m) {
@@ -847,7 +846,6 @@ let upcomingStart = nextSunday();
 let query = '';         // 검색어
 let showPast = false;   // 편집 화면에서 지난 일정 펼침
 let saving = false;     // 저장·삭제를 서버에 보내는 중
-const expanded = new Set(); // 목록에서 '자세히 보기'로 펼쳐 둔 일정
 // 연도별 보기·연습 영상의 정렬 (참이면 최근부터). 이 기기에만 저장
 // 연도별은 달력 차례대로, 연습 영상은 새로 올린 것부터가 기본
 let newestFirst = { year: false, rehearsal: true };
@@ -1011,7 +1009,7 @@ const embed = (id, start, title) => el('iframe', {
   allowfullscreen: '', referrerpolicy: 'strict-origin-when-cross-origin',
 });
 
-// 유튜브 영상 주소일 때만 그 주소를 돌려줌 (실황 보기 버튼은 유튜브 영상일 때만 보이게)
+// 유튜브 영상 주소일 때만 그 주소를 돌려줌 (실황 버튼은 유튜브 영상일 때만 보이게)
 const liveUrl = ev => { const u = safeUrl(ev.live); return youtube(u) ? u : ''; };
 
 function play(yt, url, caption) {
@@ -1046,9 +1044,6 @@ const editBtn = ev => el('button', {
   onclick: e => { e.stopPropagation(); openForm(ev); },
 }, '✎');
 
-const detailBtn = (label, onclick) => el('button', { type: 'button', class: 'detailbtn', onclick }, label);
-
-// 일정 전체 카드 (맨 위 강조 카드, 목록에서 한 줄을 눌러 펼쳤을 때). toggle: '간단히 보기' 버튼 표시
 // "지휘 김흥수" / "반주 심가영"을 각각 묶어서, 줄이 바뀌면 사람 단위로 나뉘게 함
 const peopleEls = e => [e.conductor && `지휘 ${e.conductor}`, e.pianist && `반주 ${e.pianist}`]
   .filter(Boolean).flatMap((t, i) => (i ? [' · '] : []).concat(el('span', { class: 'nowrap' }, t)));
@@ -1058,7 +1053,7 @@ function heroSong(ev) {
   const people = peopleEls(ev);
   const links = [
     ...HEAD_PARTS.map(h => ({ label: h.label, url: safeUrl(ev.parts?.[h.part]), hi: h.part === '전체', bare: true })).filter(x => x.url),
-    ...(liveUrl(ev) ? [{ label: '실황 보기', url: liveUrl(ev), bare: true }] : []),
+    ...(liveUrl(ev) ? [{ label: '실황', url: liveUrl(ev), bare: true }] : []),
     ...linkList(ev.scores, '악보').map(x => ({ ...x, bare: true })),
     ...linkList(ev.refs, '참고').map(x => ({ ...x, bare: true })),
   ];
@@ -1075,14 +1070,14 @@ function heroSong(ev) {
     token && el('div', { class: 'heroedit' }, editBtn(ev)));
 }
 
-function card(ev, badge, toggle) {
+// 목록의 일정 한 개 (미리보기·월별·연도별·집회 특송 공통). 날짜 상자는 예전 한 줄 목록 모양 그대로
+function card(ev, badge) {
   const past = ev.date < TODAY;
   const people = peopleEls(ev);
-  const collapse = detailBtn('간단히 보기 ▴', () => { expanded.delete(ev.id); renderPublic(); });
-  // 제목 오른쪽: 듣기·반주·악보·참고연주
+  // 제목 오른쪽: 듣기·반주·실황·악보·참고연주
   const headChips = [
     ...HEAD_PARTS.map(h => ({ label: h.label, url: safeUrl(ev.parts?.[h.part]), hl: true })).filter(x => x.url),
-    ...(liveUrl(ev) ? [{ label: '실황 보기', url: liveUrl(ev), hl: true, live: true }] : []),
+    ...(liveUrl(ev) ? [{ label: '실황', url: liveUrl(ev), hl: true }] : []),
     ...linkList(ev.scores, '악보'),
     ...linkList(ev.refs, '참고'),
   ];
@@ -1090,27 +1085,24 @@ function card(ev, badge, toggle) {
   const partChips = PARTS.filter(p => !HEAD_PARTS.some(h => h.part === p))
     .map(p => ({ label: PART_SHORT[p] || p, full: p, url: safeUrl(ev.parts?.[p]), hl: p === myPart })).filter(x => x.url);
 
-  return el('article', { class: 'card' + (past ? ' past' : '') + (badge ? ' next' : '') },
-    el('div', { class: 'date' },
-      el('span', { class: 'dow' }, DOW[dowOf(ev.date)]),
+  return el('article', { class: 'card' + (past ? ' past' : '') + (badge ? ' next' : '') + (justSaved(ev.id) ? ' justsaved' : ''), 'data-id': ev.id },
+    el('div', { class: 'date' + (typeOf(ev) !== '주일 찬양' ? ' special' : '') },
       el('strong', {}, `${+ev.date.slice(5, 7)}/${+ev.date.slice(8, 10)}`),
+      el('span', { class: 'dow' }, `(${DOW[dowOf(ev.date)]})`),
       el('span', { class: 'kind' }, typeLabel(typeOf(ev)))),
     el('div', { class: 'body' },
       el('div', { class: 'titlerow' }, el('h3', {}, ev.title),
         badge && el('span', { class: 'badge' }, badge),
         past && el('span', { class: 'done' }, '지난 찬양'),
-        (headChips.length > 0 || (toggle && token)) && el('div', { class: 'headchips' },
-          headChips.map(x => chip(x, x.icon, ev.title)),
-          toggle && token && editBtn(ev))),
+        (headChips.length > 0 || token) && el('div', { class: 'headchips' },
+          headChips.map(x => chip(x, null, ev.title)),
+          token && editBtn(ev))), // 관리자로 로그인했을 때만 보이는 수정 버튼
       people.length > 0 && el('p', { class: 'label' }, people),   // 지휘·반주를 곡 제목 아래로
       partChips.length > 0 && el('div', { class: 'group' + (people.length ? ' tight' : '') },
         !people.length && el('p', { class: 'label' }, '파트 연습'),
-        el('div', { class: 'chips' }, partChips.map(x => chip(x, '▶', ev.title)),
-          toggle && collapse)), // 파트 연습 버튼과 같은 줄 오른쪽 끝
+        el('div', { class: 'chips' }, partChips.map(x => chip(x, '▶', ev.title)))),
       ev.note && el('p', { class: 'note' }, ev.note),
-      !partChips.length && el('div', { class: 'cardfoot' },   // 파트 영상이 없을 때도 오른쪽 끝에
-        !headChips.length && !ev.note && el('p', { class: 'muted' }, '연습 자료 준비 중'),
-        toggle && collapse)));
+      !headChips.length && !partChips.length && !ev.note && el('p', { class: 'muted' }, '연습 자료 준비 중')));
 }
 
 // 글 속의 주소를 눌러서 열 수 있게 바꿈 (문장부호는 링크 밖에 남김)
@@ -1165,7 +1157,7 @@ async function shareEvents(list) {
       return url && `${p === '전체' ? '듣기' : p}: ${url}`;
     }).filter(Boolean),
     ...[...linkList(e.scores, '악보'), ...linkList(e.refs, '참고연주')].map(x => `${x.label}: ${x.url}`),
-    liveUrl(e) && `실황 보기: ${liveUrl(e)}`,
+    liveUrl(e) && `실황: ${liveUrl(e)}`,
   ].filter(Boolean).join('\n\n')).join('\n\n\n'); // 링크마다 빈 줄을 두어 누를 때 옆 링크가 눌리지 않게
   const url = location.origin + '/';
   try {
@@ -1208,7 +1200,7 @@ const rehearsalName = r => r.title || autoRehearsalName(r.date);
 
 function rehearsalRow(r) {
   const yt = youtube(safeUrl(r.url));
-  return el('div', { class: 'rrow' },
+  return el('div', { class: 'rrow' + (justSaved(r.id) ? ' justsaved' : ''), 'data-id': r.id },
     el('a', {
       class: 'rthumb', href: r.url, target: '_blank', rel: 'noopener',
       'aria-label': `${rehearsalName(r)} 재생`, // 그림만 있는 링크라 이름을 따로 붙임
@@ -1219,7 +1211,7 @@ function rehearsalRow(r) {
         class: 'rname', href: r.url, target: '_blank', rel: 'noopener',
         onclick: yt && (e => { e.preventDefault(); play(yt, r.url, rehearsalName(r)); }),
       }, rehearsalName(r)),
-      el('small', {}, `${r.date.slice(0, 4)}년 ${fmtDate(r.date)}`)),
+      el('small', {}, `${yearLabel(r.date.slice(0, 4))} ${fmtDate(r.date)}`)),
     token && el('div', { class: 'edbtns' },
       el('button', { type: 'button', class: 'btn', onclick: () => openRehearsal(r) }, '수정'),
       el('button', { type: 'button', class: 'btn danger', onclick: () => removeRehearsal(r) }, '삭제')));
@@ -1247,7 +1239,7 @@ function openRehearsal(r) {
   showRehearsalHint();
   $('rErr').hidden = true;
   closePartPreviews();
-  $('rDlg').showModal();
+  openDlg($('rDlg'));
 }
 
 // 고른 날짜에 맞춰 "비우면 …으로 표시" 안내를 바꿔 줌
@@ -1262,7 +1254,12 @@ function removeRehearsal(r) {
   if (!confirm(`「${rehearsalName(r)}」 연습 영상을 목록에서 지울까요?\n유튜브 영상은 지워지지 않습니다.`)) return;
   mutate({ action: 'rdelete', token, id: r.id },
     () => { rehearsals = rehearsals.filter(x => x.id !== r.id); },
-    '연습 영상을 지웠습니다.');
+    '연습 영상을 지웠습니다.',
+    { label: '되돌리기', run: () => {
+      mutate({ action: 'rsave', token, id: r.id, item: { date: r.date, title: r.title || '', url: r.url } },
+        () => { rehearsals = [...rehearsals.filter(x => x.id !== r.id), r].sort((a, b) => b.date.localeCompare(a.date)); }, '연습 영상을 되돌렸습니다.');
+      markSaved(r.id);
+    } });
 }
 
 $('rForm').addEventListener('submit', e => {
@@ -1279,8 +1276,9 @@ $('rForm').addEventListener('submit', e => {
   mutate({ action: 'rsave', token, id, item },
     () => { rehearsals = [...rehearsals.filter(x => x.id !== id), { ...item, id }].sort((a, b) => b.date.localeCompare(a.date)); },
     '연습 영상을 저장했습니다.');
+  markSaved(id);
 });
-$('rCancel').onclick = $('rCancel2').onclick = () => $('rDlg').close();
+$('rCancel').onclick = $('rCancel2').onclick = () => askClose($('rDlg'));
 // 넣은 주소를 창 안에서 바로 확인 (일정 창의 ▶와 같은 방식)
 $('rPlay').onclick = () => previewLink($('pv-rehearsal'), $('rForm').url, '연습');
 $('rDlg').addEventListener('close', closePartPreviews);
@@ -1323,7 +1321,7 @@ function buildView(heroEvents = []) {
     const list = events.filter(e => ASSEMBLY_TYPES.includes(typeOf(e)) && inPeriod(e.date));
     return {
       list,
-      title: `${viewY}년 ${from}-${to}월 집회 특송`,
+      title: `${yearLabel(viewY)} ${from}-${to}월 집회 특송`,
       summary: `${list.length}곡 등록`,
       empty: '이 기간에 등록된 집회 특송이 없습니다.',
       emptySundays: [],
@@ -1334,7 +1332,7 @@ function buildView(heroEvents = []) {
     if (newestFirst.year) list.reverse(); // events는 날짜순이므로 뒤집으면 최근부터
     return {
       list,
-      title: `${viewY}년 찬양 일정`,
+      title: `${yearLabel(viewY)} 찬양 일정`,
       summary: `${list.length}곡 등록`,
       empty: '이 해에 등록된 찬양이 없습니다.',
       emptySundays: [],
@@ -1346,7 +1344,7 @@ function buildView(heroEvents = []) {
   const taken = new Set(monthEvents.filter(e => typeOf(e) === '주일 찬양').map(e => e.date));
   return {
     list,
-    title: `${viewY}년 ${viewM}월 찬양 일정`,
+    title: `${yearLabel(viewY)} ${viewM}월 찬양 일정`,
     summary: `${list.length}곡 등록 · 주일 ${suns.length}회`,
     empty: '이 달에 등록된 찬양이 없습니다.',
     emptySundays: suns.filter(k => !taken.has(k)),
@@ -1378,7 +1376,7 @@ function renderPublic() {
   const shownRehearsals = rehearsals.filter(r => inPeriod(r.date));
   if (!newestFirst.rehearsal) shownRehearsals.reverse(); // rehearsals는 최근부터라 뒤집으면 예전부터
   const view = rehearsalMode
-    ? { list: [], title: `${viewY}년 ${periodMonths().join('-')}월 연습 영상`, summary: `${shownRehearsals.length}개`, empty: '', emptySundays: [] }
+    ? { list: [], title: `${yearLabel(viewY)} ${periodMonths().join('-')}월 연습 영상`, summary: `${shownRehearsals.length}개`, empty: '', emptySundays: [] }
     : buildView(heroEvents);
   $('viewTitle').textContent = view.title;
   $('summary').textContent = view.summary;
@@ -1388,9 +1386,9 @@ function renderPublic() {
       const month = e.date.slice(0, 7);
       const yearList = mode === 'year' && !query;
       const separator = i === 0 || month !== view.list[i - 1].date.slice(0, 7) // 첫 달도 빠뜨리지 않고
-        ? [el('h3', { class: 'monthsep' }, yearList ? `${+month.slice(5)}월` : `${+month.slice(0, 4)}년 ${+month.slice(5)}월`)] : [];
+        ? [el('h3', { class: 'monthsep' }, yearList ? `${+month.slice(5)}월` : `${yearLabel(month.slice(0, 4))} ${+month.slice(5)}월`)] : [];
       const b = e.date === nextDate ? badge : null;
-      return [...separator, expanded.has(e.id) ? card(e, b, true) : listRow(e, b)];
+      return [...separator, card(e, b)];
     })
     : [el('p', { class: 'empty' }, view.empty)]));
   // 일정이 하나도 없으면 "등록된 찬양이 없습니다" 안내만 보여 줌
@@ -1425,7 +1423,7 @@ function renderPublic() {
   // 연도 선택지: 일정이 있는 해 ~ 올해 앞뒤 1년
   const years = events.map(e => +e.date.slice(0, 4)).concat(+TODAY.slice(0, 4), viewY);
   const fromY = Math.min(...years) - 1, toY = Math.max(...years) + 1;
-  $('yearSel').replaceChildren(...Array.from({ length: toY - fromY + 1 }, (_, i) => el('option', { value: fromY + i }, `${fromY + i}년`)));
+  $('yearSel').replaceChildren(...Array.from({ length: toY - fromY + 1 }, (_, i) => el('option', { value: fromY + i }, yearLabel(fromY + i))));
   $('yearSel').value = viewY;
   $('monthSel').value = viewM;
 }
@@ -1434,29 +1432,6 @@ function renderPublic() {
 function clearSearch() {
   query = '';
   $('searchInput').value = '';
-}
-
-// 연도별 보기의 한 줄: 날짜 · 구분 · 제목 (지휘·반주). 누르면 카드로 펼쳐 영상·악보를 봄
-// 목록의 한 줄: 날짜 · 구분 · 제목 (지휘·반주) · [듣기][▶ 내 파트]. 줄을 누르면 전체 카드로 펼침
-function listRow(e, badge) {
-  const people = peopleEls(e);
-  const quick = [
-    { label: '듣기', url: safeUrl(e.parts?.['전체']), hl: true },
-    myPart && { label: PART_SHORT[myPart] || myPart, full: myPart, url: safeUrl(e.parts?.[myPart]), hl: true, icon: '▶' },
-    { label: '실황', full: '실황 보기', url: liveUrl(e), hl: true, live: true }, // 우리 찬양대가 부른 영상 (유튜브일 때만)
-  ].filter(x => x && x.url);
-  const open = () => { expanded.add(e.id); renderPublic(); };
-  return el('div', { class: 'yrow' + (e.date < TODAY ? ' past' : '') + (badge ? ' next' : '') },
-    el('span', { class: 'yrdatebox' + (typeOf(e) !== '주일 찬양' ? ' special' : '') },
-      el('strong', { class: 'yrdate' }, `${+e.date.slice(5, 7)}/${+e.date.slice(8, 10)}`),
-      el('small', { class: 'yrdow' }, `(${DOW[dowOf(e.date)]})`),
-      el('span', { class: 'yrkind' }, typeLabel(typeOf(e)))),
-    el('span', { class: 'yrtitle' }, e.title, badge && el('span', { class: 'badge' }, badge)),
-    (quick.length > 0 || token) && el('span', { class: 'yrchips' },
-      quick.map(x => chip(x, x.icon, e.title, x.live && 'live')),
-      token && editBtn(e)), // 관리자로 로그인했을 때만 보이는 수정 버튼
-    el('span', { class: 'yrmore' }, detailBtn('자세히 보기 ▾', open)),
-    people.length > 0 && el('span', { class: 'yrpeople' }, people));
 }
 
 function showYear(y) {
@@ -1496,12 +1471,17 @@ $('loginForm').addEventListener('submit', async e => {
 });
 
 /* ===== 편집 화면 ===== */
-function flash(msg, isErr) {
+// 화면 위에 뜨는 알림. undo: { label, run } — 삭제처럼 되돌릴 수 있는 일에 버튼을 붙임
+// 실패 알림은 직접 닫을 때까지 남겨 둠 (놓치면 저장된 줄 알 수 있으므로)
+function flash(msg, isErr, undo) {
   const s = $('edStatus');
-  s.textContent = msg;
-  s.className = 'status ' + (isErr ? 'err' : 'ok');
+  const hide = () => { clearTimeout(flash.t); s.replaceChildren(); };
+  s.className = 'status' + (isErr ? ' err' : '');
+  s.replaceChildren(...[el('span', {}, msg), // 없는 버튼(false·undefined)이 글자로 찍히지 않게 걸러 냄
+    undo && el('button', { type: 'button', onclick: () => { hide(); undo.run(); } }, undo.label),
+    isErr && el('button', { type: 'button', class: 'toastx', 'aria-label': '알림 닫기', onclick: hide }, '✕')].filter(Boolean));
   clearTimeout(flash.t);
-  if (!isErr) flash.t = setTimeout(() => { s.textContent = ''; }, 4000);
+  if (!isErr) flash.t = setTimeout(hide, undo ? 8000 : 4000);
 }
 
 // 로그인 만료면 로그인 화면으로, 그 밖의 오류는 편집 화면에 안내
@@ -1511,21 +1491,22 @@ function handleErr(err) {
     setToken(null);
     route();
     loginError(err.message);
+    flash(err.message, true); // 목록에서 고치다 만료된 경우에도 보이게
   } else {
     flash(err.message, true);
   }
 }
 
-function applyResult(res, msg) {
+function applyResult(res, msg, undo) {
   applyData(res);
   saveCache();
   route();
-  flash(msg);
+  flash(msg, false, undo);
 }
 
 // 구글 응답이 느려도 기다리지 않도록, 화면에 먼저 반영하고 저장은 뒤에서 처리.
 // 실패하면 원래대로 되돌리고 알려 줌 (같은 요청을 다시 보내도 중복되지 않음)
-async function mutate(body, applyNow, okMsg) {
+async function mutate(body, applyNow, okMsg, undo) {
   const prevEvents = events, prevNotices = notices, prevRehearsals = rehearsals;
   saving = true; // 저장이 끝날 때까지 자동 새로고침을 멈춤 (방금 넣은 내용이 깜빡이지 않도록)
   applyNow();
@@ -1533,7 +1514,7 @@ async function mutate(body, applyNow, okMsg) {
   route();
   flash('화면에는 반영했습니다. 서버에 저장하는 중입니다…');
   try {
-    applyResult(await api(body), okMsg);
+    applyResult(await api(body), okMsg, undo);
   } catch (err) {
     events = prevEvents;
     notices = prevNotices;
@@ -1575,6 +1556,16 @@ const reChanged = () => board.slots.filter((s, i) => (board.contents[i]?.srcId |
 const pending = () => !!board && reChanged().length > 0;
 
 const md = key => `${+key.slice(5, 7)}/${+key.slice(8, 10)}`;
+// 방금 저장한 줄: 화면 가운데로 가져와 잠깐 테두리로 표시 (서버 답을 받아 다시 그려도 유지)
+let savedMark = { id: null, until: 0 };
+const justSaved = id => id === savedMark.id && Date.now() < savedMark.until;
+function markSaved(id) {
+  savedMark = { id, until: Date.now() + 2500 };
+  const row = document.querySelector(`[data-id="${CSS.escape(id)}"]`);
+  if (row && row.offsetParent) { row.classList.add('justsaved'); row.scrollIntoView({ block: 'center' }); }
+  clearTimeout(markSaved.t);
+  markSaved.t = setTimeout(() => document.querySelectorAll('.justsaved').forEach(x => x.classList.remove('justsaved')), 2500);
+}
 const dateBox = (date, type) => el('div', { class: 'eddate' + (type !== '주일 찬양' ? ' special' : '') },
   el('strong', {}, md(date)), el('small', {}, `(${DOW[dowOf(date)]})`), el('small', { class: 'kind' }, typeLabel(type)));
 const person = (label, name) => el('span', { class: name ? '' : 'missing' }, `${label} ${name || '없음'}`);
@@ -1595,7 +1586,7 @@ function slotRow(i, locked) {
   }
   const moved = c.srcId !== s.id;
   const ev = events.find(e => e.id === c.srcId);
-  return el('div', { class: 'reslot' + (moved ? ' moved' : '') + (sel.has(c.srcId) ? ' selected' : '') },
+  return el('div', { class: 'reslot' + (moved ? ' moved' : '') + (sel.has(c.srcId) ? ' selected' : '') + (justSaved(c.srcId) ? ' justsaved' : ''), 'data-id': c.srcId },
     dateBox(s.date, s.type),
     el('div', {
       class: 'recard', onpointerdown: e => startDrag(e, i),
@@ -1634,39 +1625,60 @@ function moveByKey(e, i) {
   }
 }
 
+// 옮길 수 없는 줄 (지난 일정·검색 결과): 날짜 상자 + 내용 + [수정][복제][삭제]
+const staticRow = (ev, locked) => el('div', { class: 'reslot past' + (justSaved(ev.id) ? ' justsaved' : ''), 'data-id': ev.id },
+  dateBox(ev.date, typeOf(ev)), el('div', { class: 'recard static' }, edInfo(ev), edBtns(ev, locked)));
+
+// 줄 목록 사이사이에 월(해가 바뀌면 연도도) 구분선을 넣음
+const withMonths = (items, rowOf) => items.flatMap((it, k) => {
+  const month = it.date.slice(0, 7), prev = items[k - 1]?.date;
+  const sep = !prev || month !== prev.slice(0, 7)
+    ? [el('h3', { class: 'monthsep' }, `${!prev || month.slice(0, 4) !== prev.slice(0, 4) ? yearLabel(month.slice(0, 4)) + ' ' : ''}${+month.slice(5)}월`)] : [];
+  return [...sep, rowOf(it)];
+});
+
+let edQuery = ''; // 편집 화면 검색어
+
 function renderEditor() {
   if (!pending()) board = buildBoard(); // 옮긴 게 없으면 늘 최신 일정으로 다시 그림
   const locked = pending(); // 옮긴 뒤 저장 전에는 수정·삭제·추가를 막음 (서로 꼬이지 않게)
   const pastCount = events.filter(e => e.date < TODAY).length;
-  $('pastBtn').hidden = !pastCount;
+  $('pastBtn').hidden = !pastCount || !!edQuery;
   $('pastBtn').textContent = showPast ? '지난 일정 숨기기' : `지난 일정 ${pastCount}건 보기`;
   $('addBtn').disabled = $('bulkBtn').disabled = locked;
+  $('edSearchClear').hidden = !edQuery;
 
   const changed = reChanged().length;
   const picked = board.contents.filter(c => c && sel.has(c.srcId)).length;
   $('reBar').hidden = !changed && !picked;
   $('reSummary').replaceChildren(...[
-    changed && `${changed}개 날짜가 바뀝니다. [저장]을 눌러야 반영돼요 `,
+    // 왜 [수정]·[추가]가 흐리게 막혀 있는지 함께 알려 줌
+    changed && `${changed}개 날짜가 바뀝니다. [저장]을 눌러야 반영되고, 그 전에는 수정·추가를 잠시 막아 둡니다 `,
     picked > 0 && `${picked}곡 선택됨 `,
     picked > 0 && el('button', { type: 'button', class: 'linkbtn', onclick: () => { sel.clear(); renderEditor(); } }, '선택 해제'),
   ].filter(Boolean));
   $('reCancel').hidden = $('reSave').hidden = !changed;
 
-  // 지난 일정(펼쳤을 때)은 옮길 수 없고, 오늘 이후는 날짜 자리 + 곡 카드
-  const items = [
-    ...(showPast ? events.filter(e => e.date < TODAY).map(e => ({ date: e.date, past: e })) : []),
-    ...board.slots.map((s, i) => ({ date: s.date, i })),
-  ];
-  $('edList').replaceChildren(...items.flatMap((it, k) => {
-    const month = it.date.slice(0, 7), prev = items[k - 1]?.date;
-    const sep = !prev || month !== prev.slice(0, 7) // 월(해가 바뀌면 연도도)마다 구분선
-      ? [el('h3', { class: 'monthsep' }, `${!prev || month.slice(0, 4) !== prev.slice(0, 4) ? +month.slice(0, 4) + '년 ' : ''}${+month.slice(5)}월`)] : [];
-    const row = it.past
-      ? el('div', { class: 'reslot past' }, dateBox(it.past.date, typeOf(it.past)),
-        el('div', { class: 'recard static' }, edInfo(it.past), edBtns(it.past, locked)))
-      : slotRow(it.i, locked);
-    return [...sep, row];
-  }));
+  // 검색 중: 지난 일정까지 모두에서 찾아 날짜순으로 (검색 결과는 옮기지 않음)
+  if (edQuery) {
+    const key = edQuery.toLowerCase();
+    const found = events.filter(e => [e.title, e.conductor, e.pianist].some(v => String(v || '').toLowerCase().includes(key)));
+    $('edSearchSummary').hidden = false;
+    $('edSearchSummary').textContent = `"${edQuery}" ${found.length}건 · 지난 일정 포함`;
+    $('edList').replaceChildren(...(found.length
+      ? withMonths(found.map(e => ({ date: e.date, ev: e })), it => staticRow(it.ev, locked))
+      : [el('p', { class: 'empty' }, `"${edQuery}"에 맞는 일정이 없습니다. 검색어를 바꾸거나 지워 보세요.`)]));
+    return;
+  }
+  $('edSearchSummary').hidden = true;
+
+  // 오늘 이후 일정은 위에 (날짜 자리 + 곡 카드), 지난 일정은 펼쳤을 때만 그 아래에 최근 것부터
+  const up = withMonths(board.slots.map((s, i) => ({ date: s.date, i })), it => slotRow(it.i, locked));
+  const past = showPast ? events.filter(e => e.date < TODAY).reverse() : [];
+  $('edList').replaceChildren(...up, ...(past.length ? [
+    el('h2', { class: 'pasthead', id: 'pastHead' }, `지난 일정 ${past.length}건 · 최근 것부터`),
+    ...withMonths(past.map(e => ({ date: e.date, ev: e })), it => staticRow(it.ev, locked)),
+  ] : []));
 }
 
 // from 자리의 곡을 to 자리로: 빈 자리면 그냥 옮기고, 곡이 있으면 사이의 곡들이 한 칸씩 밀림
@@ -1747,23 +1759,32 @@ function saveBoard() {
     '바꾼 순서를 저장했습니다.');
 }
 
-// 영상·기타 항목의 입력 여부를 작은 표시로 (지휘·반주는 이름을 바로 위에 보여 주므로 제외)
+// 입력 여부를 작은 표시 5개로: [영상 4/6 · T·B 없음] [악보] [참고연주] [실황] [메모]
+// 칠해짐 = 입력됨, 노랑 = 일부만, 점선 = 비어 있음 (지휘·반주는 바로 위에 이름으로 보여 줌)
 function edTags(e) {
-  const tag = (label, on, full = label) => el('span', {
-    class: 'edtag' + (on ? '' : ' off'), title: `${full} ${on ? '입력됨' : '비어 있음'}`,
-  }, label);
-  // 묶음 이름이 표시와 떨어지지 않게 묶음마다 한 덩어리로
-  const group = (name, ...tags) => el('span', { class: 'edgrp' }, el('span', { class: 'edgroup' }, name), ...tags);
+  const tag = (label, state, tip) => el('span', { class: 'edtag' + (state === 'on' ? '' : ' ' + state), title: tip }, label);
+  const miss = PARTS.filter(p => !safeUrl(e.parts?.[p]));
+  const have = PARTS.length - miss.length;
+  const shortName = p => PART_SHORT[p] || p;
   return el('div', { class: 'edtags' },
-    group('영상', ...PARTS.map(p => tag(PART_SHORT[p] || p, safeUrl(e.parts?.[p]), `${p} 영상`))),
-    group('기타', tag('악보', e.scores?.length), tag('참고연주', e.refs?.length), tag('실황', liveUrl(e)), tag('메모', e.note)));
+    tag(`영상 ${have}/${PARTS.length}` + (have && miss.length ? ` · ${miss.map(shortName).join('·')} 없음` : ''),
+      !miss.length ? 'on' : have ? 'part' : 'off',
+      miss.length ? `비어 있는 영상: ${miss.join(', ')}` : '파트 영상 모두 입력됨'),
+    ...[['악보', e.scores?.length], ['참고연주', e.refs?.length], ['실황', liveUrl(e)], ['메모', e.note]]
+      .map(([label, on]) => tag(label, on ? 'on' : 'off', `${label} ${on ? '입력됨' : '비어 있음'}`)));
 }
 
 function removeEvent(e) {
   if (!confirm(`「${e.title}」(${fmtDate(e.date)}) 일정을 삭제할까요?\n삭제하면 사이트에서 바로 사라집니다.`)) return;
-  mutate({ action: 'delete', token, id: e.id },
-    () => { events = events.filter(x => x.id !== e.id); },
-    '삭제되었습니다.');
+  const { id, ...event } = e;
+  mutate({ action: 'delete', token, id },
+    () => { events = events.filter(x => x.id !== id); },
+    `「${e.title}」을(를) 삭제했습니다.`,
+    { label: '되돌리기', run: () => { // 같은 번호로 다시 저장하면 서버가 새로 추가함
+      mutate({ action: 'save', token, id, event },
+        () => { events = sorted([...events.filter(x => x.id !== id), e]); }, '삭제를 되돌렸습니다.');
+      markSaved(id);
+    } });
 }
 
 /* ===== 일정 추가·수정 창 ===== */
@@ -1961,15 +1982,15 @@ form.type.onchange = () => {
   if (custom) form.typeCustom.focus();
 };
 
-// asCopy: 기존 일정을 그대로 베껴 새 일정으로 (날짜만 다음 주일로)
+// asCopy: 기존 일정을 그대로 베껴 새 일정으로 (날짜만 곡이 비어 있는 가장 가까운 주일로)
 // slot: 목록의 빈 자리에서 추가할 때 — 날짜·구분은 그 자리로 고정
 function openForm(ev, asCopy, slot = null) {
   editingId = ev && !asCopy ? ev.id : null;
-  const v = ev || { date: slot ? slot.date : nextSunday(), type: slot ? slot.type : TYPES[0], title: '', conductor: '', pianist: '', parts: {}, scores: [], refs: [], note: '', live: '' };
+  const v = ev || { date: slot ? slot.date : freeSunday(), type: slot ? slot.type : TYPES[0], title: '', conductor: '', pianist: '', parts: {}, scores: [], refs: [], note: '', live: '' };
   $('formTitle').textContent = slot ? `찬양 일정 추가 · ${fmtDate(slot.date)}` : asCopy ? '찬양 일정 복제' : ev ? '찬양 일정 수정' : '찬양 일정 추가';
   form.date.closest('label').hidden = form.type.closest('label').hidden = !!slot;
   fillNameLists();
-  form.date.value = asCopy ? nextSunday() : v.date;
+  form.date.value = asCopy ? freeSunday() : v.date;
   // 목록에 없는 구분(직접 입력해 둔 값)이면 '직접 입력'으로 열어 줌
   const t = String(v.type || '');
   form.type.value = !t ? '' : TYPES.includes(t) ? t : TYPE_CUSTOM;
@@ -1986,8 +2007,10 @@ function openForm(ev, asCopy, slot = null) {
   form.live.value = v.live || '';
   closePartPreviews();
   $('formErr').hidden = true;
-  $('dlg').showModal();
+  openDlg($('dlg'));
   $('dlg').scrollTop = 0; // 전에 아래로 내려 둔 채 닫았어도 맨 위부터
+  // 처음 선택되는 곳: 새 일정은 바로 적도록 제목 칸, 수정은 창 제목 (맨 위 [취소]가 먼저 잡히지 않게)
+  (editingId ? $('formTitle') : form.title).focus();
 }
 
 /* ===== 링크 정리 (일정 창과 집회 창이 함께 씀) =====
@@ -2023,9 +2046,9 @@ function cleanLines(text, label, where, bad) {
 
 // 잘못된 항목을 한 줄로 알려 줌 — 무엇이 잘못됐는지에 맞춰 고치는 방법까지
 function badMsg(bad) {
-  const live = bad.some(b => b.endsWith('실황 보기 링크'));
+  const live = bad.some(b => b.endsWith('실황 링크'));
   const link = bad.some(b => b.includes('링크') || b.includes('악보') || b.includes('참고연주'));
-  return `확인해 주세요: ${bad.join(', ')}${live ? ' (실황 보기는 유튜브 영상 주소만 넣을 수 있어요)'
+  return `확인해 주세요: ${bad.join(', ')}${live ? ' (실황은 유튜브 영상 주소만 넣을 수 있어요)'
     : link ? ' (링크는 https:// 로 시작해야 해요)' : ''}`;
 }
 
@@ -2035,7 +2058,7 @@ function cleanLive(raw, where, bad) {
   if (!v) return '';
   const url = tidyUrl(v);
   if (url && youtube(url)) return url;
-  bad.push(`${where}실황 보기 링크`);
+  bad.push(`${where}실황 링크`);
   return '';
 }
 
@@ -2087,7 +2110,8 @@ form.addEventListener('submit', async e => {
   $('dlg').close();
   mutate({ action: 'save', token, id: editingId, event: ev },
     () => { events = sorted([...events.filter(e => e.id !== saved.id), saved]); },
-    '저장되었습니다.');
+    `「${ev.title}」을(를) 저장했습니다.`);
+  markSaved(saved.id);
 });
 
 /* ===== 집회 일정 한 번에 추가 =====
@@ -2155,7 +2179,7 @@ function openBulk() {
   $('bulkErr').hidden = true;
   renderBulkDays();
   fillNameLists(); // 지휘·반주 이름 고르기 목록은 본문 창과 같이 씀
-  $('bulkDlg').showModal();
+  openDlg($('bulkDlg'));
   $('bulkDlg').scrollTop = 0;
 }
 
@@ -2193,8 +2217,9 @@ $('bulkForm').addEventListener('submit', e => {
   mutate({ action: 'batch', token, saves, deletes: [] },
     () => { events = sorted([...events, ...saved]); },
     `${saves.length}곡을 저장했습니다.`);
+  markSaved(saves[0].id);
 });
-$('bulkCancel').onclick = $('bulkCancel2').onclick = () => $('bulkDlg').close();
+$('bulkCancel').onclick = $('bulkCancel2').onclick = () => askClose($('bulkDlg'));
 $('bulkDlg').addEventListener('close', closePartPreviews);
 $('bulkStart').onchange = renderBulkDays;
 $('bulkDaysSel').onchange = renderBulkDays;
@@ -2211,7 +2236,7 @@ function openNoticeEdit(focusIndex = 0) {
   f.n1.value = notices[0] || '';
   f.n2.value = notices[1] || '';
   $('noticeErr').hidden = true;
-  $('noticeEditDlg').showModal();
+  openDlg($('noticeEditDlg'));
   const box = focusIndex === 1 ? f.n2 : f.n1;
   box.focus();
   box.setSelectionRange(box.value.length, box.value.length);
@@ -2263,6 +2288,23 @@ function applyBig(on) {
   try { on ? localStorage.setItem(BIG_KEY, '1') : localStorage.removeItem(BIG_KEY); } catch {}
 }
 
+/* ===== 입력 창을 닫기 전 확인 =====
+   창을 연 순간의 값과 달라졌으면, Esc나 [취소]로 닫기 전에 한 번 물어봄 (적어 둔 내용이 날아가지 않게) */
+const opened = new WeakMap(); // 창 → 연 순간의 값
+const formValues = dlg => [...dlg.querySelectorAll('input, textarea, select')].map(x => x.value).join('\u0001');
+const isDirty = dlg => opened.has(dlg) && formValues(dlg) !== opened.get(dlg);
+const DISCARD_MSG = '입력한 내용이 아직 저장되지 않았습니다.\n저장하지 않고 창을 닫을까요?';
+function openDlg(dlg) {
+  dlg.showModal();
+  opened.set(dlg, formValues(dlg));
+}
+function askClose(dlg) {
+  if (!isDirty(dlg) || confirm(DISCARD_MSG)) dlg.close();
+}
+['dlg', 'bulkDlg', 'noticeEditDlg', 'rDlg'].forEach(id => $(id).addEventListener('cancel', e => { // Esc
+  if (isDirty($(id)) && !confirm(DISCARD_MSG)) e.preventDefault();
+}));
+
 /* ===== 버튼 연결 ===== */
 // 편집 화면에서 나올 때 주소 끝에 빈 '#'이 남지 않게 지움
 function goPublic() {
@@ -2280,14 +2322,21 @@ $('addBtn').onclick = () => openForm(null);
 $('bulkBtn').onclick = openBulk;
 $('reCancel').onclick = () => { board = null; sel.clear(); renderEditor(); };
 $('reSave').onclick = saveBoard;
-$('cancelBtn').onclick = $('cancelTop').onclick = () => $('dlg').close();
-$('pastBtn').onclick = () => { showPast = !showPast; renderEditor(); };
+$('cancelBtn').onclick = $('cancelTop').onclick = () => askClose($('dlg'));
+$('pastBtn').onclick = () => {
+  showPast = !showPast;
+  renderEditor();
+  if (showPast) $('pastHead')?.scrollIntoView({ block: 'start' }); // 펼친 지난 일정으로 바로 이동
+};
+$('edSearch').oninput = e => { edQuery = e.target.value.trim(); renderEditor(); };
+$('edSearch').onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); e.target.blur(); } };
+$('edSearchClear').onclick = () => { $('edSearch').value = ''; edQuery = ''; renderEditor(); $('edSearch').focus(); };
 $('noticeBtn').onclick = () => openNoticeEdit(0);
 $('noticeEditBtn').onclick = () => {   // 공지 전체 보기 창의 ✎ 버튼
   $('noticeDlg').close();
   openNoticeEdit(openNotice);
 };
-$('noticeCancel').onclick = () => $('noticeEditDlg').close();
+$('noticeCancel').onclick = () => askClose($('noticeEditDlg'));
 $('noticeClose').onclick = () => $('noticeDlg').close();
 $('retryBtn').onclick = load;
 $('playerClose').onclick = closePlayer;
