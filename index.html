@@ -90,7 +90,7 @@
   .hero .card + .card { margin-top: 10px; }
 
   /* 내 파트 (이 기기에 저장) */
-  .mypart { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin: -6px 0 16px; }
+  .mypart { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin: 0 0 14px; }
   .mypart .mplabel { font-size: 14px; font-weight: 700; color: var(--muted); margin-right: 2px; }
   .mypart .btn { min-height: 44px; min-width: 48px; padding: 8px 14px; font-size: 15px; }
   /* 고른 파트는 조회 모드 버튼과 같은 남색 — '고른 것'은 어디서나 남색 */
@@ -437,6 +437,18 @@
   <div id="publicView">
     <!-- 쪽 제목 — 화면에는 로고가 대신하고, 화면 읽기 프로그램에는 이 글이 읽힘 -->
     <h1 class="sronly">찬양대 알리미 — 인천영종교회</h1>
+    <!-- 내 파트를 고르면 바로 아래 이번 주 찬양에서 내 파트 버튼이 강조됨 -->
+    <div class="mypart" id="myPart" role="group" aria-label="내 파트"></div>
+
+    <!-- 이번 주 찬양 — 앱을 열자마자 가장 먼저 보이도록 공지보다 위에 둠 -->
+    <section class="hero" id="hero" hidden>
+      <div class="herohead">
+        <h2 class="eyebrow" id="heroLabel"></h2>
+        <button type="button" class="sharebtn" id="shareBtn">공유</button>
+      </div>
+      <div id="heroCards"></div>
+    </section>
+
     <div class="notices" id="notices"></div>
 
     <div id="schedule" hidden>
@@ -449,16 +461,6 @@
         <input type="search" id="searchInput" placeholder="곡 제목 · 지휘자 · 반주자 검색" aria-label="곡 제목, 지휘자, 반주자 검색" autocomplete="off" enterkeyhint="search">
         <button type="button" class="clearbtn" id="searchClear" aria-label="검색어 지우기" title="검색어 지우기" hidden>✕</button>
       </div>
-
-      <div class="mypart" id="myPart" role="group" aria-label="내 파트"></div>
-
-      <section class="hero" id="hero" hidden>
-        <div class="herohead">
-          <h2 class="eyebrow" id="heroLabel"></h2>
-          <button type="button" class="sharebtn" id="shareBtn">공유</button>
-        </div>
-        <div id="heroCards"></div>
-      </section>
 
       <div class="viewhead">
         <h2 id="viewTitle"></h2>
