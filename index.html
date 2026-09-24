@@ -243,6 +243,7 @@
   .guide { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; margin-bottom: 14px; font-size: 14px; }
   .login { max-width: 420px; }
   .hint { font-weight: 400; color: var(--muted); font-size: 12px; }
+  .titlehist { margin: -6px 0 12px; padding: 8px 11px; border-radius: 10px; background: var(--warn-bg); border: 1px solid var(--warn-line); font-size: 13.5px; }
   .login .hint, .edhint { margin: 0 0 12px; font-size: 14px; }
   /* 저장·삭제 결과 알림: 화면 위 가운데에 떠 있음 (아래쪽은 재생창·순서 저장 막대 자리) */
   .status { position: fixed; top: calc(12px + env(safe-area-inset-top)); left: 50%; transform: translateX(-50%); z-index: 20;
@@ -744,6 +745,7 @@
       <input name="typeCustom" maxlength="30" placeholder="예: 부활절 특송">
     </label>
     <label class="field">찬양 제목<input name="title" maxlength="100" placeholder="예: 하나님의 시간" required></label>
+    <p class="titlehist" id="titleHist" aria-live="polite" hidden></p>
     <div class="tworow">
       <label class="field">지휘 <span class="hint">(선택)</span><input name="conductor" maxlength="30" list="conductorList" placeholder="지휘자 이름"></label>
       <label class="field">반주 <span class="hint">(선택)</span><input name="pianist" maxlength="30" list="pianistList" placeholder="반주자 이름"></label>
@@ -2032,6 +2034,7 @@ function openForm(ev, asCopy, slot = null) {
   form.typeCustom.value = t && !TYPES.includes(t) ? t : '';
   $('typeCustomRow').hidden = !!slot || form.type.value !== TYPE_CUSTOM;
   form.title.value = v.title;
+  showTitleHist();
   form.conductor.value = v.conductor || '';
   form.pianist.value = v.pianist || '';
   PARTS.forEach(p => { form['part-' + p].value = v.parts?.[p] || ''; form['part-' + p].classList.remove('autofilled'); });
@@ -2057,6 +2060,20 @@ function fillNameLists() {
     $(id).replaceChildren(...names.map(n => el('option', { value: n })));
   }
 }
+
+// 입력한 제목을 전에(또는 앞으로) 부른 날을 보여 줌 — 곡이 겹치지 않게. 띄어쓰기·대소문자는 무시
+const normTitle = t => String(t || '').replace(/\s+/g, '').toLowerCase();
+function showTitleHist() {
+  const q = normTitle(form.title.value);
+  const same = q && q !== '미정' ? events.filter(e => e.id !== editingId && normTitle(e.title) === q)
+    .sort((a, b) => b.date.localeCompare(a.date)) : [];
+  $('titleHist').hidden = !same.length;
+  if (!same.length) return;
+  const today = todayKey();
+  const when = e => `${yearLabel(e.date.slice(0, 4))} ${fmtDate(e.date)} ${typeOf(e)}${e.date >= today ? ' (예정)' : ''}`;
+  $('titleHist').textContent = `이 곡을 부른 날: ${same.slice(0, 3).map(when).join(' · ')}${same.length > 3 ? ` 외 ${same.length - 3}번` : ''}`;
+}
+form.title.addEventListener('input', showTitleHist);
 
 // get(p): 파트 p 칸의 글자를 돌려주는 함수
 function collectParts(get, where, bad) {
