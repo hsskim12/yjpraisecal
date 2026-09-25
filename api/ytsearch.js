@@ -3,7 +3,11 @@
 const MAX = 20; // 검색 결과 최대 개수
 const text = t => !t ? '' : t.simpleText || (t.runs || []).map(r => r.text).join('');
 
+// 이 사이트 화면에서 부른 요청만 받음 (다른 곳에서 검색 대행으로 쓰지 못하게 — 막혀도 사이트는 Apps Script 검색으로 대신함)
+const OWN = /^(https:\/\/yjpraisecal[\w-]*\.vercel\.app|http:\/\/localhost(:\d+)?)(\/|$)/;
+
 module.exports = async (req, res) => {
+  if (!OWN.test(String(req.headers.referer || req.headers.origin || ''))) return res.status(403).json({ ok: false, error: 'forbidden' });
   const q = String(req.query.q || '').trim().slice(0, 100);
   if (!q) return res.json({ ok: true, items: [] });
   try {

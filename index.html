@@ -87,7 +87,7 @@
 
   /* 공지사항 */
   .notices { margin: 0 0 18px; display: grid; gap: 8px; }
-  .noticebar { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; font-weight: 700; font-size: 16px; }
+  .noticebar { display: flex; align-items: center; gap: 10px; width: 100%; min-width: 0; text-align: left; background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; font-weight: 700; font-size: 16px; }
   .noticebar:hover { border-color: var(--navy); }
   .noticebar .tag { background: var(--accent); color: #fff; font-size: 12px; font-weight: 700; border-radius: 999px; padding: 3px 10px; flex-shrink: 0; }
   .noticebar .txt { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -109,7 +109,7 @@
   .herodate { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin: 0; font-size: 25px; font-weight: 800; letter-spacing: -.02em; line-height: 1.15; }
   .herodate em { font-style: normal; font-size: 14px; font-weight: 700; letter-spacing: 0; background: rgb(255 255 255 / .18); border-radius: 7px; padding: 3px 10px; }
   .herosong + .herosong { margin-top: 22px; padding-top: 18px; border-top: 1px solid rgb(255 255 255 / .2); }
-  .herosong h3 { margin: 20px 0 6px; font-size: 38px; font-weight: 800; letter-spacing: -.03em; line-height: 1.18; text-wrap: balance; overflow-wrap: anywhere; }
+  .herosong h3 { margin: 20px 0 6px; font-size: 38px; font-weight: 800; letter-spacing: -.03em; line-height: 1.18; text-wrap: balance; word-break: keep-all; overflow-wrap: anywhere; }
   .heroppl { margin: 0; font-size: 14px; color: rgb(255 255 255 / .8); }
   /* 듣기는 강조색, 반주·악보·실황은 흰 버튼 */
   .herolinks { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 20px; }
@@ -180,7 +180,7 @@
   .rthumb { width: 112px; flex-shrink: 0; aspect-ratio: 16 / 9; border-radius: 8px; overflow: hidden; background: var(--navy-soft); display: grid; place-items: center; color: var(--navy); font-size: 22px; text-decoration: none; }
   .rthumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .rinfo { flex: 1; min-width: 0; }
-  .rname { display: block; font-size: 17px; font-weight: 700; color: var(--ink); text-decoration: none; overflow-wrap: anywhere; }
+  .rname { display: block; font-size: 17px; font-weight: 700; color: var(--ink); text-decoration: none; word-break: keep-all; overflow-wrap: anywhere; }
   .rname:hover { text-decoration: underline; }
   .rinfo small { color: var(--muted); font-size: 13px; }
 
@@ -203,9 +203,10 @@
   .group.tight { margin-top: 6px; }  /* 지휘·반주 줄 바로 아래 파트 연습 버튼 */
   .body { padding: 2px 0; min-width: 0; }
   .titlerow { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; }
-  .titlerow h3 { margin: 0; font-size: 22px; overflow-wrap: anywhere; }
+  .titlerow h3 { margin: 0; font-size: 22px; word-break: keep-all; overflow-wrap: anywhere; }
   .headchips .chip { max-width: 100%; overflow-wrap: anywhere; }
   .headchips { display: flex; flex-wrap: wrap; gap: 6px; margin-left: auto; max-width: 100%; }
+  .titlerow .people { order: 1; flex-basis: 100%; margin: 0; }
   .badge { background: var(--navy); color: #fff; font-size: 12px; font-weight: 700; border-radius: 999px; padding: 1px 9px; }
   .done { color: var(--muted); font-size: 12px; }
   .group { margin-top: 10px; }
@@ -279,7 +280,7 @@
   .eddate.special { background: var(--accent-soft); }            /* 특별집회 등 주일이 아닌 일정 */
   .eddate.special strong, .eddate.special small { color: var(--accent-dark); }
   .edinfo { flex: 1; min-width: 0; }
-  .edinfo b { display: block; font-size: 17px; line-height: 1.35; overflow-wrap: anywhere; }
+  .edinfo b { display: block; font-size: 17px; line-height: 1.35; word-break: keep-all; overflow-wrap: anywhere; }
   .edpeople { font-size: 13px; color: var(--muted); margin-top: 1px; }
   .edpeople .missing { color: #a7616c; }              /* 비어 있는 지휘·반주 */
   /* 편집 목록: 항목별 입력 여부 (칠해짐 = 입력됨, 점선 = 비어 있음) */
@@ -319,12 +320,12 @@
   dialog { border: 0; border-radius: 16px; padding: 0; width: min(560px, calc(100% - 24px)); max-height: calc(100% - 24px); }
   dialog::backdrop { background: rgb(0 0 0 / .45); }
   dialog > form, .dlgbody { padding: 18px; }
-  dialog h3 { margin: 0 0 12px; }
+  dialog h2 { margin: 0 0 12px; font-size: 1.17em; }
   .dlghead { display: flex; align-items: flex-start; gap: 10px; }
-  .dlghead h3 { flex: 1; }
+  .dlghead h2 { flex: 1; }
   /* 일정 추가·수정 창: 제목과 ✕가 스크롤해도 위에 붙어 있게 */
   .formhead { position: sticky; top: 0; z-index: 2; background: #fff; margin: -18px -18px 12px; padding: 18px 18px 10px; border-bottom: 1px solid var(--line); }
-  .formhead h3 { margin: 0; align-self: center; }
+  .formhead h2 { margin: 0; align-self: center; }
   .formhead .actions { flex-shrink: 0; }
   .formhead .btn { padding: 7px 14px; }
   .iconbtn { border: 1px solid var(--line); background: #fff; border-radius: 9px; width: 40px; height: 40px; font-size: 16px; line-height: 1; flex-shrink: 0; }
@@ -334,7 +335,7 @@
   .tworow { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .field { display: block; margin-bottom: 12px; font-size: 14px; font-weight: 600; }
   .field input, .field textarea, .field select { display: block; width: 100%; margin-top: 4px; font: inherit; font-weight: 400; padding: 9px 10px; border: 1px solid var(--line); border-radius: 9px; }
-  fieldset { border: 1px solid var(--line); border-radius: 12px; margin: 0 0 12px; padding: 10px 12px 0; }
+  fieldset { border: 1px solid var(--line); border-radius: 12px; margin: 0 0 12px; padding: 10px 12px 8px; }
   legend { font-size: 14px; font-weight: 600; padding: 0 4px; }
   .partrow { display: grid; grid-template-columns: 64px 1fr auto auto; align-items: center; gap: 8px; margin-bottom: 10px; font-size: 14px; }
   .partrow input { font: inherit; padding: 8px 10px; border: 1px solid var(--line); border-radius: 9px; min-width: 0; }
@@ -446,6 +447,8 @@
     .date strong { font-size: 17px; }
     .date .dow, .date .kind { font-size: 12px; }
     .group .chips { gap: 5px; }
+    /* 휴대폰: 제목 → 지휘·반주 → 듣기·반주·악보 순서로 읽히게 */
+    .titlerow .headchips { order: 2; flex-basis: 100%; margin-left: 0; }
     .group .chips .chip { font-size: 16px; min-width: 0; flex: 1 1 0; padding: 8px 2px; order: 0; }
     /* 연습 영상 줄: 썸네일을 줄이고 [수정][삭제]는 아랫줄 오른쪽으로 (제목이 눌리지 않게) */
     .rrow { flex-wrap: wrap; }
@@ -646,7 +649,7 @@
 <dialog id="noticeDlg">
   <div class="dlgbody">
     <div class="dlghead">
-      <h3 id="noticeDlgTitle">공지사항</h3>
+      <h2 id="noticeDlgTitle">공지사항</h2>
       <button type="button" class="iconbtn" id="noticeEditBtn" aria-label="공지 수정" title="공지 수정" hidden>✎</button>
       <button type="button" class="iconbtn" id="noticeClose" aria-label="닫기">✕</button>
     </div>
@@ -657,7 +660,7 @@
 <!-- 공지 수정 (관리자) -->
 <dialog id="noticeEditDlg">
   <form id="noticeForm" novalidate>
-    <h3>공지사항 수정</h3>
+    <h2>공지사항 수정</h2>
     <p class="hint" id="noticeHint"></p>
     <label class="field">공지사항 1<textarea name="n1" rows="4" maxlength="2000"></textarea></label>
     <label class="field">공지사항 2<textarea name="n2" rows="4" maxlength="2000"></textarea></label>
@@ -673,7 +676,7 @@
 <dialog id="ytDlg">
   <div class="dlgbody">
     <div class="dlghead">
-      <h3 id="ytTitle">유튜브 검색</h3>
+      <h2 id="ytTitle">유튜브 검색</h2>
       <button type="button" class="iconbtn" id="ytClose" aria-label="닫기">✕</button>
     </div>
     <form class="ytsearch" id="ytForm">
@@ -689,7 +692,7 @@
 <dialog id="bulkDlg">
   <form id="bulkForm" novalidate>
     <div class="dlghead formhead">
-      <h3>집회 일정 한 번에 추가</h3>
+      <h2>집회 일정 한 번에 추가</h2>
       <div class="actions">
         <button type="button" class="btn" id="bulkCancel">취소</button>
         <button type="submit" class="btn primary">저장</button>
@@ -714,7 +717,7 @@
 <dialog id="rDlg">
   <form id="rForm" novalidate>
     <div class="dlghead formhead">
-      <h3 id="rTitle">연습 영상 추가</h3>
+      <h2 id="rTitle">연습 영상 추가</h2>
       <div class="actions">
         <button type="button" class="btn" id="rCancel">취소</button>
         <button type="submit" class="btn primary">저장</button>
@@ -742,7 +745,7 @@
 <dialog id="dlg">
   <form id="form" novalidate>
     <div class="dlghead formhead">
-      <h3 id="formTitle" tabindex="-1"></h3>
+      <h2 id="formTitle" tabindex="-1"></h2>
       <div class="actions">
         <button type="button" class="btn" id="cancelTop">취소</button>
         <button type="submit" class="btn primary">저장</button>
@@ -821,7 +824,7 @@ const dayKey = ms => new Date(ms).toISOString().slice(0, 10);
 const dowOf = key => new Date(utc(key)).getUTCDay();
 const fmtDate = key => `${+key.slice(5, 7)}월 ${+key.slice(8, 10)}일 (${DOW[dowOf(key)]})`;
 const yearLabel = y => `${String(y).slice(-2)}년`; // 화면의 연도는 두 자리로 (2026년 → 26년)
-const periodDate = (key, year = '') => `${key.slice(0, 4) === year ? '' : +key.slice(0, 4) + '. '}${+key.slice(5, 7)}. ${+key.slice(8, 10)}.`;
+const periodDate = (key, year = '') => `${key.slice(0, 4) === year ? '' : yearLabel(key.slice(0, 4)) + ' '}${+key.slice(5, 7)}월 ${+key.slice(8, 10)}일`;
 const nextSunday = () => dayKey(utc(TODAY) + ((7 - dowOf(TODAY)) % 7) * 864e5); // 오늘이 일요일이면 오늘
 // 곡이 아직 없는 가장 가까운 주일 (새 일정·복제의 기본 날짜 — 저장할 때 중복 경고가 뜨지 않게)
 function freeSunday() {
@@ -907,7 +910,7 @@ function setToken(t) {
 /* ===== 서버(Apps Script) ===== */
 // 요청 한 번 보내기 (ms 안에 답이 없거나 stop 신호가 오면 포기)
 // body가 있으면 POST, 없으면 GET (query는 GET 주소에 붙일 값)
-async function send(body, query, ms, stop) {
+async function send(body, query, ms, stop, keepalive = false) {
   const ac = new AbortController();
   const timer = setTimeout(() => ac.abort(), ms);
   const onStop = () => ac.abort();
@@ -915,7 +918,7 @@ async function send(body, query, ms, stop) {
   try {
     const res = body
       // text/plain으로 보내야 Apps Script가 받는 교차 출처 요청(사전 요청 없음)이 됨
-      ? await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(body), signal: ac.signal })
+      ? await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(body), signal: ac.signal, keepalive })
       : await fetch(`${API_URL}${API_URL.includes('?') ? '&' : '?'}${new URLSearchParams({ ...query, t: Date.now() })}`, { signal: ac.signal });
     const data = await res.json(); // 구글이 오류 화면(HTML)을 주면 여기서 실패 → 다른 요청의 답을 기다림
     if (!data.ok) {
@@ -952,7 +955,9 @@ function api(body, query = {}) {
       timers.forEach(clearTimeout);
       fn(v);
     };
-    const timers = [0, 1, 2, 3].map(i => setTimeout(() => send(body, query, 40000, stop.signal).then(
+    // 저장 요청의 첫 번째는 keepalive — 저장 중에 창을 닫아도 끝까지 전달됨 (64KB 한도라 큰 요청은 제외)
+    const keep = !!body && JSON.stringify(body).length < 60000;
+    const timers = [0, 1, 2, 3].map(i => setTimeout(() => send(body, query, 40000, stop.signal, keep && i === 0).then(
       data => end(resolve, data),
       e => {
         if (e.server) end(reject, e);          // 서버가 거절한 요청(비밀번호 틀림 등)은 바로 알림
@@ -1147,8 +1152,8 @@ function card(ev, badge) {
         past && el('span', { class: 'done' }, '지난 찬양'),
         (headChips.length > 0 || token) && el('div', { class: 'headchips' },
           headChips.map(x => chip(x, null, ev.title)),
-          token && editBtn(ev))), // 관리자로 로그인했을 때만 보이는 수정 버튼
-      people.length > 0 && el('p', { class: 'label' }, people),   // 지휘·반주를 곡 제목 아래로
+          token && editBtn(ev)), // 관리자로 로그인했을 때만 보이는 수정 버튼
+        people.length > 0 && el('p', { class: 'label people' }, people)), // 지휘·반주는 곡 제목 아랫줄
       partChips.length > 0 && el('div', { class: 'group' + (people.length ? ' tight' : '') },
         !people.length && el('p', { class: 'label' }, '파트 연습'),
         el('div', { class: 'chips' }, partChips.map(x => partChip(x, ev.title, x.mine && 'mine')))), // 고른 파트는 남색
@@ -1195,7 +1200,7 @@ function renderNotices() {
       },
     }, el('span', { class: 'tag' }, '공지'),
       el('span', { class: 'txt' }, long ? flat.slice(0, NOTICE_HEAD) : flat),
-      long && el('span', { class: 'more' }, '⋯ 전체 보기'));
+      el('span', { class: 'more', 'aria-hidden': 'true' }, long ? '전체 보기 ›' : '›')); // 잘려 보여도 눌러서 전체를 볼 수 있다는 표시
   }));
 }
 
@@ -1319,7 +1324,7 @@ $('rForm').addEventListener('submit', e => {
   $('rDlg').close();
   mutate({ action: 'rsave', token, id, item },
     () => { rehearsals = [...rehearsals.filter(x => x.id !== id), { ...item, id }].sort((a, b) => b.date.localeCompare(a.date)); },
-    '연습 영상을 저장했습니다.');
+    '연습 영상을 저장했습니다.', null, () => openRehearsal({ ...item, id }));
   markSaved(id);
 });
 $('rCancel').onclick = $('rCancel2').onclick = () => askClose($('rDlg'));
@@ -1531,47 +1536,48 @@ function flash(msg, isErr, undo) {
 }
 
 // 로그인 만료면 로그인 화면으로, 그 밖의 오류는 편집 화면에 안내
-function handleErr(err) {
-  if (err.unknown) load(); // 저장·삭제 결과를 모르면 최신 목록으로 확인
+// reopen: 입력하던 창을 그대로 다시 여는 버튼 (저장에 실패해도 쓴 내용을 다시 치지 않게)
+function handleErr(err, reopen) {
+  if (err.unknown && !ops.length) load(); // 저장·삭제 결과를 모르면 최신 목록으로 확인
+  const btn = reopen && { label: '입력한 내용 다시 열기', run: reopen };
   if (err.auth) {
     setToken(null);
     route();
     loginError(err.message);
-    flash(err.message, true); // 목록에서 고치다 만료된 경우에도 보이게
-  } else {
-    flash(err.message, true);
   }
-}
-
-function applyResult(res, msg, undo) {
-  applyData(res);
-  saveCache();
-  route();
-  flash(msg, false, undo);
+  flash(err.message, true, btn); // 목록에서 고치다 만료된 경우에도 보이게
 }
 
 // 구글 응답이 느려도 기다리지 않도록, 화면에 먼저 반영하고 저장은 뒤에서 처리.
-// 실패하면 원래대로 되돌리고 알려 줌 (같은 요청을 다시 보내도 중복되지 않음)
-async function mutate(body, applyNow, okMsg, undo) {
-  const prevEvents = events, prevNotices = notices, prevRehearsals = rehearsals;
-  saving = true; // 저장이 끝날 때까지 자동 새로고침을 멈춤 (방금 넣은 내용이 깜빡이지 않도록)
+// 여러 번 저장해도 보낸 순서대로 하나씩 처리하고, 응답이 올 때마다 [서버 내용 + 아직 저장 중인 변경]으로 다시 그림
+// → 앞 저장의 응답이 뒤 저장을 잠깐 지워 보이는 일이 없음. 실패한 변경만 빠짐 (같은 요청을 다시 보내도 중복되지 않음)
+let ops = [];                  // 서버에 보내는 중인 변경 (applyNow 목록)
+let confirmed = null;          // 서버가 마지막으로 확인해 준 내용
+let queue = Promise.resolve(); // 저장 요청을 한 줄로 세움
+function settle(op, res) {
+  ops = ops.filter(o => o !== op);
+  if (res) confirmed = res;
+  applyData(confirmed);
+  saveCache();                  // 휴대폰에는 서버가 확인한 내용만 기억 (저장 중에 앱을 닫아도 없는 곡이 보이지 않게)
+  ops.forEach(o => o.applyNow());
+  saving = ops.length > 0;
+  route();
+}
+function mutate(body, applyNow, okMsg, undo, reopen) {
+  if (!ops.length) confirmed = { events, notices, rehearsals };
+  const op = { applyNow };
+  ops.push(op);
+  saving = true; // 저장이 끝날 때까지 자동 새로고침을 멈춤
   applyNow();
-  saveCache();
   route();
   flash('화면에는 반영했습니다. 서버에 저장하는 중입니다…');
-  try {
-    applyResult(await api(body), okMsg, undo);
-  } catch (err) {
-    events = prevEvents;
-    notices = prevNotices;
-    rehearsals = prevRehearsals;
-    saveCache();
-    route();
-    handleErr(err);
-  } finally {
-    saving = false;
-  }
+  const sent = queue.then(() => api(body));
+  queue = sent.catch(() => {});
+  sent.then(res => { settle(op, res); flash(okMsg, false, undo); },
+    err => { settle(op); handleErr(err, reopen); });
 }
+// 저장이 끝나기 전에 창을 닫으려 하면 한 번 물어봄 (옮겨 놓고 저장 안 한 순서도)
+addEventListener('beforeunload', e => { if (ops.length || pending()) e.preventDefault(); });
 
 /* ===== 편집 목록 (순서 바꾸기 포함) =====
    오늘 이후 일정의 날짜(구분 포함)는 고정된 자리이고, 곡 내용만 끌어서 옮김.
@@ -1679,7 +1685,7 @@ const staticRow = (ev, locked) => el('div', { class: 'reslot past' + (justSaved(
 const withMonths = (items, rowOf) => items.flatMap((it, k) => {
   const month = it.date.slice(0, 7), prev = items[k - 1]?.date;
   const sep = !prev || month !== prev.slice(0, 7)
-    ? [el('h3', { class: 'monthsep' }, `${!prev || month.slice(0, 4) !== prev.slice(0, 4) ? yearLabel(month.slice(0, 4)) + ' ' : ''}${+month.slice(5)}월`)] : [];
+    ? [el('h2', { class: 'monthsep' }, `${!prev || month.slice(0, 4) !== prev.slice(0, 4) ? yearLabel(month.slice(0, 4)) + ' ' : ''}${+month.slice(5)}월`)] : [];
   return [...sep, rowOf(it)];
 });
 
@@ -2171,7 +2177,7 @@ form.addEventListener('submit', async e => {
   $('dlg').close();
   mutate({ action: 'save', token, id: editingId, event: ev },
     () => { events = sorted([...events.filter(e => e.id !== saved.id), saved]); },
-    `「${ev.title}」을(를) 저장했습니다.`);
+    `「${ev.title}」을(를) 저장했습니다.`, null, () => openForm(saved));
   markSaved(saved.id);
 });
 
@@ -2277,7 +2283,7 @@ $('bulkForm').addEventListener('submit', e => {
   $('bulkDlg').close();
   mutate({ action: 'batch', token, saves, deletes: [] },
     () => { events = sorted([...events, ...saved]); },
-    `${saves.length}곡을 저장했습니다.`);
+    `${saves.length}곡을 저장했습니다.`, null, () => openDlg($('bulkDlg'))); // 창을 닫기만 했으므로 칸에 쓴 내용이 그대로 있음
   markSaved(saves[0].id);
 });
 $('bulkCancel').onclick = $('bulkCancel2').onclick = () => askClose($('bulkDlg'));
@@ -2292,10 +2298,10 @@ let openNotice = 0; // 전체 보기 창에서 열어 둔 공지 번호 (수정 
 
 $('noticeHint').textContent = `첫 화면에는 각 공지의 앞 ${NOTICE_HEAD}자만 보이고, 누르면 전체 내용이 열립니다. 비워 두면 표시되지 않습니다.`;
 
-function openNoticeEdit(focusIndex = 0) {
+function openNoticeEdit(focusIndex = 0, values = notices) {
   const f = $('noticeForm');
-  f.n1.value = notices[0] || '';
-  f.n2.value = notices[1] || '';
+  f.n1.value = values[0] || '';
+  f.n2.value = values[1] || '';
   $('noticeErr').hidden = true;
   openDlg($('noticeEditDlg'));
   const box = focusIndex === 1 ? f.n2 : f.n1;
@@ -2309,7 +2315,7 @@ $('noticeForm').addEventListener('submit', e => {
   $('noticeEditDlg').close();
   mutate({ action: 'notices', token, notices: next },
     () => { notices = next; },
-    '공지사항이 저장되었습니다.');
+    '공지사항이 저장되었습니다.', null, () => openNoticeEdit(0, next));
 });
 
 /* ===== 화면 색 고르기 (이 기기에만 저장) =====
