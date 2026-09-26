@@ -1156,10 +1156,10 @@ function youtube(url) {
   } catch { return null; }
 }
 
-// 유튜브 재생 화면 — 파트를 누른 것이 곧 재생 요청이라 바로 재생 (막는 기기에서는 ▶를 한 번 더)
+// 유튜브 재생 화면 — 창이 열려도 바로 재생하지 않음 (▶를 눌러야 재생, 2026-09-26 요청)
 const embed = (id, start, title) => el('iframe', {
-  src: `https://www.youtube-nocookie.com/embed/${id}?playsinline=1&rel=0&autoplay=1${start ? '&start=' + start : ''}`,
-  title, allow: 'autoplay; encrypted-media; picture-in-picture; fullscreen; clipboard-write; web-share', // 복사·공유 버튼용
+  src: `https://www.youtube-nocookie.com/embed/${id}?playsinline=1&rel=0${start ? '&start=' + start : ''}`,
+  title, allow: 'encrypted-media; picture-in-picture; fullscreen; clipboard-write; web-share', // 복사·공유 버튼용
   allowfullscreen: '', referrerpolicy: 'strict-origin-when-cross-origin',
 });
 
