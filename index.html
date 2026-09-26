@@ -57,6 +57,11 @@
   }
   body.big { zoom: 1.2; } /* 큰 글씨 보기 */
   body.big .player { zoom: calc(1 / 1.2); } /* 재생창은 확대하지 않음 (영상이 화면 밖으로 넘치지 않게) */
+  body.big .herosong h3 { font-size: 32px; }          /* ×1.2 = 38px — 보통 크기와 같게 */
+  body.big .herosong.compact h3 { font-size: 22px; }
+  body.big .herodate { font-size: 21px; }             /* ×1.2 = 25px */
+  body.big .heroparts a b { font-size: 21px; }        /* ×1.2 = 25px */
+  body.big .herolinks a { font-size: 16.5px; }        /* ×1.2 = 19.8px */
   /* 키보드로 움직일 때 어디에 있는지 잘 보이게 (남색 바탕 위에서는 흰색) */
   :focus-visible { outline: 3px solid var(--navy); outline-offset: 2px; }
   .hero :focus-visible, .player :focus-visible,
@@ -75,7 +80,7 @@
   .logo { height: 54px; width: auto; flex-shrink: 0; align-self: center; }
   .brand { min-width: 0; display: flex; flex-direction: column; justify-content: center; padding-top: 8px; } /* 글자를 로고 가운데보다 조금 아래로 */
   .brand b { display: block; font-size: 26px; line-height: 28px; }
-  .brand small { color: var(--muted); font-size: 13px; line-height: 16px; }
+  .brand small { color: var(--muted); font-size: 14px; line-height: 16px; }
   .topnav { margin-left: auto; flex-shrink: 0; display: flex; gap: 6px; }
   .topnav .btn { display: inline-block; text-decoration: none; font-size: 14px; padding: 8px 12px; white-space: nowrap; }
 
@@ -98,7 +103,7 @@
   .notices { margin: 0 0 18px; display: grid; gap: 8px; }
   .noticebar { display: flex; align-items: center; gap: 10px; width: 100%; min-width: 0; text-align: left; background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; font-weight: 700; font-size: 16px; }
   .noticebar:hover { border-color: var(--navy); }
-  .noticebar .tag { background: var(--accent); color: #fff; font-size: 13px; font-weight: 700; border-radius: 999px; padding: 3px 10px; flex-shrink: 0; }
+  .noticebar .tag { background: var(--accent); color: #fff; font-size: 14px; font-weight: 700; border-radius: 999px; padding: 3px 10px; flex-shrink: 0; }
   .noticebar .txt { overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; } /* 두 줄까지, 넘치면 … */
   .noticebar .more { margin-left: auto; color: var(--muted); font-size: 18px; font-weight: 400; flex-shrink: 0; }
   .noticebar.none { color: var(--muted); font-weight: 400; cursor: default; }
@@ -119,7 +124,15 @@
   .herohead .eyebrow { order: 2; margin: 0; } /* 날짜 뒤에 */
   .herodate { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin: 0; font-size: 25px; font-weight: 800; letter-spacing: -.02em; line-height: 1.15; color: #ffe08a; } /* 날짜는 연한 노랑 (남색 바탕에서 눈에 띄게) */
   .herodate em { color: #fff; font-style: normal; font-size: 14px; font-weight: 700; letter-spacing: 0; background: rgb(255 255 255 / .18); border-radius: 7px; padding: 3px 10px; }
-  .herosong + .herosong { margin-top: 22px; padding-top: 18px; border-top: 1px solid rgb(255 255 255 / .2); }
+  .herosong + .herosong { margin-top: 14px; padding-top: 12px; border-top: 1px solid rgb(255 255 255 / .2); }
+  /* 같은 날 두 번째 곡: 제목·버튼을 작게 (이번 주 찬양이 한 화면을 다 차지하지 않게) */
+  .herosong.compact h3 { font-size: 26px; margin-top: 16px; }
+  .herosong.compact .herolinks { margin-top: 8px; }
+  .herosong.compact .herolinks a { min-height: 38px; font-size: 16px; padding-block: 4px; }
+  .herosong.compact .heroparts { margin-top: 6px; }
+  .herosong.compact .heroparts a { padding-block: 3px; }
+  .herosong.compact .heroparts a b { font-size: 20px; }
+  .herosong.compact .heroparts a i { font-size: 14px; }
   .herosong h3 { margin: 12px 0 2px; font-size: 38px; font-weight: 800; letter-spacing: -.03em; line-height: 1.18; text-wrap: balance; word-break: keep-all; overflow-wrap: anywhere; }
   .heroppl { margin: 0; font-size: 14px; color: rgb(255 255 255 / .8); }
   /* 듣기는 강조색, 반주·악보·실황은 흰 버튼 */
@@ -137,6 +150,8 @@
   .heroparts a b { font-size: 25px; font-weight: 800; line-height: 1.05; } /* 19px의 1.3배 */
   .heroparts a i { font-style: normal; font-size: 15.5px; line-height: 1.25; font-weight: 500; color: #fff; } /* 12px의 1.3배 · 흐리게 하면 밝은 테마에서 대비가 모자라 흰색 그대로 */
   .heroparts a.hl { background: #fff; color: var(--navy); }
+  .heroparts a .tick { display: none; margin-left: 3px; font-size: .72em; vertical-align: .12em; } /* 고른 칸의 작은 ✓ — 반주·악보 흰 버튼과 구분 */
+  .heroparts a.hl .tick { display: inline; }
   .heroparts a.hl i { color: var(--muted); }
   .hero .tbd { color: rgb(255 255 255 / .75); }   /* 남색 바탕 위 '곡 미정' */
   .herotbd { display: inline-block; margin: 0 0 12px; padding: 5px 11px; border-radius: 9px; background: rgb(255 255 255 / .14); font-size: 14px; font-weight: 600; }
@@ -205,7 +220,7 @@
   .rinfo { flex: 1; min-width: 0; }
   .rname { display: block; font-size: 17px; font-weight: 700; color: var(--ink); text-decoration: none; word-break: keep-all; overflow-wrap: anywhere; }
   .rname:hover { text-decoration: underline; }
-  .rinfo small { color: var(--muted); font-size: 13px; }
+  .rinfo small { color: var(--muted); font-size: 14px; }
 
   /* 월이 바뀌는 지점 구분선 */
   .monthsep { margin: 0; display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 14px; font-weight: 700; }
@@ -219,8 +234,8 @@
   /* 날짜·요일·구분을 한 상자로 묶어 음영 (카드 안쪽 위에 붙음) */
   .date { align-self: start; min-width: 86px; display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 8px; border-radius: 10px; background: var(--navy-soft); text-align: center; }
   .date strong { font-size: 20px; font-weight: 800; color: var(--navy); line-height: 1.2; white-space: nowrap; }
-  .date .dow { font-size: 13px; font-weight: 700; color: color-mix(in oklab, var(--muted), var(--ink) 35%); } /* 연한 바탕 위라 조금 진하게 */
-  .date .kind { margin-top: 2px; font-size: 13px; font-weight: 700; color: var(--navy); white-space: nowrap; }
+  .date .dow { font-size: 14px; font-weight: 700; color: color-mix(in oklab, var(--muted), var(--ink) 35%); } /* 연한 바탕 위라 조금 진하게 */
+  .date .kind { margin-top: 2px; font-size: 14px; font-weight: 700; color: var(--navy); white-space: nowrap; }
   .date.special { background: var(--accent-soft); }   /* 주일이 아닌 일정 (집회·특별집회 등) */
   .date.special strong, .date.special .kind { color: var(--accent-dark); }
   .group.tight { margin-top: 6px; }  /* 지휘·반주 줄 바로 아래 파트 연습 버튼 */
@@ -230,8 +245,8 @@
   .headchips .chip { max-width: 100%; overflow-wrap: anywhere; }
   .headchips { display: flex; flex-wrap: wrap; gap: 6px; margin-left: auto; max-width: 100%; }
   .titlerow .people { order: 1; flex-basis: 100%; margin: 0; }
-  .badge { background: var(--navy); color: #fff; font-size: 13px; font-weight: 700; border-radius: 999px; padding: 1px 9px; }
-  .done { color: var(--muted); font-size: 13px; }
+  .badge { background: var(--navy); color: #fff; font-size: 14px; font-weight: 700; border-radius: 999px; padding: 1px 9px; }
+  .done { color: var(--muted); font-size: 14px; }
   .group { margin-top: 10px; }
   .label { margin: 0 0 6px; font-size: 16px; color: var(--muted); }
   .chips { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
@@ -265,8 +280,10 @@
   .playerhead b { flex: 1; min-width: 0; font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .playerhead a { color: #cdd8ec; font-size: 14px; flex-shrink: 0; display: inline-flex; align-items: center; min-height: 44px; padding: 0 6px; }
   .playerhead b { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; white-space: normal !important; }
-  .playerparts { max-width: 760px; margin: 0 auto 8px; display: flex; gap: 6px; }
-  .playerparts button { flex: 1; min-height: 40px; border: 0; border-radius: 9px; background: rgb(255 255 255 / .14); color: #fff; font-size: 16px; font-weight: 700; }
+  .playerparts { flex: 1; min-width: 0; display: flex; gap: 6px; }
+  .player.withparts .playerhead b { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); } /* 화면 읽기용 */
+  .player.withparts #playerOpen { display: none; }
+  .playerparts button { flex: 1; min-width: 0; padding: 0; min-height: 40px; border: 0; border-radius: 9px; background: rgb(255 255 255 / .14); color: #fff; font-size: 16px; font-weight: 700; }
   .playerparts button[aria-pressed="true"] { background: #fff; color: #0f1a2e; }
   .playerhead .iconbtn { background: rgb(255 255 255 / .12); border-color: rgb(255 255 255 / .3); color: #fff; }
   /* 영상은 유튜브가 허용하는 가장 작은 16:9 크기 356×200 (최소 200×200을 지키면서 목록을 덜 가리게).
@@ -277,14 +294,14 @@
   .footbrand { display: flex; align-items: center; gap: 9px; }
   .footbrand img { height: 27px; width: auto; opacity: .85; }
   .footbrand b { display: block; color: var(--ink); font-size: 14px; line-height: 18px; }
-  .footbrand small { display: block; font-size: 13px; line-height: 16px; }
-  .ver { align-self: center; margin-left: 2px; padding: 2px 8px; border-radius: 999px; background: var(--surface-sunken); color: var(--muted); font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; }
-  footer.wrap { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; padding-block: 18px 32px; color: var(--muted); font-size: 13px; border-top: 1px solid var(--line); }
+  .footbrand small { display: block; font-size: 14px; line-height: 16px; }
+  .ver { align-self: center; margin-left: 2px; padding: 2px 8px; border-radius: 999px; background: var(--surface-sunken); color: var(--muted); font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  footer.wrap { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; padding-block: 18px 32px; color: var(--muted); font-size: 14px; border-top: 1px solid var(--line); }
 
   /* 관리자 화면 */
   .guide { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; margin-bottom: 14px; font-size: 14px; }
   .login { max-width: 420px; }
-  .hint { font-weight: 400; color: var(--muted); font-size: 13px; }
+  .hint { font-weight: 400; color: var(--muted); font-size: 14px; }
   .titlehist { margin: -6px 0 12px; padding: 8px 11px; border-radius: 10px; background: var(--warn-bg); border: 1px solid var(--warn-line); font-size: 13.5px; }
   .login .hint, .edhint { margin: 0 0 12px; font-size: 14px; }
   /* 저장·삭제 결과 알림: 화면 위 가운데에 떠 있음 (아래쪽은 재생창·순서 저장 막대 자리) */
@@ -425,8 +442,8 @@
   #fontBtn[aria-pressed="true"] { background: var(--navy); color: #fff; border-color: var(--navy); }
   /* 화면 색 고르기 (바닥글) */
   .themepick { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; }
-  .themepick .tplabel { font-size: 13px; font-weight: 700; color: var(--muted); margin-right: 2px; }
-  .themebtn { display: inline-flex; align-items: center; gap: 7px; min-height: 40px; padding: 7px 12px; border: 1px solid var(--line); border-radius: 999px; background: #fff; font-size: 13px; font-weight: 600; color: var(--ink); }
+  .themepick .tplabel { font-size: 14px; font-weight: 700; color: var(--muted); margin-right: 2px; }
+  .themebtn { display: inline-flex; align-items: center; gap: 7px; min-height: 40px; padding: 7px 12px; border: 1px solid var(--line); border-radius: 999px; background: #fff; font-size: 14px; font-weight: 600; color: var(--ink); }
   .themebtn:hover { border-color: var(--line-strong); }
   .themebtn .dots { display: inline-flex; flex-shrink: 0; }
   .themebtn .dots i { display: block; width: 13px; height: 13px; border-radius: 999px; box-shadow: 0 0 0 1.5px #fff; }
@@ -531,6 +548,7 @@
   /* 480px 규칙보다 뒤에 둬야 이김 */
   /* 크게 보기(1.2배)에서는 실제로 쓸 수 있는 폭이 좁아지므로 576px까지 휴대폰 배치 */
   @media (max-width: 576px) {
+    body.big .ympick select { font-size: 14px; padding: 6px 2px 6px 6px; }
     body.big .modebar { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
     body.big .modebar .btn { grid-column: span 2; padding: 8px 4px; }
     body.big .modebar #modeAssembly, body.big .modebar #modeRehearsal { grid-column: span 3; margin-left: 0; }
@@ -722,10 +740,10 @@
 <div class="player" id="player" hidden>
   <div class="playerhead">
     <b id="playerTitle" aria-live="polite"></b>
+    <div class="playerparts" id="playerParts" role="group" aria-label="다른 파트 듣기" hidden></div>
     <a id="playerOpen" target="_blank" rel="noopener">유튜브에서 열기</a>
     <button type="button" class="iconbtn" id="playerClose" aria-label="재생 닫기" title="재생 닫기">✕</button>
   </div>
-  <div class="playerparts" id="playerParts" role="group" aria-label="다른 파트 듣기" hidden></div>
   <div class="playerframe" id="playerFrame"></div>
 </div>
 
@@ -1178,6 +1196,8 @@ function play(yt, url, caption, ev, part) {
   $('playerOpen').href = url; // 재생이 막힌 영상은 유튜브에서 열도록
   const others = ev ? PARTS.map(p => ({ p, url: safeUrl(ev.parts?.[p]) })).filter(x => youtube(x.url)) : [];
   $('playerParts').hidden = others.length < 2;
+  // 파트 버튼이 있으면 한 줄: 제목은 화면 읽기용으로만 두고, 유튜브 링크는 뺌 (막힌 영상은 유튜브 화면 자체의 '유튜브에서 보기'로)
+  $('player').classList.toggle('withparts', others.length >= 2);
   $('playerParts').replaceChildren(...others.map(({ p, url: u }) => el('button', {
     type: 'button', 'aria-pressed': String(p === part), 'aria-label': `${p === '전체' ? '듣기' : p} 재생`,
     onclick: () => { play(youtube(u), u, `${showTitle(ev)} · ${p === '전체' ? '듣기' : p}`, ev, p); if (PART_SHORT[p]) setMyPart(p); },
@@ -1224,7 +1244,8 @@ const editBtn = ev => el('button', {
 // "지휘 김흥수" / "반주 심가영"을 각각 묶어서, 줄이 바뀌면 사람 단위로 나뉘게 함
 const known = v => v && v.trim() !== '미정';
 const showTitle = ev => isTbd(ev) ? '곡 미정' : ev.title; // 화면·재생창에 보일 제목
-const isTbd = ev => /^미정\d*$/.test(String(ev.title || '').trim()); // '미정', '미정1'처럼 곡이 아직 없는 자리
+// '미정', '미정1'처럼 곡이 아직 없는 자리. 'ㅇ'처럼 한 글자뿐인 제목도 임시로 넣은 것으로 봄
+const isTbd = ev => { const t = String(ev.title || '').trim(); return /^미정\d*$/.test(t) || t.length < 2; };
 const titleEl = (tag, ev) => isTbd(ev) ? el(tag, { class: 'tbd' }, '곡 미정') : el(tag, {}, ev.title);
 const peopleEls = e => [known(e.conductor) && `지휘 ${e.conductor}`, known(e.pianist) && `반주 ${e.pianist}`]
   .filter(Boolean).flatMap((t, i) => (i ? [' · '] : []).concat(el('span', { class: 'nowrap' }, t)));
@@ -1239,7 +1260,7 @@ const partChip = (x, caption, extra, ev) => {
 };
 
 // 이번 주 찬양 한 곡 — 목록의 카드와 달리 곡 제목을 가장 크게 보여 줌. many: 같은 날 곡이 여럿이면 곡마다 구분 표시
-function heroSong(ev, many) {
+function heroSong(ev, many, compact) {
   const people = peopleEls(ev);
   const cap = showTitle(ev);
   const links = [
@@ -1249,9 +1270,9 @@ function heroSong(ev, many) {
     ...linkList(ev.refs, '참고').map(x => ({ ...x, bare: true })),
   ];
   const parts = PARTS.filter(p => !HEAD_PARTS.some(h => h.part === p))
-    .map(p => ({ label: [el('b', {}, PART_SHORT[p] || p), el('i', {}, p)], full: p, url: safeUrl(ev.parts?.[p]), mine: p === myPart, bare: true })) // S / 소프라노 두 줄 (고른 칸은 흰색으로만 표시)
+    .map(p => ({ label: [el('b', {}, PART_SHORT[p] || p, el('span', { class: 'tick', 'aria-hidden': 'true' }, '✓')), el('i', {}, p)], full: p, url: safeUrl(ev.parts?.[p]), mine: p === myPart, bare: true })) // S / 소프라노 두 줄 (고른 칸은 흰색으로만 표시)
     .filter(x => x.url);
-  return el('div', { class: 'herosong' },
+  return el('div', { class: 'herosong' + (compact ? ' compact' : '') },
     many && el('p', { class: 'herotype' }, typeLabel(typeOf(ev))),
     titleEl('h3', ev),
     people.length > 0 && el('p', { class: 'heroppl' }, people),
@@ -1579,9 +1600,11 @@ function renderPublic() {
     $('heroLabel').textContent = heroEvents.length > 1 ? `찬양 ${heroEvents.length}곡 · ${when}` : `${typeOf(heroEvents[0])} · ${when}`;
     // 그 사이에 곡이 아직 없는 일정(집회 등)이 있으면 한 줄로 알려 줌
     $('heroTbd').hidden = !tbdFirst.length;
-    $('heroTbd').textContent = tbdFirst.length ? `먼저 있는 일정: ${[...new Set(tbdFirst.map(e => `${md(e.date)}(${DOW[dowOf(e.date)]}) ${typeLabel(typeOf(e))}`))].join(' · ')} — 곡 미정` : '';
+    const byType = new Map(); // 구분 → 날짜들 ('10/16(금)·10/17(토) 특별집회')
+    tbdFirst.forEach(e => { const k = typeLabel(typeOf(e)), d = `${md(e.date)}(${DOW[dowOf(e.date)]})`; byType.set(k, [...new Set([...(byType.get(k) || []), d])]); });
+    $('heroTbd').textContent = [...byType].map(([k, ds]) => `${ds.join('·')} ${k}`).join(', ') + (tbdFirst.length ? ' (곡 미정)' : '');
     $('heroDate').replaceChildren(`${+nextDate.slice(5, 7)}월 ${+nextDate.slice(8, 10)}일`, el('em', {}, `${DOW[dowOf(nextDate)]}요일`));
-    $('heroCards').replaceChildren(...heroEvents.map(e => heroSong(e, heroEvents.length > 1)));
+    $('heroCards').replaceChildren(...heroEvents.map((e, i) => heroSong(e, heroEvents.length > 1, i > 0))); // 두 번째 곡부터는 작게
     $('shareBtn').onclick = () => shareEvents(heroEvents);
     $('shareBtn').hidden = !heroEvents.some(hasLinks); // 보낼 링크가 없으면 숨김
     $('shareMsg').hidden = true;
@@ -2234,6 +2257,7 @@ function openForm(ev, asCopy, slot = null) {
   $('typeCustomRow').hidden = !!slot || form.type.value !== TYPE_CUSTOM;
   form.title.value = v.title;
   $('tbdChk').checked = !!v.title && isTbd(v);
+  if ($('tbdChk').checked && !/^미정/.test(v.title.trim())) form.title.value = '미정'; // 'ㅇ' 같은 임시 제목은 열 때 '미정'으로 (저장하면 바뀜)
   form.title.readOnly = $('tbdChk').checked;
   showTitleHist();
   form.conductor.value = v.conductor || '';
