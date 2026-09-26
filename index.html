@@ -502,7 +502,43 @@
     body.pssheet #printSheet { padding-bottom: 6mm; }
     .pskind { display: inline-block; margin-left: 1.5mm; padding: 0 1.2mm; border: .7px solid var(--accent-dark); color: var(--accent-dark); border-radius: 1mm; font-size: 8pt; font-weight: 800; vertical-align: .3mm; }
     .psrow.next { background: #fff4c7; box-shadow: -1.5mm 0 0 #fff4c7, 1.5mm 0 0 #fff4c7; }
-    .pslegend { font-size: 7.5pt; color: #555; margin-top: 3mm; }
+    .pslegend { font-size: 8.5pt; color: #555; margin-top: 3mm; }
+    .psright { display: flex; align-items: flex-end; gap: 4mm; }
+    .psqr { width: 18mm; } .psqr svg { display: block; width: 100%; height: auto; }
+    /* 미리보기·검색: 표 */
+    .pstable { width: 100%; border-collapse: collapse; font-size: 11pt; }
+    .pstable thead { display: table-header-group; } /* 쪽마다 머리줄 반복 */
+    .pstable th { text-align: left; font-size: 9pt; color: #555; border-bottom: 1.2px solid var(--navy); padding: 1.5mm 2mm; }
+    .pstable td { padding: 2.2mm 2mm; border-bottom: .5px solid #ccc; vertical-align: top; }
+    .pstable tr { break-inside: avoid; }
+    .pstable td.d { white-space: nowrap; width: 22mm; } .pstable td.t { font-weight: 700; font-size: 12pt; } .pstable td.t.tbd { color: #777; font-weight: 600; }
+    .pstable td.m { font-size: 9pt; color: var(--accent-dark); white-space: nowrap; }
+    .pstable tr.psmrow td { font-weight: 800; color: var(--navy); font-size: 11pt; padding-top: 4mm; border-bottom: 1.2px solid var(--navy); }
+    .pstable tr.next td { background: #fff4c7; }
+    /* 월별: 큰 카드 + 공지 */
+    .psbig { display: grid; gap: 1mm; }
+    .psb { display: grid; grid-template-columns: 22mm 1fr; gap: 5mm; align-items: center; border-bottom: 1px solid #ccc; padding: 2.5mm 0; break-inside: avoid; }
+    .psb.next { background: #fff4c7; }
+    .psb .d { text-align: center; } .psb .d b { display: block; font-size: 26pt; line-height: 1; color: var(--navy); } .psb .d span { font-size: 11pt; font-weight: 700; color: #555; }
+    .psb .k { font-size: 9pt; font-weight: 800; color: var(--accent-dark); } .psb .t { font-size: 18pt; font-weight: 800; letter-spacing: -.02em; line-height: 1.25; } .psb .t.tbd { color: #777; } .psb .p { font-size: 11pt; color: #444; }
+    .psnote { margin-top: 6mm; border: 1.5px solid var(--accent); border-radius: 3mm; padding: 3mm 4mm; break-inside: avoid; }
+    .psnote .h { font-weight: 800; color: var(--accent); font-size: 10pt; } .psnote p { margin: 1mm 0 0; font-size: 12pt; white-space: pre-line; }
+    /* 연도별 ②: 1년 한눈에 (가로 A4) */
+    #printSheet.land { page: land; }
+    @page land { size: A4 landscape; margin: 12mm; }
+    .psyear { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3mm; }
+    .psmb { border: 1px solid #c5ccd6; border-radius: 2mm; padding: 1.8mm 2.2mm; min-height: 38mm; break-inside: avoid; } .psmb.empty { background: #f5f5f5; }
+    .psmb .psmon { margin: 0 0 1mm; font-size: 11pt; }
+    .psi { display: grid; grid-template-columns: 5mm 1fr auto; gap: 1.2mm; font-size: 8.8pt; line-height: 1.35; } .psi.next { background: #fff4c7; }
+    .psi b { color: var(--navy); text-align: right; } .psi span { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; } .psi span.tbd { color: #777; }
+    .psi em { font-style: normal; font-size: 7.5pt; color: var(--accent-dark); font-weight: 800; } .psmb .none { color: #aaa; font-size: 9pt; }
+    /* 집회 특송: 집회별 순서표 */
+    .psser { margin-bottom: 7mm; break-inside: avoid; }
+    .psser .h { display: flex; justify-content: space-between; align-items: baseline; background: var(--navy); color: #fff; border-radius: 2mm 2mm 0 0; padding: 2mm 3.5mm; } .psser .h b { font-size: 14pt; } .psser .h span { font-size: 10pt; }
+    .psser table { width: 100%; border-collapse: collapse; font-size: 11.5pt; border: 1px solid #c5ccd6; border-top: 0; }
+    .psser th { text-align: left; font-size: 8.5pt; color: #555; padding: 1.5mm 3mm; border-bottom: 1px solid #c5ccd6; background: #f3f5f8; }
+    .psser td { padding: 2.5mm 3mm; border-bottom: .5px solid #ddd; } .psser td.n { width: 16mm; color: var(--navy); font-weight: 800; font-size: 10pt; } .psser td.d { width: 26mm; white-space: nowrap; }
+    .psser td.t { font-weight: 800; } .psser td.t.tbd { color: #777; font-weight: 600; }
     .pslegend b { display: inline-block; width: 3mm; height: 3mm; border-radius: 1mm; background: #fff4c7; vertical-align: -.4mm; margin-right: 1mm; }
   }
   @media (max-width: 480px) {
@@ -518,7 +554,7 @@
     .date strong { font-size: 17px; }
     .date .dow, .date .kind { font-size: 14px; }
     .group .chips { gap: 5px; }
-    #printBtn { display: none; } /* 인쇄는 넓은 화면에서만 */
+    #printBtn, #printBtn2 { display: none; } /* 인쇄는 넓은 화면에서만 */
     /* 보기 버튼 5개: 위 3개·아래 2개 격자 (한 개만 떨어져 남지 않게, 글자는 크게) */
     .modebar { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
     .modebar .btn { grid-column: span 2; font-size: 15px !important; padding: 8px 4px !important; }
@@ -666,6 +702,7 @@
         <button type="button" class="btn" id="sortBtn" hidden></button>
         <button type="button" class="btn" id="nowBtn" hidden></button>
         <button type="button" class="btn" id="printBtn" hidden>인쇄</button>
+        <button type="button" class="btn" id="printBtn2" hidden>인쇄 · 한눈에</button>
       </div>
 
       <p class="summary" id="searchSummary" role="status" hidden></p>
@@ -903,7 +940,7 @@
   </form>
 </dialog>
 
-<!-- 인쇄할 때만 보이는 종이용 쪽 (연도별 [인쇄]) — 내용은 인쇄 직전에 채움 -->
+<!-- 인쇄할 때만 보이는 종이용 쪽 ([인쇄] 버튼·브라우저 메뉴 인쇄 모두) — 내용은 인쇄 직전에 채움 -->
 <div id="printSheet"></div>
 
 <script>
@@ -1645,7 +1682,7 @@ function renderPublic() {
     ? { list: [], title: `${yearLabel(viewY)} ${periodMonths().join('-')}월 연습 영상`, summary: `연습 영상 ${shownRehearsals.length}개${rehearsalAuto === `${viewY}-${viewB}` ? ' · 가장 최근 영상이 있는 기간' : ''}`, empty: '', emptySundays: [] }
     : buildView();
   $('viewTitle').textContent = view.title;
-  printView = rehearsalMode ? null : { title: view.title, list: view.list }; // 인쇄할 목록
+  printView = rehearsalMode ? null : { kind: query ? 'search' : mode, title: view.title, range: view.range, list: view.list }; // 인쇄할 목록 (연습 영상은 인쇄 없음)
   $('summary').textContent = view.summary;
   if (rehearsalMode) renderRehearsals(shownRehearsals);
   else $('list').replaceChildren(...(view.list.length
@@ -1690,7 +1727,10 @@ function renderPublic() {
   $('sortBtn').hidden = mode !== 'year' && mode !== 'rehearsal';
   $('sortBtn').textContent = newestFirst[mode] ? '예전부터 보기' : '최근부터 보기';
   $('monthSel').hidden = mode !== 'month';
-  $('printBtn').hidden = mode !== 'year';
+  // [인쇄]: 미리보기·월별·연도별·집회 특송 (연습 영상은 없음). 연도별은 목록·한눈에 두 가지
+  $('printBtn').hidden = !['upcoming', 'month', 'year', 'assembly'].includes(mode);
+  $('printBtn').textContent = mode === 'year' ? '인쇄 · 목록' : '인쇄';
+  $('printBtn2').hidden = mode !== 'year';
   // '현재 8주' 버튼은 기간을 옮겼을 때만 보여 줌
   $('nowBtn').hidden = mode !== 'upcoming' || upcomingStart === nextSunday();
   $('nowBtn').textContent = `현재 ${UPCOMING_WEEKS}주`;
@@ -2756,34 +2796,113 @@ const showPeriod = m => {
 $('modeAssembly').onclick = () => showPeriod('assembly');
 $('modeRehearsal').onclick = () => showPeriod('rehearsal');
 $('modeYear').onclick = () => showYear(viewY);
-$('printBtn').onclick = () => print();
+// 연도별은 [인쇄 · 목록]과 [인쇄 · 한눈에] 두 가지. 브라우저 메뉴로 인쇄하면 목록
+let printStyle = null;
+$('printBtn').onclick = () => { printStyle = 'list'; print(); };
+$('printBtn2').onclick = () => { printStyle = 'glance'; print(); };
+addEventListener('afterprint', () => { printStyle = null; });
 
-/* ===== 인쇄 — A4 한 장에 2단 목록 (시안 B) =====
-   인쇄 직전에 지금 보고 있는 목록으로 종이용 쪽을 만들고, 나머지 화면은 인쇄에서 뺌.
-   연습 영상처럼 목록이 없는 화면에서는 예전처럼 화면을 그대로 간단히 인쇄 */
-let printView = null; // { title, list } — renderPublic에서 채움
-function buildPrintSheet() {
-  document.body.classList.toggle('pssheet', !!printView?.list.length);
-  if (!printView?.list.length) return;
-  const { title, list } = printView;
-  const next = events.find(e => e.date >= TODAY && !isTbd(e))?.date; // 화면의 이번 주 찬양과 같은 곡을 강조
-  const multiYear = new Set(list.map(e => e.date.slice(0, 4))).size > 1; // 해가 섞이면 월 앞에 연도도
-  const months = new Map();
-  list.forEach(e => { const k = e.date.slice(0, 7); months.has(k) || months.set(k, []); months.get(k).push(e); });
-  $('printSheet').replaceChildren(
-    el('div', { class: 'pshead' },
-      el('div', {}, el('div', { class: 'psorg' }, '인천영종교회 찬양대'), el('h1', {}, title)),
-      el('div', { class: 'psmeta' }, `${list.length}곡 · ${TODAY.slice(2, 4)}. ${+TODAY.slice(5, 7)}. ${+TODAY.slice(8, 10)}. 기준`, el('br'), location.host)),
-    el('div', { class: 'pscols' }, [...months].map(([k, rows]) => el('div', { class: 'psmonth' }, // 한 달치를 한 덩어리로
-      el('div', { class: 'psmon' }, `${multiYear ? yearLabel(k.slice(0, 4)) + ' ' : ''}${+k.slice(5)}월`, el('small', {}, `${rows.length}곡`)),
+/* ===== 인쇄 — 화면마다 사용자가 고른 모양 (2026-09-26 시안에서 선택) =====
+   미리보기·검색: 표 / 월별: 큰 카드 + 공지 + 사이트 QR / 연도별: 2단 목록 또는 1년 한눈에(가로) / 집회 특송: 집회별 순서표
+   인쇄 직전에 지금 보고 있는 목록으로 종이용 쪽을 만들고, 나머지 화면은 인쇄에서 뺌. 연습 영상은 인쇄 없음 */
+let printView = null; // { kind, title, range, list } — renderPublic에서 채움
+// 사이트 주소 QR (주소가 바뀌지 않으므로 미리 만들어 넣어 둠 — 인터넷 없이도 인쇄됨)
+const SITE_QR = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="-2 -2 33 33" shape-rendering="crispEdges"><rect x="-2" y="-2" width="33" height="33" fill="#fff"/><path d="M0 0h7v1h-7zM9 0h4v1h-4zM14 0h1v1h-1zM19 0h1v1h-1zM22 0h7v1h-7zM0 1h1v1h-1zM6 1h1v1h-1zM9 1h1v1h-1zM11 1h1v1h-1zM16 1h1v1h-1zM20 1h1v1h-1zM22 1h1v1h-1zM28 1h1v1h-1zM0 2h1v1h-1zM2 2h3v1h-3zM6 2h1v1h-1zM9 2h4v1h-4zM14 2h2v1h-2zM17 2h2v1h-2zM20 2h1v1h-1zM22 2h1v1h-1zM24 2h3v1h-3zM28 2h1v1h-1zM0 3h1v1h-1zM2 3h3v1h-3zM6 3h1v1h-1zM13 3h1v1h-1zM16 3h1v1h-1zM18 3h2v1h-2zM22 3h1v1h-1zM24 3h3v1h-3zM28 3h1v1h-1zM0 4h1v1h-1zM2 4h3v1h-3zM6 4h1v1h-1zM9 4h3v1h-3zM18 4h1v1h-1zM22 4h1v1h-1zM24 4h3v1h-3zM28 4h1v1h-1zM0 5h1v1h-1zM6 5h1v1h-1zM8 5h1v1h-1zM15 5h3v1h-3zM19 5h2v1h-2zM22 5h1v1h-1zM28 5h1v1h-1zM0 6h7v1h-7zM8 6h1v1h-1zM10 6h1v1h-1zM12 6h1v1h-1zM14 6h1v1h-1zM16 6h1v1h-1zM18 6h1v1h-1zM20 6h1v1h-1zM22 6h7v1h-7zM9 7h5v1h-5zM15 7h6v1h-6zM0 8h1v1h-1zM3 8h1v1h-1zM5 8h2v1h-2zM8 8h1v1h-1zM10 8h2v1h-2zM14 8h1v1h-1zM16 8h1v1h-1zM20 8h2v1h-2zM23 8h1v1h-1zM2 9h4v1h-4zM8 9h1v1h-1zM11 9h1v1h-1zM13 9h1v1h-1zM15 9h3v1h-3zM20 9h3v1h-3zM25 9h1v1h-1zM28 9h1v1h-1zM5 10h3v1h-3zM10 10h2v1h-2zM13 10h3v1h-3zM19 10h2v1h-2zM25 10h3v1h-3zM1 11h1v1h-1zM3 11h3v1h-3zM7 11h1v1h-1zM9 11h5v1h-5zM16 11h1v1h-1zM18 11h1v1h-1zM26 11h2v1h-2zM1 12h3v1h-3zM5 12h2v1h-2zM9 12h2v1h-2zM12 12h1v1h-1zM14 12h2v1h-2zM17 12h1v1h-1zM19 12h5v1h-5zM25 12h1v1h-1zM27 12h2v1h-2zM5 13h1v1h-1zM8 13h1v1h-1zM10 13h7v1h-7zM19 13h1v1h-1zM21 13h1v1h-1zM1 14h2v1h-2zM4 14h3v1h-3zM10 14h5v1h-5zM17 14h1v1h-1zM23 14h6v1h-6zM0 15h1v1h-1zM3 15h1v1h-1zM8 15h1v1h-1zM11 15h2v1h-2zM15 15h1v1h-1zM17 15h1v1h-1zM19 15h2v1h-2zM23 15h1v1h-1zM25 15h1v1h-1zM27 15h1v1h-1zM0 16h2v1h-2zM4 16h5v1h-5zM10 16h1v1h-1zM13 16h1v1h-1zM17 16h2v1h-2zM20 16h2v1h-2zM23 16h1v1h-1zM27 16h1v1h-1zM1 17h1v1h-1zM4 17h1v1h-1zM8 17h1v1h-1zM10 17h1v1h-1zM13 17h5v1h-5zM22 17h2v1h-2zM25 17h1v1h-1zM28 17h1v1h-1zM0 18h1v1h-1zM2 18h1v1h-1zM5 18h4v1h-4zM10 18h1v1h-1zM14 18h4v1h-4zM22 18h1v1h-1zM27 18h2v1h-2zM2 19h1v1h-1zM5 19h1v1h-1zM7 19h1v1h-1zM9 19h2v1h-2zM12 19h1v1h-1zM14 19h1v1h-1zM17 19h1v1h-1zM23 19h2v1h-2zM27 19h2v1h-2zM0 20h1v1h-1zM2 20h1v1h-1zM4 20h3v1h-3zM8 20h1v1h-1zM11 20h1v1h-1zM15 20h2v1h-2zM20 20h5v1h-5zM26 20h1v1h-1zM8 21h1v1h-1zM12 21h1v1h-1zM14 21h2v1h-2zM17 21h1v1h-1zM19 21h2v1h-2zM24 21h1v1h-1zM26 21h3v1h-3zM0 22h7v1h-7zM10 22h1v1h-1zM12 22h1v1h-1zM16 22h1v1h-1zM18 22h1v1h-1zM20 22h1v1h-1zM22 22h1v1h-1zM24 22h1v1h-1zM27 22h1v1h-1zM0 23h1v1h-1zM6 23h1v1h-1zM8 23h1v1h-1zM10 23h1v1h-1zM12 23h1v1h-1zM14 23h1v1h-1zM16 23h1v1h-1zM18 23h1v1h-1zM20 23h1v1h-1zM24 23h3v1h-3zM28 23h1v1h-1zM0 24h1v1h-1zM2 24h3v1h-3zM6 24h1v1h-1zM9 24h1v1h-1zM12 24h1v1h-1zM15 24h3v1h-3zM20 24h5v1h-5zM27 24h1v1h-1zM0 25h1v1h-1zM2 25h3v1h-3zM6 25h1v1h-1zM8 25h4v1h-4zM13 25h1v1h-1zM16 25h5v1h-5zM22 25h5v1h-5zM28 25h1v1h-1zM0 26h1v1h-1zM2 26h3v1h-3zM6 26h1v1h-1zM14 26h1v1h-1zM16 26h3v1h-3zM24 26h3v1h-3zM28 26h1v1h-1zM0 27h1v1h-1zM6 27h1v1h-1zM9 27h1v1h-1zM15 27h1v1h-1zM17 27h1v1h-1zM19 27h2v1h-2zM27 27h1v1h-1zM0 28h7v1h-7zM8 28h2v1h-2zM12 28h1v1h-1zM14 28h1v1h-1zM16 28h2v1h-2zM20 28h2v1h-2zM27 28h1v1h-1z" fill="#000"/></svg>';
+const peopleText = e => [known(e.conductor) && `지휘 ${e.conductor}`, known(e.pianist) && `반주 ${e.pianist}`].filter(Boolean).join(' · ');
+const byMonth = list => { const m = new Map(); list.forEach(e => { const k = e.date.slice(0, 7); m.has(k) || m.set(k, []); m.get(k).push(e); }); return m; };
+const kindTag = e => typeOf(e) !== '주일 찬양' && el('span', { class: 'pskind' }, typeLabel(typeOf(e)));
+
+// 미리보기·검색: 날짜·구분·찬양·지휘·반주·자료 표
+function psTable(list, next) {
+  const multiYear = new Set(list.map(e => e.date.slice(0, 4))).size > 1;
+  return [el('table', { class: 'pstable' },
+    el('thead', {}, el('tr', {}, ...['날짜', '구분', '찬양', '지휘', '반주', '자료'].map(h => el('th', {}, h)))),
+    el('tbody', {}, ...[...byMonth(list)].flatMap(([k, rows]) => [
+      el('tr', { class: 'psmrow' }, el('td', { colspan: 6 }, `${multiYear ? yearLabel(k.slice(0, 4)) + ' ' : ''}${+k.slice(5)}월`)),
+      ...rows.map(e => el('tr', { class: e.date === next ? 'next' : null },
+        el('td', { class: 'd' }, el('b', {}, md(e.date)), ` (${DOW[dowOf(e.date)]})`),
+        el('td', {}, typeLabel(typeOf(e))),
+        el('td', { class: 't' + (isTbd(e) ? ' tbd' : '') }, showTitle(e)),
+        el('td', {}, known(e.conductor) ? e.conductor : ''),
+        el('td', {}, known(e.pianist) ? e.pianist : ''),
+        el('td', { class: 'm' }, [PARTS.some(p => safeUrl(e.parts?.[p])) && '영상', linkList(e.scores, '').length && '악보'].filter(Boolean).join(' ') || '—')))]))),
+    el('p', { class: 'pslegend' }, el('b'), '이번 주 찬양 · 자료: 사이트에 파트 연습 영상·악보가 있음')];
+}
+// 월별: 날짜를 크게, 곡마다 큰 글씨 + 아래 공지
+function psMonth(list, next) {
+  const ns = notices.map(n => String(n || '').trim()).filter(Boolean);
+  return [el('div', { class: 'psbig' }, ...list.map(e => el('div', { class: 'psb' + (e.date === next ? ' next' : '') },
+      el('div', { class: 'd' }, el('b', {}, +e.date.slice(8, 10)), el('span', {}, DOW[dowOf(e.date)])),
+      el('div', {}, el('div', { class: 'k' }, typeLabel(typeOf(e))),
+        el('div', { class: 't' + (isTbd(e) ? ' tbd' : '') }, showTitle(e)),
+        el('div', { class: 'p' }, peopleText(e)))))),
+    ns.length > 0 && el('div', { class: 'psnote' }, el('div', { class: 'h' }, '공지'), ...ns.map(n => el('p', {}, n)))].filter(Boolean);
+}
+// 연도별 ① 2단 목록 (한 달치를 한 덩어리로)
+function psYearList(list, next) {
+  return [el('div', { class: 'pscols' }, [...byMonth(list)].map(([k, rows]) => el('div', { class: 'psmonth' },
+      el('div', { class: 'psmon' }, `${+k.slice(5)}월`, el('small', {}, `${rows.length}곡`)),
       ...rows.map(e => el('div', { class: 'psrow' + (e.date === next ? ' next' : '') },
         el('div', { class: 'psd' }, md(e.date), el('small', {}, `${DOW[dowOf(e.date)]}요일`)),
         el('div', {},
-          el('div', { class: 'pst' + (isTbd(e) ? ' tbd' : '') }, showTitle(e), typeOf(e) !== '주일 찬양' && el('span', { class: 'pskind' }, typeLabel(typeOf(e)))),
-          el('div', { class: 'psp' }, [known(e.conductor) && `지휘 ${e.conductor}`, known(e.pianist) && `반주 ${e.pianist}`].filter(Boolean).join(' · ') || '\u00a0')))),
-    ))),
-    el('div', { class: 'pslegend' }, el('b'), '이번 주 찬양 · 테두리 표시 = 주일이 아닌 일정'),
-    el('div', { class: 'psfoot' }, `인천영종교회 찬양대 · ${title} · ${TODAY.slice(2, 4)}. ${+TODAY.slice(5, 7)}. ${+TODAY.slice(8, 10)}. 기준`)); // 쪽마다 아래에
+          el('div', { class: 'pst' + (isTbd(e) ? ' tbd' : '') }, showTitle(e), kindTag(e)),
+          el('div', { class: 'psp' }, peopleText(e) || '\u00a0'))))))),
+    el('div', { class: 'pslegend' }, el('b'), '이번 주 찬양 · 테두리 표시 = 주일이 아닌 일정')];
+}
+// 연도별 ② 1년 한눈에 — 12달 칸 (가로 A4)
+function psGlance(list, next) {
+  const m = byMonth(list), y = list[0]?.date.slice(0, 4) || String(viewY);
+  return [el('div', { class: 'psyear' }, ...Array.from({ length: 12 }, (_, i) => {
+    const rows = m.get(`${y}-${pad(i + 1)}`) || [];
+    return el('div', { class: 'psmb' + (rows.length ? '' : ' empty') },
+      el('div', { class: 'psmon' }, `${i + 1}월`, el('small', {}, rows.length ? `${rows.length}곡` : '')),
+      ...(rows.length ? rows.map(e => el('div', { class: 'psi' + (e.date === next ? ' next' : '') },
+        el('b', {}, +e.date.slice(8, 10)), el('span', { class: isTbd(e) ? 'tbd' : null }, showTitle(e)),
+        typeOf(e) !== '주일 찬양' ? el('em', {}, typeLabel(typeOf(e))) : el('i'))) : [el('div', { class: 'none' }, '—')]));
+  }))];
+}
+// 집회 특송: 하루씩 이어지는 같은 구분을 한 집회로 묶어 1일차·2일차… (제목 괄호 속은 '부르는 사람')
+function psAssembly(list) {
+  const series = [];
+  list.forEach(e => {
+    const last = series[series.length - 1]?.at(-1);
+    if (last && typeOf(last) === typeOf(e) && utc(e.date) - utc(last.date) === 864e5) series[series.length - 1].push(e);
+    else series.push([e]);
+  });
+  const split = e => { const t = showTitle(e), m = /^(.*?)\s*\(([^)]*)\)\s*$/.exec(t); return m ? [m[1], m[2]] : [t, peopleText(e)]; };
+  const day = k => `${md(k)}(${DOW[dowOf(k)]})`;
+  return series.map(s => el('div', { class: 'psser' },
+    el('div', { class: 'h' }, el('b', {}, typeOf(s[0]).replace(/ 특송$/, '')),
+      el('span', {}, `${s.length > 1 ? `${day(s[0].date)} – ${day(s.at(-1).date)}` : day(s[0].date)} · ${s.length}일`)),
+    el('table', {},
+      el('thead', {}, el('tr', {}, ...['', '날짜', '찬양', '부르는 사람'].map(h => el('th', {}, h)))),
+      el('tbody', {}, ...s.map((e, i) => { const [song, who] = split(e); return el('tr', {},
+        el('td', { class: 'n' }, `${i + 1}일차`), el('td', { class: 'd' }, `${md(e.date)} (${DOW[dowOf(e.date)]})`),
+        el('td', { class: 't' + (isTbd(e) ? ' tbd' : '') }, song), el('td', {}, who || '—')); })))));
+}
+
+function buildPrintSheet() {
+  const on = !!printView?.list.length;
+  document.body.classList.toggle('pssheet', on);
+  if (!on) return;
+  const { kind, title, range } = printView;
+  const list = kind === 'year' ? [...printView.list].sort((a, b) => a.date.localeCompare(b.date)) : printView.list; // 종이는 늘 날짜순
+  const next = events.find(e => e.date >= TODAY && !isTbd(e))?.date; // 화면의 이번 주 찬양과 같은 곡을 강조
+  const stamp = `${TODAY.slice(2, 4)}. ${+TODAY.slice(5, 7)}. ${+TODAY.slice(8, 10)}. 기준`;
+  const glance = kind === 'year' && printStyle === 'glance';
+  const body = kind === 'month' ? psMonth(list, next) : kind === 'assembly' ? psAssembly(list)
+    : kind === 'year' ? (glance ? psGlance(list, next) : psYearList(list, next)) : psTable(list, next);
+  const qr = kind === 'month' && el('div', { class: 'psqr', 'aria-hidden': 'true' });
+  if (qr) qr.innerHTML = SITE_QR; // 미리 만들어 둔 그림 (사용자 입력 아님)
+  $('printSheet').className = glance ? 'land' : ''; // 1년 한눈에는 가로 A4
+  $('printSheet').replaceChildren(
+    el('div', { class: 'pshead' },
+      el('div', {}, el('div', { class: 'psorg' }, '인천영종교회 찬양대'), el('h1', {}, glance ? title.replace('일정', '한눈에') : title)),
+      el('div', { class: 'psright' },
+        el('div', { class: 'psmeta' }, range && range, range && el('br'), `${list.length}곡 · ${stamp}`, el('br'), location.host),
+        qr)),
+    ...body,
+    el('div', { class: 'psfoot' }, `인천영종교회 찬양대 · ${title} · ${stamp}`)); // 쪽마다 아래에
 }
 addEventListener('beforeprint', buildPrintSheet);
 
