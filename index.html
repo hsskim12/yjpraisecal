@@ -115,8 +115,8 @@
   body:has(#topZone:not([hidden]) :is(#hero, #heroSkel):not([hidden])) #fontBtn[aria-pressed="true"] { background: #fff; color: var(--navy); }
   .hero .eyebrow { color: rgb(255 255 255 / .8); margin: 0 0 4px; font-size: 14px; letter-spacing: .02em; } /* 한글은 자간을 벌리지 않음 */
   /* 날짜 줄: '9월 27일 [일요일]' — 요일 알약은 날짜와 같은 줄 */
-  .herodate { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin: 0; font-size: 25px; font-weight: 800; letter-spacing: -.02em; line-height: 1.15; }
-  .herodate em { font-style: normal; font-size: 14px; font-weight: 700; letter-spacing: 0; background: rgb(255 255 255 / .18); border-radius: 7px; padding: 3px 10px; }
+  .herodate { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin: 0; font-size: 25px; font-weight: 800; letter-spacing: -.02em; line-height: 1.15; color: #ffe08a; } /* 날짜는 연한 노랑 (남색 바탕에서 눈에 띄게) */
+  .herodate em { color: #fff; font-style: normal; font-size: 14px; font-weight: 700; letter-spacing: 0; background: rgb(255 255 255 / .18); border-radius: 7px; padding: 3px 10px; }
   .herosong + .herosong { margin-top: 22px; padding-top: 18px; border-top: 1px solid rgb(255 255 255 / .2); }
   .herosong h3 { margin: 12px 0 2px; font-size: 38px; font-weight: 800; letter-spacing: -.03em; line-height: 1.18; text-wrap: balance; word-break: keep-all; overflow-wrap: anywhere; }
   .heroppl { margin: 0; font-size: 14px; color: rgb(255 255 255 / .8); }
