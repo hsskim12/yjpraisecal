@@ -128,7 +128,7 @@
   .herolinks a.hi { background: var(--accent); color: #fff; }
   .herolinks a.hi:hover { background: var(--accent-dark); }
   /* 파트 버튼 — 큼직한 네 칸, S / 소프라노 두 줄. 고른 파트(내 파트)는 하얗게 */
-  .heroparts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 7px; margin-top: 12px; } /* 위 테두리에 걸친 '내 파트' 표시 자리 */
+  .heroparts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 7px; margin-top: 8px; }
   .heroparts a { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0; padding: 6px 2px 5px;
     color: #fff; background: rgb(255 255 255 / .14); border-radius: 13px; text-decoration: none; }
   .heroparts a:not(.hl):hover { box-shadow: inset 0 0 0 2px rgb(255 255 255 / .6); } /* 바탕을 밝히면 흰 글자 대비가 모자라 테두리로 */
@@ -136,10 +136,6 @@
   .heroparts a i { font-style: normal; font-size: 15.5px; line-height: 1.25; font-weight: 500; color: #fff; } /* 12px의 1.3배 · 흐리게 하면 밝은 테마에서 대비가 모자라 흰색 그대로 */
   .heroparts a.hl { background: #fff; color: var(--navy); }
   .heroparts a.hl i { color: var(--muted); }
-  /* '내 파트' — 고른 칸에만, 칸 위 테두리에 걸친 작은 표시 (칸이 세 줄로 커지지 않게) */
-  .heroparts a em { display: none; position: absolute; top: 0; left: 50%; transform: translate(-50%, -50%); white-space: nowrap;
-    padding: 1px 8px; border-radius: 999px; background: var(--accent); color: #fff; font-style: normal; font-size: 13px; font-weight: 800; line-height: 1.4; }
-  .heroparts a.hl em { display: block; }
   .hero .tbd { color: rgb(255 255 255 / .75); }   /* 남색 바탕 위 '곡 미정' */
   .herotbd { display: inline-block; margin: 0 0 12px; padding: 5px 11px; border-radius: 9px; background: rgb(255 255 255 / .14); font-size: 14px; font-weight: 600; }
   .herotype { margin: 0 0 -12px; font-size: 14px; font-weight: 700; color: rgb(255 255 255 / .85); } /* 같은 날 여러 곡일 때 곡마다 구분 */
@@ -1249,7 +1245,7 @@ function heroSong(ev, many) {
     ...linkList(ev.refs, '참고').map(x => ({ ...x, bare: true })),
   ];
   const parts = PARTS.filter(p => !HEAD_PARTS.some(h => h.part === p))
-    .map(p => ({ label: [el('b', {}, PART_SHORT[p] || p), el('i', {}, p), el('em', {}, '내 파트')], full: p, url: safeUrl(ev.parts?.[p]), mine: p === myPart, bare: true })) // S / 소프라노 두 줄 ('내 파트'는 고른 칸에만 보임)
+    .map(p => ({ label: [el('b', {}, PART_SHORT[p] || p), el('i', {}, p)], full: p, url: safeUrl(ev.parts?.[p]), mine: p === myPart, bare: true })) // S / 소프라노 두 줄 (고른 칸은 흰색으로만 표시)
     .filter(x => x.url);
   return el('div', { class: 'herosong' },
     many && el('p', { class: 'herotype' }, typeLabel(typeOf(ev))),
