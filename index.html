@@ -32,6 +32,7 @@
     --line: #e0e3e9; --line-strong: #c5ccd6; --surface-sunken: #eceef2;
     /* 테마와 무관하게 뜻이 고정된 색 */
     --card: #fff; --danger: #b3261e; --ok: #2e7d32;
+    --note: #7a4b00; /* 안내 메모 — 경고(빨강)와 구분되는 갈색 */
     --warn-bg: #fff8d6; --warn-line: #ecd67a;
   }
   /* 테마 2 — 미드나잇 & 코랄 */
@@ -63,9 +64,10 @@
   body.big .heroparts a b { font-size: 21px; }        /* ×1.2 = 25px */
   body.big .herolinks a { font-size: 16.5px; }        /* ×1.2 = 19.8px */
   /* 키보드로 움직일 때 어디에 있는지 잘 보이게 (남색 바탕 위에서는 흰색) */
-  :focus-visible { outline: 3px solid var(--navy); outline-offset: 2px; }
+  /* 두 겹(안쪽 흰 선 + 바깥 남색 선) — 남색 버튼 위에서도 보임. 남색 바탕에서는 반대로 */
+  :focus-visible { outline: 3px solid var(--navy) !important; outline-offset: 2px; box-shadow: 0 0 0 2px #fff !important; } /* 요소 자체의 그림자 규칙보다 우선 */
   .hero :focus-visible, .player :focus-visible,
-  body:has(#topZone:not([hidden]) :is(#hero, #heroSkel):not([hidden])) .top :focus-visible { outline-color: #fff; }
+  body:has(#topZone:not([hidden]) :is(#hero, #heroSkel):not([hidden])) .top :focus-visible { outline-color: #fff !important; box-shadow: 0 0 0 2px rgb(0 0 0 / .55) !important; }
   .skip { position: absolute; left: 12px; top: -60px; z-index: 30; padding: 10px 14px; border-radius: 10px; background: var(--navy); color: #fff; font-weight: 700; text-decoration: none; }
   .skip:focus { top: 12px; }
   a { color: inherit; }
@@ -137,9 +139,9 @@
   .heroppl { margin: 0; font-size: 14px; color: rgb(255 255 255 / .8); }
   /* 듣기는 강조색, 반주·악보·실황은 흰 버튼 */
   .herolinks { display: grid; grid-template-columns: repeat(auto-fit, minmax(88px, 1fr)); gap: 7px; margin-top: 12px; } /* 좁아져도 한 버튼만 한 줄을 다 차지하지 않게 */
-  .herolinks a { min-width: 0; min-height: 44px; display: inline-flex; align-items: center; justify-content: center;
+  .herolinks a, .herolinks button { min-width: 0; min-height: 44px; border: 0; display: inline-flex; align-items: center; justify-content: center;
     font-size: 19.5px; font-weight: 700; color: var(--navy); background: #fff; border-radius: 13px; padding: 8px 12px; text-decoration: none; } /* 15px의 1.3배 */
-  .herolinks a:hover { background: var(--navy-soft); }
+  .herolinks a:hover, .herolinks button:hover { background: var(--navy-soft); }
   .herolinks a.hi { background: var(--accent); color: #fff; }
   .herolinks a.hi:hover { background: var(--accent-dark); }
   /* 파트 버튼 — 큼직한 네 칸, S / 소프라노 두 줄. 고른 파트(내 파트)는 하얗게 */
@@ -176,15 +178,15 @@
   .searchrow .glass { position: absolute; left: 16px; display: grid; place-items: center; color: var(--muted); pointer-events: none; }
   .searchrow input {
     flex: 1; min-width: 0; font: inherit; font-size: 15px;
-    padding: 12px 44px 12px 44px; border: 1px solid #d7dde6; border-radius: 999px; background: var(--surface-sunken); color: var(--ink);
+    padding: 12px 44px 12px 44px; border: 1px solid var(--line-strong); border-radius: 999px; background: var(--surface-sunken); color: var(--ink);
   }
   .searchrow input::placeholder { color: var(--muted); opacity: 1; }
   .searchrow input::-webkit-search-cancel-button { display: none; } /* 기기 기본 × 대신 아래 버튼 사용 */
   .searchrow input:focus { background: #fff; }
   .searchrow input:focus-visible { outline: 2px solid var(--navy); outline-offset: 2px; } /* 키보드로 왔을 때만 테두리 */
   .searchrow .clearbtn {
-    position: absolute; right: 8px; width: 30px; height: 30px; border: 0; border-radius: 999px;
-    background: #d7dde6; color: #3d4757; font-size: 15px; line-height: 1; display: grid; place-items: center;
+    position: absolute; right: 6px; width: 36px; height: 36px; border: 0; border-radius: 999px;
+    background: var(--line-strong); color: #3d4757; font-size: 15px; line-height: 1; display: grid; place-items: center;
   }
   .searchrow .clearbtn:hover { background: #c6cedb; color: var(--ink); }
   .viewhead { margin-bottom: 10px; }
@@ -251,7 +253,7 @@
   .label { margin: 0 0 6px; font-size: 16px; color: var(--muted); }
   .chips { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
   .chip { display: inline-flex; align-items: center; justify-content: center; gap: 5px; min-height: 44px; padding: 8px 14px; border-radius: 10px; background: var(--navy-soft); color: var(--navy); text-decoration: none; font-size: 15px; font-weight: 600; }
-  .chip:hover { background: #dbe4f3; }
+  .chip:hover { background: color-mix(in oklab, var(--navy-soft), var(--navy) 10%); }
   .group .chips .chip { font-size: 17px; min-width: 60px; }    /* 파트 연습 버튼 */
   .chip.hl { background: var(--accent); color: #fff; }         /* 듣기·반주·악보·참고연주·실황 */
   .chip.hl:hover { background: var(--accent-dark); }
@@ -260,14 +262,18 @@
   .group .chips .chip { flex-direction: column; gap: 0; line-height: 1.2; padding-block: 6px; } /* ▶ S / 소프라노 두 줄 */
   .chip small { font-size: 14px; font-weight: 600; }
   .pastsep ~ .card .done { display: none; } /* 검색 결과: '지난 찬양' 제목 아래 카드에는 따로 붙이지 않음 */
-  @media (min-width: 481px) { .group .chips .chip { flex: 1 1 0; max-width: 150px; } } /* 넓은 화면에서도 파트 칸이 한쪽에 작게 모이지 않게 */
+  @media (min-width: 481px) { .group .chips .chip { flex: 1 1 0; max-width: 150px; } }
+  @media (min-width: 1024px) { .hero { border-radius: 0; } } /* 큰 화면에서는 화면 폭 전체 띠 — 둥근 모서리가 화면 끝에 걸리지 않게 */ /* 넓은 화면에서도 파트 칸이 한쪽에 작게 모이지 않게 */
   .card.past { background: var(--surface-sunken); border-color: transparent; } /* 지난 일정 */
   .pastsep { margin: 26px 0 0; font-size: 16px; font-weight: 800; color: var(--ink); } /* 검색 결과의 '지난 찬양' */
   .tbd { color: var(--muted); }                                                /* 곡 미정 */
   /* 내 파트: '고른 것'은 어디서나 남색 — 듣기·악보(강조색)와 한눈에 구분 */
   .chip.mine, .chip.mine:hover { background: var(--navy); color: #fff; box-shadow: 0 0 0 2px var(--card), 0 0 0 4px var(--navy); }
   /* 안내 메모 — 눈에 띄도록 버건디 계열 */
-  .note { margin: 10px 0 0; white-space: pre-line; font-size: 16px; color: #8c1d2e; font-weight: 600; border-left: 3px solid #8c1d2e; padding-left: 10px; }
+  .note { margin: 10px 0 0; white-space: pre-line; font-size: 16px; color: var(--note); font-weight: 600; border-left: 3px solid var(--note); padding-left: 10px; }
+  .note.clamp { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 4; line-clamp: 4; overflow: hidden; }
+  .notewrap { margin-top: 10px; } .notewrap .note { margin-top: 0; } .morebtn { margin: 4px 0 0 13px; }
+  .notices:empty { display: none; }
   .muted { margin: 8px 0 0; color: var(--muted); font-size: 14px; }
   .empty { background: #fff; border: 1px dashed var(--line); border-radius: 14px; padding: 18px; text-align: center; color: var(--muted); margin: 0; }
   .emptyadd { display: block; width: 100%; font-size: 15px; cursor: pointer; }
@@ -275,7 +281,7 @@
   .emptySundays { margin: 12px 0 0; color: var(--muted); font-size: 14px; padding: 10px 14px; background: #fff; border: 1px dashed var(--line); border-radius: 10px; }
 
   /* 화면 아래 고정 유튜브 재생창 */
-  .player { position: fixed; left: 0; right: 0; bottom: 0; z-index: 10; background: #0f1a2e; color: #fff; padding: 8px 12px calc(10px + env(safe-area-inset-bottom)); box-shadow: 0 -4px 16px rgb(0 0 0 / .25); }
+  .player { position: fixed; left: 0; right: 0; bottom: 0; z-index: 10; background: color-mix(in oklab, var(--navy), #000 45%); color: #fff; padding: 8px 12px calc(10px + env(safe-area-inset-bottom)); box-shadow: 0 -4px 16px rgb(0 0 0 / .25); }
   .playerhead { max-width: 760px; margin: 0 auto 8px; display: flex; align-items: center; gap: 10px; }
   .playerhead b { flex: 1; min-width: 0; font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .playerhead a { color: #cdd8ec; font-size: 14px; flex-shrink: 0; display: inline-flex; align-items: center; min-height: 44px; padding: 0 6px; }
@@ -284,7 +290,7 @@
   .player.withparts .playerhead b { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); } /* 화면 읽기용 */
   .player.withparts #playerOpen { display: none; }
   .playerparts button { flex: 1; min-width: 0; padding: 0; min-height: 40px; border: 0; border-radius: 9px; background: rgb(255 255 255 / .14); color: #fff; font-size: 16px; font-weight: 700; }
-  .playerparts button[aria-pressed="true"] { background: #fff; color: #0f1a2e; }
+  .playerparts button[aria-pressed="true"] { background: #fff; color: var(--navy); }
   .playerhead .iconbtn { background: rgb(255 255 255 / .12); border-color: rgb(255 255 255 / .3); color: #fff; }
   /* 영상은 유튜브가 허용하는 가장 작은 16:9 크기 356×200 (최소 200×200을 지키면서 목록을 덜 가리게).
      좁은 휴대폰(360px)에서는 재생창 좌우 여백(12px)을 빌려 써서 356px을 확보 */
@@ -330,7 +336,7 @@
   #edList > .monthsep:first-child { margin-top: 4px; }
   .eddate { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 6px 0; border-radius: 10px; background: var(--navy-soft); text-align: center; }
   .eddate strong { font-size: 20px; line-height: 1.15; color: var(--navy); }
-  .eddate small { font-size: 13px; line-height: 1.3; color: color-mix(in oklab, var(--muted), var(--ink) 35%); } /* 연한 남색 바탕에서도 4.5:1 넘게 */
+  .eddate small { font-size: 14px; line-height: 1.3; color: color-mix(in oklab, var(--muted), var(--ink) 35%); } /* 연한 남색 바탕에서도 4.5:1 넘게 */
   .eddate .kind { font-weight: 700; color: var(--navy); word-break: keep-all; }
   .eddate.special { background: var(--accent-soft); }            /* 특별집회 등 주일이 아닌 일정 */
   .eddate.special strong, .eddate.special small { color: var(--accent-dark); }
@@ -339,12 +345,14 @@
   .edpeople { font-size: 14px; color: var(--muted); margin-top: 1px; }
   .edpeople .missing { color: #a7616c; }              /* 비어 있는 지휘·반주 */
   .reslot.past .edpeople .missing { color: #8a4550; }  /* 회색 바탕(지난 일정)에서도 4.5:1 */
-  .checkrow { display: flex; align-items: center; gap: 8px; margin: -4px 0 12px; font-size: 15px; font-weight: 600; }
-  .checkrow input { width: 20px; height: 20px; }
+  .checkrow { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; margin: -4px 0 12px; font-size: 15px; font-weight: 600; }
+  .checkrow b { white-space: nowrap; font-weight: 600; }
+  .checkrow .hint { flex-basis: 100%; padding-left: 32px; }
+  .checkrow input { width: 24px; height: 24px; margin: 0; }
   input[readonly] { background: var(--surface-sunken); }
   /* 편집 목록: 항목별 입력 여부 (칠해짐 = 입력됨, 점선 = 비어 있음) */
   .edtags { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; margin-top: 6px; }
-  .edtags .edtag { font-size: 13px; line-height: 1.5; padding: 0 7px; border-radius: 6px; border: 1px solid transparent; background: var(--navy-soft); color: var(--navy); font-weight: 600; }
+  .edtags .edtag { font-size: 14px; line-height: 1.5; padding: 0 7px; border-radius: 6px; border: 1px solid transparent; background: var(--navy-soft); color: var(--navy); font-weight: 600; }
   .edtags .edtag.off { background: #fff; color: #707780; border: 1px dashed #cfd6e0; font-weight: 400; }
   .edtags .edtag.part { background: var(--warn-bg); color: var(--ink); border-color: var(--warn-line); } /* 일부만 입력됨 */
   /* 방금 저장한 줄 */
@@ -361,18 +369,18 @@
   .reslot.past .recard { background: var(--surface-sunken); } /* 지난 일정: 흐리게 하지 않고 바탕만 달리 (글자 대비 유지) */
   .recard { display: flex; align-items: center; gap: 10px; min-width: 0; min-height: 60px; background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 8px 10px 8px 6px; cursor: grab; user-select: none; -webkit-user-select: none; touch-action: pan-y; }
   .recard.static { cursor: default; padding-left: 12px; }
-  .recard.empty { width: 100%; min-height: 48px; justify-content: center; border-style: dashed; color: var(--muted); font-size: 13px; cursor: pointer; }
+  .recard.empty { width: 100%; min-height: 48px; justify-content: center; border-style: dashed; color: var(--muted); font-size: 14px; cursor: pointer; }
   .recard.empty:hover { border-color: var(--navy); color: var(--navy); background: var(--navy-soft); }
   .recard.dragging { position: relative; z-index: 5; box-shadow: 0 8px 20px rgb(0 0 0 / .2); cursor: grabbing; }
   .reslot.over .recard:not(.dragging) { outline: 2px dashed var(--accent); outline-offset: 2px; }
   .reslot.moved .recard { background: var(--warn-bg); border-color: var(--warn-line); }
-  .reslot.selected .recard { background: #e3edff; border-color: var(--navy); box-shadow: inset 4px 0 0 var(--navy); } /* 고른 곡 */
-  .linkbtn { border: 0; background: none; padding: 0; color: var(--navy); font-size: 14px; font-weight: 600; text-decoration: underline; }
+  .reslot.selected .recard { background: color-mix(in oklab, var(--navy-soft), var(--navy) 10%); border-color: var(--navy); box-shadow: inset 4px 0 0 var(--navy); } /* 고른 곡 */
+  .linkbtn { border: 0; background: none; padding: 8px 4px; margin: -8px 0; color: var(--navy); font-size: 14px; font-weight: 600; text-decoration: underline; } /* 누르는 높이 36px, 줄 높이는 그대로 */
   /* 잡는 손잡이 — 마우스로는 끌고, 키보드로는 Alt+↑/↓로 옮김 */
   .recard .handle { border: 0; background: none; font-size: 22px; line-height: 1; color: var(--muted); width: 44px; height: 44px; padding: 0; touch-action: none; cursor: grab; flex-shrink: 0; }
   .recard .handle[aria-pressed="true"] { color: var(--navy); }
   .recard.empty:disabled { opacity: .5; cursor: default; }
-  .movednote { color: #9a6b00; font-weight: 700; }   /* 옮긴 곡의 원래 날짜 */
+  .movednote { color: #8a5f00; font-weight: 700; }   /* 옮긴 곡의 원래 날짜 */
   .edbtns .btn { min-height: 40px; padding: 6px 11px; font-size: 14px; }
   .edbtns .btn.danger { margin-left: 8px; } /* 복제 옆에 붙어 잘못 누르지 않게 */
 
@@ -399,7 +407,7 @@
   legend { font-size: 14px; font-weight: 600; padding: 0 4px; }
   .partrow { display: grid; grid-template-columns: 64px 1fr auto auto; align-items: center; gap: 8px; margin-bottom: 10px; font-size: 14px; }
   .partrow input { font: inherit; padding: 8px 10px; border: 1px solid var(--line); border-radius: 9px; min-width: 0; }
-  .partrow .iconbtn { width: 38px; height: 38px; }
+  .partrow .iconbtn { width: 42px; height: 42px; }
   .autorow { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin-bottom: 10px; }
   .autorow .btn, .refsearch .btn { padding: 7px 12px; font-size: 14px; }
   .partrow input.autofilled { background: var(--warn-bg); border-color: var(--warn-line); } /* 자동으로 채운 칸 — 고치면 원래 색 */
@@ -409,11 +417,11 @@
   .bulkday { border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; margin-bottom: 10px; }
   .bulkhead { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
   .bulkhead b { flex: 0 0 74px; font-size: 15px; color: var(--navy); }
-  .bulkhead input { flex: 1; min-width: 0; font: inherit; padding: 9px 10px; border: 1px solid var(--line); border-radius: 9px; color: #1a56db; }
+  .bulkhead input { flex: 1; min-width: 0; font: inherit; padding: 9px 10px; border: 1px solid var(--line); border-radius: 9px; color: var(--navy); }
   .bulkpeople { margin-bottom: 8px; }
-  .bulkpeople input { font: inherit; padding: 8px 10px; border: 1px solid var(--line); border-radius: 9px; min-width: 0; color: #1a56db; }
+  .bulkpeople input { font: inherit; padding: 8px 10px; border: 1px solid var(--line); border-radius: 9px; min-width: 0; color: var(--navy); }
   .bulkday summary { cursor: pointer; font-size: 14px; font-weight: 600; color: var(--navy); padding: 4px 0; }
-  .bulkday textarea { color: #1a56db; }
+  .bulkday textarea { color: var(--navy); }
   .partpreview { grid-column: 1 / -1; }
   .partpreview iframe { width: 100%; aspect-ratio: 16 / 9; border: 0; border-radius: 8px; display: block; }
   .partpreview .hint { margin: 0; }
@@ -432,12 +440,12 @@
   .ytpreview iframe { width: 100%; height: 100%; border: 0; border-radius: 8px; display: block; }
   .ytitem small { display: block; color: var(--muted); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   /* 일정 추가·수정·공지 수정 창: 직접 입력한 글자는 파란색 (예시 글자는 회색 그대로) */
-  dialog .field input, dialog .field textarea, dialog .field select, dialog .partrow input { color: #1a56db; }
+  dialog .field input, dialog .field textarea, dialog .field select, dialog .partrow input { color: var(--navy); } /* 입력한 글자는 예시 글자(회색)와 구분 */
   .err { color: var(--danger); font-size: 14px; margin: 0 0 10px; }
   .actions { display: flex; justify-content: flex-end; gap: 8px; }
   #fontBtn { min-width: 76px; font-size: 14px; line-height: 1.2; padding: 8px 10px; white-space: nowrap; }
   /* 일정 편집 — 대원용 화면에서 튀지 않게 회색 톤 */
-  #toEdit, #toPublic { background: var(--surface-sunken); border-color: #d7dde6; color: #4a5568; }
+  #toEdit, #toPublic { background: var(--surface-sunken); border-color: var(--line-strong); color: #4a5568; }
   #toEdit:hover, #toPublic:hover { background: #e3e8ef; color: var(--ink); }
   #fontBtn[aria-pressed="true"] { background: var(--navy); color: #fff; border-color: var(--navy); }
   /* 화면 색 고르기 (바닥글) */
@@ -477,19 +485,22 @@
     .pshead { display: flex; align-items: flex-end; justify-content: space-between; gap: 8mm; border-bottom: 2.2px solid var(--navy); padding-bottom: 2.5mm; margin-bottom: 3.5mm; }
     .psorg { font-size: 8.5pt; font-weight: 700; color: var(--navy); letter-spacing: .06em; }
     .pshead h1 { margin: 1mm 0 0; font-size: 19pt; letter-spacing: -.02em; line-height: 1.1; }
-    .psmeta { font-size: 8pt; color: #555; text-align: right; line-height: 1.5; }
+    .psmeta { font-size: 9pt; color: #555; text-align: right; line-height: 1.5; }
     .pscols { column-count: 2; column-gap: 7mm; column-rule: .6px solid #cfcfcf; }
     .psmon { display: flex; justify-content: space-between; align-items: baseline; margin: 2.5mm 0 1mm; padding-bottom: .8mm; border-bottom: 1.4px solid var(--navy); color: var(--navy); font-weight: 800; font-size: 10.5pt; break-after: avoid; }
     /* 한 달치는 한 덩어리 — 쪽이나 단 끝에 자리가 모자라면 그 달을 통째로 다음 단·쪽으로 */
     .psmonth { break-inside: avoid; }
     .psmonth:first-child .psmon { margin-top: 0; }
-    .psmon small { font-size: 7.5pt; color: #666; font-weight: 600; }
-    .psrow { display: grid; grid-template-columns: 15mm 1fr; column-gap: 2.5mm; padding: 1.3mm 0; border-bottom: .5px dotted #bbb; break-inside: avoid; }
+    .psmon small { font-size: 8.5pt; color: #666; font-weight: 600; }
+    .psrow { display: grid; grid-template-columns: 16mm 1fr; column-gap: 2.5mm; padding: 1.6mm 0; border-bottom: .5px dotted #bbb; break-inside: avoid; }
     .psd { font-weight: 800; font-size: 10pt; line-height: 1.2; }
-    .psd small { display: block; font-size: 7.5pt; font-weight: 600; color: #666; }
-    .pst { font-weight: 700; font-size: 9.6pt; line-height: 1.3; }
-    .psp { font-size: 7.8pt; color: #555; }
-    .pskind { display: inline-block; margin-left: 1.5mm; padding: 0 1.2mm; border: .7px solid var(--accent-dark); color: var(--accent-dark); border-radius: 1mm; font-size: 7pt; font-weight: 800; vertical-align: .3mm; }
+    .psd small { display: block; font-size: 9pt; font-weight: 600; color: #666; }
+    .pst { font-weight: 700; font-size: 10.5pt; line-height: 1.3; }
+    .pst.tbd { color: #777; font-weight: 600; }
+    .psp { font-size: 9pt; color: #555; }
+    .psfoot { position: fixed; left: 0; right: 0; bottom: 0; font-size: 8pt; color: #777; text-align: center; } /* 쪽마다 반복 */
+    body.pssheet #printSheet { padding-bottom: 6mm; }
+    .pskind { display: inline-block; margin-left: 1.5mm; padding: 0 1.2mm; border: .7px solid var(--accent-dark); color: var(--accent-dark); border-radius: 1mm; font-size: 8pt; font-weight: 800; vertical-align: .3mm; }
     .psrow.next { background: #fff4c7; box-shadow: -1.5mm 0 0 #fff4c7, 1.5mm 0 0 #fff4c7; }
     .pslegend { font-size: 7.5pt; color: #555; margin-top: 3mm; }
     .pslegend b { display: inline-block; width: 3mm; height: 3mm; border-radius: 1mm; background: #fff4c7; vertical-align: -.4mm; margin-right: 1mm; }
@@ -539,7 +550,7 @@
     .recard .edbtns { margin-left: auto; }
     /* 파트 링크 줄: 링크 칸을 넓게 */
     .partrow { grid-template-columns: 50px 1fr auto auto; gap: 6px; }
-    .partrow .iconbtn { width: 40px; height: 40px; }
+    .partrow .iconbtn { width: 42px; height: 42px; }
     .partrow input { padding: 8px; }
     /* 아이폰 사파리는 16px보다 작은 칸을 누르면 화면 전체를 확대해 버림 — 칸만 16px로 */
     .field input, .field textarea, .field select, .searchrow input, .partrow input,
@@ -549,6 +560,9 @@
   /* 크게 보기(1.2배)에서는 실제로 쓸 수 있는 폭이 좁아지므로 576px까지 휴대폰 배치 */
   @media (max-width: 576px) {
     body.big .ympick select { font-size: 14px; padding: 6px 2px 6px 6px; }
+    body.big .brand b { font-size: 18px; }            /* 크게 보기(1.2배)에서 머리글이 한 줄에 들어가게 */
+    body.big .brand small { white-space: nowrap; }
+    body.big .topnav .btn { padding: 8px 8px; }
     body.big .modebar { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
     body.big .modebar .btn { grid-column: span 2; padding: 8px 4px; }
     body.big .modebar #modeAssembly, body.big .modebar #modeRehearsal { grid-column: span 3; margin-left: 0; }
@@ -608,7 +622,7 @@
     <button type="button" class="btn" id="installBtn" hidden>설치</button>
     <button type="button" class="iconbtn" id="installClose" aria-label="안내 닫기">✕</button>
   </div>
-  <p class="staleMsg" id="staleMsg" hidden></p>
+  <p class="staleMsg" id="staleMsg" role="status" hidden></p>
 
   <!-- 공개 화면 -->
   <div id="publicView">
@@ -667,7 +681,7 @@
       <p class="hint">일정 편집은 관리자만 할 수 있습니다.</p>
       <label class="field">아이디<input name="user" autocomplete="username"></label>
       <label class="field">비밀번호<input type="password" name="pw" autocomplete="current-password"></label>
-      <p class="err" id="loginErr" hidden></p>
+      <p class="err" id="loginErr" role="alert" hidden></p>
       <div class="actions">
         <button type="button" class="btn" id="loginCancel">취소</button>
         <button type="submit" class="btn primary" id="loginSubmit">로그인</button>
@@ -719,7 +733,7 @@
   </div>
 
   <div class="loadbox" id="loadBox" hidden>
-    <p id="loadMsg"></p>
+    <p id="loadMsg" role="status"></p>
     <button type="button" class="btn" id="retryBtn" hidden>다시 불러오기</button>
   </div>
 </main>
@@ -767,7 +781,7 @@
     <p class="hint" id="noticeHint"></p>
     <label class="field">공지사항 1<textarea name="n1" rows="4" maxlength="2000"></textarea></label>
     <label class="field">공지사항 2<textarea name="n2" rows="4" maxlength="2000"></textarea></label>
-    <p class="err" id="noticeErr" hidden></p>
+    <p class="err" id="noticeErr" role="alert" hidden></p>
     <div class="actions">
       <button type="button" class="btn" id="noticeCancel">취소</button>
       <button type="submit" class="btn primary" id="noticeSave">저장</button>
@@ -786,7 +800,7 @@
       <input type="search" id="ytQ" aria-label="검색어" enterkeyhint="search" maxlength="100">
       <button type="submit" class="btn primary" id="ytGo">검색</button>
     </form>
-    <p class="hint" id="ytMsg"></p>
+    <p class="hint" id="ytMsg" role="status"></p>
     <div class="ytlist" id="ytList"></div>
   </div>
 </dialog>
@@ -808,7 +822,7 @@
     <label class="field">며칠 동안<select name="days" id="bulkDaysSel"></select></label>
     <p class="hint">첫날부터 하루씩 이어지는 집회 일정입니다. 고른 기간의 <b>모든 날이 저장</b>되고, 제목을 비워 둔 날은 <b>'미정'</b>으로 저장돼 나중에 채울 수 있습니다.</p>
     <div id="bulkDays"></div>
-    <p class="err" id="bulkErr" hidden></p>
+    <p class="err" id="bulkErr" role="alert" hidden></p>
     <div class="actions">
       <button type="button" class="btn" id="bulkCancel2">취소</button>
       <button type="submit" class="btn primary">저장</button>
@@ -834,9 +848,10 @@
     <div class="partrow liverow">
       <input type="url" id="rUrl" name="url" placeholder="https://youtu.be/..." required>
       <button type="button" class="iconbtn" id="rPlay" title="들어 보기" aria-label="들어 보기">▶</button>
+      <button type="button" class="iconbtn" id="rSearch" title="유튜브에서 찾기" aria-label="유튜브에서 찾기">🔍</button>
     </div>
     <div class="partpreview" id="pv-rehearsal" hidden></div>
-    <p class="err" id="rErr" hidden></p>
+    <p class="err" id="rErr" role="alert" hidden></p>
   </form>
 </dialog>
 
@@ -850,13 +865,13 @@
         <button type="submit" class="btn primary">저장</button>
       </div>
     </div>
-    <label class="field">날짜<input type="date" name="date" required></label>
+    <label class="field">날짜 <span class="hint">(새 일정은 곡이 없는 가장 가까운 주일이 들어갑니다)</span><input type="date" name="date" required></label>
     <label class="field">구분<select name="type" required></select></label>
     <label class="field" id="typeCustomRow" hidden>직접 입력할 구분 <span class="hint">(30자 이내)</span>
       <input name="typeCustom" maxlength="30" placeholder="예: 부활절 특송">
     </label>
     <label class="field">찬양 제목<input name="title" maxlength="100" placeholder="예: 하나님의 시간" required></label>
-    <label class="checkrow"><input type="checkbox" id="tbdChk"> 곡 미정 <span class="hint">(곡이 정해지면 체크를 풀고 제목을 적어 주세요)</span></label>
+    <label class="checkrow"><input type="checkbox" id="tbdChk"> <b>곡 미정</b> <span class="hint">(곡이 정해지면 체크를 풀고 제목을 적어 주세요)</span></label>
     <p class="titlehist" id="titleHist" aria-live="polite" hidden></p>
     <div class="tworow">
       <label class="field">지휘 <span class="hint">(선택)</span><input name="conductor" maxlength="30" list="conductorList" placeholder="지휘자 이름"></label>
@@ -880,7 +895,7 @@
       <div class="partpreview" id="pv-live" hidden></div>
     </div>
     <label class="field">안내 메모 <span class="hint">(선택)</span><textarea name="note" rows="3" maxlength="2000" placeholder="연습 시 참고할 내용"></textarea></label>
-    <p class="err" id="formErr" hidden></p>
+    <p class="err" id="formErr" role="alert" hidden></p>
     <div class="actions">
       <button type="button" class="btn" id="cancelBtn">취소</button>
       <button type="submit" class="btn primary" id="saveBtn">저장</button>
@@ -996,6 +1011,7 @@ let saving = false;     // 저장·삭제를 서버에 보내는 중
 // 연도별 보기·연습 영상의 정렬 (참이면 최근부터). 이 기기에만 저장
 // 연도별은 달력 차례대로, 연습 영상은 새로 올린 것부터가 기본
 let newestFirst = { year: false, rehearsal: true };
+let rehearsalAuto = null; // 연습 영상에서 자동으로 옮겨 간 기간 ('연도-구간')
 try { newestFirst = { ...newestFirst, ...JSON.parse(localStorage.getItem(SORT_KEY)) }; } catch {}
 let myPart = '';            // 내 파트 (이 기기에만 저장)
 try { myPart = MY_PARTS.includes(localStorage.getItem(PART_KEY)) ? localStorage.getItem(PART_KEY) : ''; } catch {}
@@ -1244,6 +1260,13 @@ const editBtn = ev => el('button', {
 // "지휘 김흥수" / "반주 심가영"을 각각 묶어서, 줄이 바뀌면 사람 단위로 나뉘게 함
 const known = v => v && v.trim() !== '미정';
 const showTitle = ev => isTbd(ev) ? '곡 미정' : ev.title; // 화면·재생창에 보일 제목
+// 안내 메모: 길면 4줄까지만 보이고 [더 보기]
+const noteEl = ev => {
+  const p = el('p', { class: 'note' }, ev.note);
+  if (ev.note.length <= 120 && ev.note.split('\n').length <= 4) return p;
+  p.classList.add('clamp');
+  return el('div', { class: 'notewrap' }, p, el('button', { type: 'button', class: 'linkbtn morebtn', onclick: e => { p.classList.remove('clamp'); e.currentTarget.remove(); } }, '더 보기'));
+};
 // '미정', '미정1'처럼 곡이 아직 없는 자리. 'ㅇ'처럼 한 글자뿐인 제목도 임시로 넣은 것으로 봄
 const isTbd = ev => { const t = String(ev.title || '').trim(); return /^미정\d*$/.test(t) || t.length < 2; };
 const titleEl = (tag, ev) => isTbd(ev) ? el(tag, { class: 'tbd' }, '곡 미정') : el(tag, {}, ev.title);
@@ -1276,8 +1299,10 @@ function heroSong(ev, many, compact) {
     many && el('p', { class: 'herotype' }, typeLabel(typeOf(ev))),
     titleEl('h3', ev),
     people.length > 0 && el('p', { class: 'heroppl' }, people),
-    ev.note && el('p', { class: 'note' }, ev.note), // 안내 메모는 듣기 전에 읽도록 이름 바로 아래
-    links.length > 0 && el('div', { class: 'herolinks' }, links.map(x => chip(x, null, cap, x.hi && 'hi', ev))),
+    ev.note && noteEl(ev), // 안내 메모는 듣기 전에 읽도록 이름 바로 아래
+    // 악보·참고가 많으면(7개 이상) 5개만 보이고 나머지는 [더 보기] — 버튼 벽이 되지 않게
+    links.length > 0 && el('div', { class: 'herolinks' }, links.slice(0, links.length > 6 ? 5 : 6).map(x => chip(x, null, cap, x.hi && 'hi', ev)),
+      links.length > 6 && el('button', { type: 'button', onclick: e => e.currentTarget.replaceWith(...links.slice(5).map(x => chip(x, null, cap, x.hi && 'hi', ev))) }, `+${links.length - 5}개 더 보기`)),
     parts.length > 0 && el('div', { class: 'heroparts' }, parts.map(x => partChip(x, cap, x.mine && 'hl', ev))), // 고른 파트는 하얗게
     !links.length && !parts.length && !ev.note && el('p', { class: 'heroppl' }, '연습 자료 준비 중'),
     token && el('div', { class: 'heroedit' }, editBtn(ev)));
@@ -1312,7 +1337,7 @@ function card(ev, badge) {
           headChips.map(x => chip(x, null, showTitle(ev), null, ev)),
           token && editBtn(ev)), // 관리자로 로그인했을 때만 보이는 수정 버튼
         people.length > 0 && el('p', { class: 'label people' }, people)), // 지휘·반주는 곡 제목 아랫줄
-      ev.note && el('p', { class: 'note' }, ev.note), // 안내 메모는 버튼보다 먼저 읽히게
+      ev.note && noteEl(ev), // 안내 메모는 버튼보다 먼저 읽히게
       partChips.length > 0 && el('div', { class: 'group' + (people.length ? ' tight' : '') },
         !people.length && el('p', { class: 'label' }, '파트 연습'),
         el('div', { class: 'chips' }, partChips.map(x => partChip(x, showTitle(ev), x.mine && 'mine', ev)))), // 고른 파트는 남색
@@ -1339,7 +1364,7 @@ function linkify(text) {
 function renderNotices() {
   const list = notices.map(n => String(n || '').trim()).filter(Boolean);
   if (!list.length) {
-    $('notices').replaceChildren(el('p', { class: 'noticebar none' }, '등록된 공지사항이 없습니다.'));
+    $('notices').replaceChildren(); // 공지가 없으면 칸 자체를 비움
     return;
   }
   // 비어 있지 않은 공지만 보여 주므로, 수정 창에서 몇 번째 칸인지 원래 자리를 기억해 둠
@@ -1377,8 +1402,10 @@ function shareNote(msg) {
 
 // 이번 주 찬양을 카카오톡 등으로 보냄 (공유 창이 없는 컴퓨터에서는 복사)
 async function shareEvents(list) {
-  const text = list.map(e => [
+  const url = location.origin + '/';
+  const text = list.map((e, i) => [
     `${fmtDate(e.date)} ${typeLabel(typeOf(e))} 「${showTitle(e)}」`,
+    i === 0 && `사이트: ${url}`, // 둘째 줄에 사이트 주소 (카톡 미리보기가 사이트에 붙게)
     ...PARTS.map(p => {
       const url = safeUrl(e.parts?.[p]);
       return url && `${p === '전체' ? '듣기' : p}: ${url}`;
@@ -1386,20 +1413,19 @@ async function shareEvents(list) {
     ...[...linkList(e.scores, '악보'), ...linkList(e.refs, '참고연주')].map(x => `${x.label}: ${x.url}`),
     liveUrl(e) && `실황: ${liveUrl(e)}`,
   ].filter(Boolean).join('\n\n')).join('\n\n\n'); // 링크마다 빈 줄을 두어 누를 때 옆 링크가 눌리지 않게
-  const url = location.origin + '/';
   try {
-    if (navigator.share) await navigator.share({ title: '찬양대 알리미', text, url });
+    if (navigator.share) await navigator.share({ title: '찬양대 알리미', text });
     else {
-      await navigator.clipboard.writeText(`${text}\n\n${url}`);
+      await navigator.clipboard.writeText(text);
       shareNote('복사했습니다. 카카오톡에 붙여 넣으세요.');
     }
   } catch (e) {
     if (e.name === 'AbortError') return; // 공유 창을 닫은 경우는 조용히 넘어감
     try { // 공유 창이 열리지 않으면 복사로 대신함
-      await navigator.clipboard.writeText(`${text}\n\n${url}`);
+      await navigator.clipboard.writeText(text);
       shareNote('공유 창을 열지 못해 대신 복사했습니다. 카카오톡에 붙여 넣으세요.');
     } catch {
-      shareNote('공유하지 못했습니다. 찬양 제목을 길게 눌러 직접 복사해 주세요.');
+      shareNote('공유하지 못했습니다. 주소창의 사이트 주소를 복사해 보내 주세요.');
     }
   }
 }
@@ -1507,6 +1533,7 @@ $('rForm').addEventListener('submit', e => {
 $('rCancel').onclick = () => askClose($('rDlg'));
 // 넣은 주소를 창 안에서 바로 확인 (일정 창의 ▶와 같은 방식)
 $('rPlay').onclick = () => previewLink($('pv-rehearsal'), $('rForm').url, '연습');
+$('rSearch').onclick = () => openYtSearch($('rForm').url, { label: '연습 영상' });
 $('rDlg').addEventListener('close', closePartPreviews);
 
 // 집회특송·연습 영상에서 보고 있는 2개월 구간
@@ -1533,16 +1560,17 @@ function buildView() {
     };
   }
   if (mode === 'upcoming') {
-    const start = upcomingStart;
-    const end = dayKey(utc(start) + UPCOMING_WEEKS * 7 * 864e5);
+    // 기간을 옮기지 않았으면 오늘부터 — 오늘~다음 주일 사이의 평일·토요일 집회곡도 목록에 들어가게
+    const start = upcomingStart === nextSunday() ? TODAY : upcomingStart;
+    const end = dayKey(utc(upcomingStart) + UPCOMING_WEEKS * 7 * 864e5);
     // 이번 주 찬양도 목록 맨 앞에 넣음 (연도별처럼 '이번 주' 표시·굵은 테두리로 구분)
     const list = events.filter(e => e.date >= start && e.date < end);
     return {
       list,
       title: '찬양 일정 미리보기',
       range: `${periodDate(start)} – ${periodDate(dayKey(utc(end) - 864e5), start.slice(0, 4))}`, // ‹ › 사이에 표시
-      summary: `${list.length}곡 등록`,
-      empty: '선택한 기간에 등록된 찬양이 없습니다.',
+      summary: `찬양 ${list.length}곡`,
+      empty: events.length ? '선택한 기간에 등록된 찬양이 없습니다.' : '아직 등록된 일정이 없습니다. 관리자가 [일정 편집]에서 추가하면 여기에 보입니다.',
       emptySundays: [],
     };
   }
@@ -1552,7 +1580,7 @@ function buildView() {
     return {
       list,
       title: `${yearLabel(viewY)} ${from}-${to}월 집회 특송`,
-      summary: `${list.length}곡 등록`,
+      summary: `찬양 ${list.length}곡`,
       empty: '이 기간에 등록된 집회 특송이 없습니다.',
       emptySundays: [],
     };
@@ -1563,7 +1591,7 @@ function buildView() {
     return {
       list,
       title: `${yearLabel(viewY)} 찬양 일정`,
-      summary: `${list.length}곡 등록`,
+      summary: `찬양 ${list.length}곡`,
       empty: '이 해에 등록된 찬양이 없습니다.',
       emptySundays: [],
     };
@@ -1575,7 +1603,7 @@ function buildView() {
   return {
     list,
     title: `${yearLabel(viewY)} ${viewM}월 찬양 일정`,
-    summary: `${list.length}곡 등록 · 주일 ${suns.length}회`,
+    summary: `찬양 ${list.length}곡 · 주일 ${suns.length}회`,
     empty: '이 달에 등록된 찬양이 없습니다.',
     emptySundays: suns.filter(k => !taken.has(k)),
   };
@@ -1614,7 +1642,7 @@ function renderPublic() {
   const shownRehearsals = rehearsals.filter(r => inPeriod(r.date));
   if (!newestFirst.rehearsal) shownRehearsals.reverse(); // rehearsals는 최근부터라 뒤집으면 예전부터
   const view = rehearsalMode
-    ? { list: [], title: `${yearLabel(viewY)} ${periodMonths().join('-')}월 연습 영상`, summary: `연습 영상 ${shownRehearsals.length}개`, empty: '', emptySundays: [] }
+    ? { list: [], title: `${yearLabel(viewY)} ${periodMonths().join('-')}월 연습 영상`, summary: `연습 영상 ${shownRehearsals.length}개${rehearsalAuto === `${viewY}-${viewB}` ? ' · 가장 최근 영상이 있는 기간' : ''}`, empty: '', emptySundays: [] }
     : buildView();
   $('viewTitle').textContent = view.title;
   printView = rehearsalMode ? null : { title: view.title, list: view.list }; // 인쇄할 목록
@@ -1631,11 +1659,12 @@ function renderPublic() {
       const b = e.date === nextDate ? badge : null;
       return [...(pastStart ? [el('p', { class: 'pastsep' }, '지난 찬양')] : []), ...separator, card(e, b)];
     })
-    : [el('p', { class: 'empty' }, view.empty, ...(mode === 'month' && !query && events.length ? [el('br'),
-      el('button', { type: 'button', class: 'linkbtn', onclick: () => { // 오늘에서 가장 가까운 일정이 있는 달로
+    : [el('p', { class: 'empty' }, view.empty, ...(!query && events.length ? [el('br'),
+      el('button', { type: 'button', class: 'linkbtn', onclick: () => { // 오늘에서 가장 가까운 일정으로 (미리보기는 그 주부터, 나머지는 그 달로)
         const near = events.find(e => e.date >= TODAY) || events[events.length - 1];
-        showMonth(+near.date.slice(0, 4), +near.date.slice(5, 7));
-      } }, '가장 가까운 일정이 있는 달로 가기')] : []))]));
+        if (mode === 'upcoming') { upcomingStart = dayKey(utc(near.date) - dowOf(near.date) * 864e5); renderPublic(); }
+        else showMonth(+near.date.slice(0, 4), +near.date.slice(5, 7));
+      } }, '가장 가까운 일정으로 가기')] : []))]));
   // 일정이 하나도 없으면 "등록된 찬양이 없습니다" 안내만 보여 줌
   const futureSundays = view.emptySundays.filter(k => k >= TODAY); // 지난 주일은 '아직 곡이 없는'이 맞지 않으므로 뺌
   view.emptySundays = futureSundays;
@@ -1708,13 +1737,14 @@ $('loginForm').addEventListener('submit', async e => {
   if (!user || !password) return loginError('아이디와 비밀번호를 입력해 주세요.');
   busy($('loginSubmit'), true, '확인 중…');
   try {
-    setToken((await api({ action: 'login', user, password, device: deviceId() })).token);
+    setToken((await api({ action: 'login', user, password, device: deviceId(), rid: newId() })).token);
     f.reset();
     $('loginErr').hidden = true;
     route();
   } catch (err) {
     f.pw.value = '';
     loginError(err.message);
+    f.pw.focus(); // 초점이 사라지지 않게 비밀번호 칸으로
   } finally {
     busy($('loginSubmit'), false);
   }
@@ -1907,8 +1937,8 @@ function renderEditor() {
   $('reBar').hidden = !changed && !picked;
   $('reSummary').replaceChildren(...[
     // 왜 [수정]·[추가]가 흐리게 막혀 있는지 함께 알려 줌
-    changed && `${changed}개 날짜가 바뀝니다. [저장]을 눌러야 반영되고, 그 전에는 수정·추가를 잠시 막아 둡니다 `,
-    picked > 0 && `${picked}곡 선택됨 `,
+    changed && `날짜 ${changed}개 바뀜 · 저장 전에는 수정·추가 잠금 `,
+    picked > 0 && `${changed ? '· ' : ''}${picked}곡 선택됨 `,
     picked > 0 && el('button', { type: 'button', class: 'linkbtn', onclick: () => { sel.clear(); renderEditor(); } }, '선택 해제'),
   ].filter(Boolean));
   $('reCancel').hidden = $('reSave').hidden = !changed;
@@ -2121,7 +2151,8 @@ function openYtSearch(input, opts = {}) {
   $('ytList').replaceChildren();
   $('ytMsg').textContent = '';
   $('ytDlg').showModal();
-  if ($('ytQ').value) ytSearch(); else $('ytQ').focus();
+  $('ytQ').focus(); // 첫 초점은 ✕가 아니라 검색칸
+  if ($('ytQ').value) ytSearch();
 }
 
 function addYt(url) {
@@ -2161,13 +2192,13 @@ async function ytSearch() {
         if (open) { preview.replaceChildren(embed(x.id, 0, x.title)); preview.hidden = false; }
       };
       return el('div', { class: 'ytitem' + (isCur ? ' current' : '') },
-        el('a', { href: url, class: 'ytthumb', onclick: toggle, 'aria-label': '미리 듣기' },
+        el('a', { href: url, class: 'ytthumb', onclick: toggle, 'aria-label': `${decodeHtml(x.title)} 미리 듣기` },
           el('img', { src: `https://i.ytimg.com/vi/${x.id}/mqdefault.jpg`, alt: '', loading: 'lazy' })),
         el('div', {},
           isCur && el('span', { class: 'curbadge' }, '✓ 입력됨'),
           el('a', { href: url, onclick: toggle }, decodeHtml(x.title)),
           el('small', {}, [decodeHtml(x.channel), x.length, x.views].filter(Boolean).join(' · '))),
-        el('button', { type: 'button', class: 'btn primary', onclick: () => addYt(url) }, '추가'),
+        el('button', { type: 'button', class: 'btn', onclick: () => addYt(url) }, '추가'), // 결과마다 진한 버튼이면 눈이 갈 곳이 없어 보통 버튼으로
         preview);
     }));
     $('ytList').querySelector('.current')?.scrollIntoView({ block: 'nearest' }); // 입력된 영상이 아래에 있으면 보이게
@@ -2422,7 +2453,7 @@ const nextMonday = () => dayKey(utc(TODAY) + ((8 - dowOf(TODAY)) % 7 || 7) * 864
 function bulkRow(date) {
   const day = `${md(date)} (${DOW[dowOf(date)]})`;
   // 칸마다 무슨 칸인지 이름을 붙여 둠 (안내 글자는 쓰기 시작하면 사라져 이름 노릇을 못 함)
-  const titleInput = el('input', { maxlength: 100, placeholder: '찬양 제목 (비우면 미정으로 저장됨)', 'aria-label': `${day} 찬양 제목` });
+  const titleInput = el('input', { maxlength: 100, placeholder: '찬양 제목 (비우면 미정)', 'aria-label': `${day} 찬양 제목` });
   const song = () => titleInput.value.trim();
   const conductor = el('input', { maxlength: 30, list: 'conductorList', placeholder: '지휘자', 'aria-label': `${day} 지휘자` });
   const pianist = el('input', { maxlength: 30, list: 'pianistList', placeholder: '반주자', 'aria-label': `${day} 반주자` });
@@ -2714,9 +2745,11 @@ const showPeriod = m => {
   viewB = thisPeriod();
   // 연습 영상: 달이 바뀌어 이번 구간이 비었으면 가장 최근 영상이 있는 구간을 보여 줌 (방금 올린 영상이 사라져 보이지 않게)
   const latest = rehearsals[0]?.date; // 최근부터 정렬됨
+  rehearsalAuto = null;
   if (m === 'rehearsal' && latest && !rehearsals.some(r => inPeriod(r.date))) {
     viewY = +latest.slice(0, 4);
     viewB = Math.floor((+latest.slice(5, 7) - 1) / 2);
+    rehearsalAuto = `${viewY}-${viewB}`; // 이 기간을 보는 동안 '가장 최근 영상이 있는 기간'이라고 알림
   }
   renderPublic();
 };
@@ -2733,7 +2766,7 @@ function buildPrintSheet() {
   document.body.classList.toggle('pssheet', !!printView?.list.length);
   if (!printView?.list.length) return;
   const { title, list } = printView;
-  const next = events.find(e => e.date >= TODAY)?.date;
+  const next = events.find(e => e.date >= TODAY && !isTbd(e))?.date; // 화면의 이번 주 찬양과 같은 곡을 강조
   const multiYear = new Set(list.map(e => e.date.slice(0, 4))).size > 1; // 해가 섞이면 월 앞에 연도도
   const months = new Map();
   list.forEach(e => { const k = e.date.slice(0, 7); months.has(k) || months.set(k, []); months.get(k).push(e); });
@@ -2746,10 +2779,11 @@ function buildPrintSheet() {
       ...rows.map(e => el('div', { class: 'psrow' + (e.date === next ? ' next' : '') },
         el('div', { class: 'psd' }, md(e.date), el('small', {}, `${DOW[dowOf(e.date)]}요일`)),
         el('div', {},
-          el('div', { class: 'pst' }, e.title, typeOf(e) !== '주일 찬양' && el('span', { class: 'pskind' }, typeLabel(typeOf(e)))),
-          el('div', { class: 'psp' }, [e.conductor && `지휘 ${e.conductor}`, e.pianist && `반주 ${e.pianist}`].filter(Boolean).join(' · ') || '\u00a0')))),
+          el('div', { class: 'pst' + (isTbd(e) ? ' tbd' : '') }, showTitle(e), typeOf(e) !== '주일 찬양' && el('span', { class: 'pskind' }, typeLabel(typeOf(e)))),
+          el('div', { class: 'psp' }, [known(e.conductor) && `지휘 ${e.conductor}`, known(e.pianist) && `반주 ${e.pianist}`].filter(Boolean).join(' · ') || '\u00a0')))),
     ))),
-    el('div', { class: 'pslegend' }, el('b'), '이번 주 찬양 · 테두리 표시 = 주일이 아닌 일정'));
+    el('div', { class: 'pslegend' }, el('b'), '이번 주 찬양 · 테두리 표시 = 주일이 아닌 일정'),
+    el('div', { class: 'psfoot' }, `인천영종교회 찬양대 · ${title} · ${TODAY.slice(2, 4)}. ${+TODAY.slice(5, 7)}. ${+TODAY.slice(8, 10)}. 기준`)); // 쪽마다 아래에
 }
 addEventListener('beforeprint', buildPrintSheet);
 
@@ -2791,7 +2825,7 @@ function route() {
   $('retryBtn').hidden = loadState !== 'error';
   // 공개 화면과 편집 화면 모두에 최신 내용 확인 상태를 알림
   const stale = ready ? staleMsg : ''; // 확인 중에는 아무것도 띄우지 않음 (문구가 떴다 사라지며 화면이 들썩이지 않게)
-  $('staleMsg').textContent = stale;
+  $('staleMsg').replaceChildren(...(stale ? [stale, ' ', el('button', { type: 'button', class: 'linkbtn', onclick: () => load() }, '다시 확인')] : []));
   $('staleMsg').hidden = !stale || showLogin;
 
   // 로그인 화면이 열리면 아이디를 치는 동안 서버를 미리 깨워 둠 (잠들어 있던 서버는 첫 응답이 느림)

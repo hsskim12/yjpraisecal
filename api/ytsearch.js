@@ -4,9 +4,10 @@ const MAX = 20; // 검색 결과 최대 개수
 const text = t => !t ? '' : t.simpleText || (t.runs || []).map(r => r.text).join('');
 
 // 이 사이트 화면에서 부른 요청만 받음 (다른 곳에서 검색 대행으로 쓰지 못하게 — 막혀도 사이트는 Apps Script 검색으로 대신함)
-const OWN = /^(https:\/\/yjpraisecal[\w-]*\.vercel\.app|http:\/\/localhost(:\d+)?)(\/|$)/;
+const OWN = /^https:\/\/yjpraisecal[\w-]*\.vercel\.app(\/|$)/;
 
 module.exports = async (req, res) => {
+  res.setHeader('Cache-Control', 'no-store');
   if (!OWN.test(String(req.headers.referer || req.headers.origin || ''))) return res.status(403).json({ ok: false, error: 'forbidden' });
   const q = String(req.query.q || '').trim().slice(0, 100);
   if (!q) return res.json({ ok: true, items: [] });
@@ -34,7 +35,7 @@ module.exports = async (req, res) => {
       for (const k in o) walk(o[k]);
     })(data);
     if (!items.length) throw new Error('no items');
-    res.setHeader('Cache-Control', 's-maxage=600'); // 같은 검색어는 10분 동안 Vercel이 바로 답함
+    res.setHeader('Cache-Control', 'no-store'); // 저장해 두면 출처 검사 없이 누구에게나 답하게 되므로 저장하지 않음
     res.json({ ok: true, items, source: 'vercel' });
   } catch (e) {
     res.status(502).json({ ok: false, error: e.message });
