@@ -129,12 +129,6 @@
   .heroparts a.hl { background: #fff; color: var(--navy); }
   .heroparts a.hl i { color: var(--muted); }
   .heroparts a em { font-style: normal; font-size: 13px; font-weight: 800; color: var(--accent-dark); } /* 고른 칸의 '내 파트' */
-  /* 내 파트를 골라 두면 맨 위에 바로 듣는 큰 버튼 */
-  .heromine { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 58px; margin-top: 20px; padding: 10px 14px; border-radius: 14px;
-    background: var(--accent); color: #fff; font-size: 21px; font-weight: 800; text-decoration: none; text-align: center; }
-  .heromine:hover { background: var(--accent-dark); }
-  .heromine + .herolinks { margin-top: 8px; }
-  .partshint { margin: 8px 0 0; font-size: 14px; color: rgb(255 255 255 / .85); text-align: center; }
   .heroshare { display: block; margin: 14px auto 0; min-height: 40px; padding: 6px 14px; border: 0; background: none; color: rgb(255 255 255 / .85); font-size: 18px; font-weight: 600; } /* 14px의 약 1.3배 */
   .heroshare:hover { color: #fff; text-decoration: underline; }
   .hero .note { color: #ffe0e4; border-left-color: rgb(255 224 228 / .7); }
@@ -1164,15 +1158,11 @@ function heroSong(ev) {
   const parts = PARTS.filter(p => !HEAD_PARTS.some(h => h.part === p))
     .map(p => ({ label: [el('b', {}, PART_SHORT[p] || p), el('i', {}, p), p === myPart && el('em', {}, '내 파트')], full: p, url: safeUrl(ev.parts?.[p]), mine: p === myPart, bare: true })) // S / 소프라노 두 줄
     .filter(x => x.url);
-  const mine = parts.find(x => x.mine);
   return el('div', { class: 'herosong' },
     titleEl('h3', ev),
     people.length > 0 && el('p', { class: 'heroppl' }, people),
-    // 내 파트를 골라 두었으면 맨 앞에 바로 듣는 큰 버튼 — 이때는 '듣기'를 흰 버튼으로 낮춤
-    mine && partChip({ ...mine, label: `▶ 내 파트(${mine.full}) 연습 듣기` }, ev.title, 'heromine'),
-    links.length > 0 && el('div', { class: 'herolinks' }, links.map(x => chip(x, null, ev.title, x.hi && !mine && 'hi'))),
+    links.length > 0 && el('div', { class: 'herolinks' }, links.map(x => chip(x, null, ev.title, x.hi && 'hi'))),
     parts.length > 0 && el('div', { class: 'heroparts' }, parts.map(x => partChip(x, ev.title, x.mine && 'hl'))), // 고른 파트는 하얗게
-    parts.length > 0 && !myPart && el('p', { class: 'partshint' }, '내 파트를 한 번 누르면 다음부터 맨 위에 바로 보여요'),
     !links.length && !parts.length && !ev.note && el('p', { class: 'heroppl' }, '연습 자료 준비 중'),
     ev.note && el('p', { class: 'note' }, ev.note),
     token && el('div', { class: 'heroedit' }, editBtn(ev)));
