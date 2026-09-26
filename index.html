@@ -106,7 +106,7 @@
   /* 이번 주 찬양 (개선안 2) — 머리글과 이어진 남색 면, 아래 모서리만 둥글게.
      흐린 글씨는 흰색 투명도로 두어 어느 테마에서나 읽히게 */
   .hero { background: linear-gradient(180deg, var(--navy), color-mix(in oklab, var(--navy), #fff 12%)); color: #fff; border-radius: 0 0 28px 28px; }
-  .hero > .wrap { padding-block: 4px 10px; }
+  .hero > .wrap { padding-block: 8px 10px; }
   /* 이번 주 찬양이 보일 때는 머리글도 같은 남색으로 이어 붙임 (편집 화면은 흰 머리글 그대로) */
   body:has(#topZone:not([hidden]) :is(#hero, #heroSkel):not([hidden])) .top { background: linear-gradient(180deg, color-mix(in oklab, var(--navy), #000 16%), var(--navy)); border-bottom: 0; color: #fff; }
   body:has(#topZone:not([hidden]) :is(#hero, #heroSkel):not([hidden])) .brand small { color: rgb(255 255 255 / .75); }
@@ -115,6 +115,8 @@
   body:has(#topZone:not([hidden]) :is(#hero, #heroSkel):not([hidden])) #fontBtn[aria-pressed="true"] { background: #fff; color: var(--navy); }
   .hero .eyebrow { color: rgb(255 255 255 / .8); margin: 0 0 4px; font-size: 14px; letter-spacing: .02em; } /* 한글은 자간을 벌리지 않음 */
   /* 날짜 줄: '9월 27일 [일요일]' — 요일 알약은 날짜와 같은 줄 */
+  .herohead { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 12px; }
+  .herohead .eyebrow { order: 2; margin: 0; } /* 날짜 뒤에 */
   .herodate { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin: 0; font-size: 25px; font-weight: 800; letter-spacing: -.02em; line-height: 1.15; color: #ffe08a; } /* 날짜는 연한 노랑 (남색 바탕에서 눈에 띄게) */
   .herodate em { color: #fff; font-style: normal; font-size: 14px; font-weight: 700; letter-spacing: 0; background: rgb(255 255 255 / .18); border-radius: 7px; padding: 3px 10px; }
   .herosong + .herosong { margin-top: 22px; padding-top: 18px; border-top: 1px solid rgb(255 255 255 / .2); }
@@ -567,8 +569,10 @@
   <section class="hero" id="hero" hidden>
     <div class="wrap">
       <p class="herotbd" id="heroTbd" hidden></p>
-      <h2 class="eyebrow" id="heroLabel"></h2>
-      <p class="herodate" id="heroDate"></p>
+      <div class="herohead"> <!-- 한 줄: '9월 27일 [일요일] 주일 찬양 · 내일' (좁으면 구분만 아랫줄로) -->
+        <h2 class="eyebrow" id="heroLabel"></h2>
+        <p class="herodate" id="heroDate"></p>
+      </div>
       <div id="heroCards"></div>
       <button type="button" class="heroshare" id="shareBtn"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 8l5-5 5 5M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg> 파트연습 공유하기</button>
       <p class="sharemsg" id="shareMsg" role="status" hidden></p>
