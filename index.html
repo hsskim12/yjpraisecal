@@ -52,6 +52,7 @@
     margin: 0; background: var(--bg); color: var(--ink);
     font: 15px/1.55 -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif;
     -webkit-text-size-adjust: 100%;
+    word-break: keep-all; overflow-wrap: break-word; /* 한글이 단어 중간에서 끊기지 않게 */
   }
   body.big { zoom: 1.2; } /* 큰 글씨 보기 */
   a { color: inherit; }
@@ -66,14 +67,14 @@
   .logo { height: 54px; width: auto; flex-shrink: 0; align-self: center; }
   .brand { min-width: 0; display: flex; flex-direction: column; justify-content: center; padding-top: 8px; } /* 글자를 로고 가운데보다 조금 아래로 */
   .brand b { display: block; font-size: 26px; line-height: 28px; }
-  .brand small { color: var(--muted); font-size: 12px; line-height: 16px; }
+  .brand small { color: var(--muted); font-size: 13px; line-height: 16px; }
   .topnav { margin-left: auto; flex-shrink: 0; display: flex; gap: 6px; }
   .topnav .btn { display: inline-block; text-decoration: none; font-size: 14px; padding: 8px 12px; white-space: nowrap; }
 
   main.wrap { padding-block: 24px 40px; }
   /* 화면에는 안 보이지만 화면 읽기 프로그램에는 읽히는 글 (쪽 제목) */
   .sronly { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-  .eyebrow { font-size: 12px; letter-spacing: .1em; color: var(--muted); font-weight: 700; margin: 0 0 6px; }
+  .eyebrow { font-size: 13px; letter-spacing: .1em; color: var(--muted); font-weight: 700; margin: 0 0 6px; }
   h1 { font-size: clamp(24px, 6vw, 30px); margin: 0 0 22px; line-height: 1.3; }
   .loadbox { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 20px; text-align: center; color: var(--muted); }
   .loadbox p { margin: 0; }
@@ -83,15 +84,15 @@
   .kakaobar a { font-weight: 700; color: var(--navy); }
   .installbar { align-items: center; background: var(--navy-soft); border-color: var(--line-strong); }
   .installbar .btn { flex-shrink: 0; }
-  .staleMsg { margin: 0 0 14px; font-size: 13px; color: var(--muted); }
+  .staleMsg { margin: 0 0 14px; font-size: 14px; color: var(--muted); }
 
   /* 공지사항 */
   .notices { margin: 0 0 18px; display: grid; gap: 8px; }
   .noticebar { display: flex; align-items: center; gap: 10px; width: 100%; min-width: 0; text-align: left; background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; font-weight: 700; font-size: 16px; }
   .noticebar:hover { border-color: var(--navy); }
-  .noticebar .tag { background: var(--accent); color: #fff; font-size: 12px; font-weight: 700; border-radius: 999px; padding: 3px 10px; flex-shrink: 0; }
-  .noticebar .txt { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .noticebar .more { margin-left: auto; color: var(--muted); font-size: 13px; font-weight: 400; flex-shrink: 0; }
+  .noticebar .tag { background: var(--accent); color: #fff; font-size: 13px; font-weight: 700; border-radius: 999px; padding: 3px 10px; flex-shrink: 0; }
+  .noticebar .txt { overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; } /* 두 줄까지, 넘치면 … */
+  .noticebar .more { margin-left: auto; color: var(--muted); font-size: 18px; font-weight: 400; flex-shrink: 0; }
   .noticebar.none { color: var(--muted); font-weight: 400; cursor: default; }
 
   /* 이번 주 찬양 (개선안 2) — 머리글과 이어진 남색 면, 아래 모서리만 둥글게.
@@ -99,12 +100,12 @@
   .hero { background: linear-gradient(180deg, var(--navy), color-mix(in oklab, var(--navy), #fff 12%)); color: #fff; border-radius: 0 0 28px 28px; }
   .hero > .wrap { padding-block: 4px 18px; }
   /* 이번 주 찬양이 보일 때는 머리글도 같은 남색으로 이어 붙임 (편집 화면은 흰 머리글 그대로) */
-  body:has(#topZone:not([hidden]) #hero:not([hidden])) .top { background: linear-gradient(180deg, color-mix(in oklab, var(--navy), #000 16%), var(--navy)); border-bottom: 0; color: #fff; }
-  body:has(#topZone:not([hidden]) #hero:not([hidden])) .brand small { color: rgb(255 255 255 / .75); }
-  body:has(#topZone:not([hidden]) #hero:not([hidden])) .topnav .btn { background: rgb(255 255 255 / .15); border-color: transparent; color: #fff; border-radius: 999px; }
-  body:has(#topZone:not([hidden]) #hero:not([hidden])) .topnav .btn:hover { background: rgb(255 255 255 / .26); }
-  body:has(#topZone:not([hidden]) #hero:not([hidden])) #fontBtn[aria-pressed="true"] { background: #fff; color: var(--navy); }
-  .hero .eyebrow { color: rgb(255 255 255 / .75); margin: 0 0 8px; font-size: 12px; letter-spacing: .12em; }
+  body:has(#topZone:not([hidden]) :is(#hero, #heroSkel):not([hidden])) .top { background: linear-gradient(180deg, color-mix(in oklab, var(--navy), #000 16%), var(--navy)); border-bottom: 0; color: #fff; }
+  body:has(#topZone:not([hidden]) :is(#hero, #heroSkel):not([hidden])) .brand small { color: rgb(255 255 255 / .75); }
+  body:has(#topZone:not([hidden]) :is(#hero, #heroSkel):not([hidden])) .topnav .btn { background: rgb(255 255 255 / .15); border-color: transparent; color: #fff; border-radius: 999px; }
+  body:has(#topZone:not([hidden]) :is(#hero, #heroSkel):not([hidden])) .topnav .btn:hover { background: rgb(255 255 255 / .26); }
+  body:has(#topZone:not([hidden]) :is(#hero, #heroSkel):not([hidden])) #fontBtn[aria-pressed="true"] { background: #fff; color: var(--navy); }
+  .hero .eyebrow { color: rgb(255 255 255 / .8); margin: 0 0 8px; font-size: 13px; letter-spacing: .12em; }
   /* 날짜 줄: '9월 27일 [일요일]' — 요일 알약은 날짜와 같은 줄 */
   .herodate { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin: 0; font-size: 25px; font-weight: 800; letter-spacing: -.02em; line-height: 1.15; }
   .herodate em { font-style: normal; font-size: 14px; font-weight: 700; letter-spacing: 0; background: rgb(255 255 255 / .18); border-radius: 7px; padding: 3px 10px; }
@@ -122,15 +123,30 @@
   .heroparts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 7px; margin-top: 8px; }
   .heroparts a { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; padding: 12px 2px 10px;
     color: #fff; background: rgb(255 255 255 / .14); border-radius: 13px; text-decoration: none; }
-  .heroparts a:hover { background: rgb(255 255 255 / .24); }
+  .heroparts a:not(.hl):hover { box-shadow: inset 0 0 0 2px rgb(255 255 255 / .6); } /* 바탕을 밝히면 흰 글자 대비가 모자라 테두리로 */
   .heroparts a b { font-size: 25px; font-weight: 800; line-height: 1.2; } /* 19px의 1.3배 */
   .heroparts a i { font-style: normal; font-size: 15.5px; font-weight: 500; color: #fff; } /* 12px의 1.3배 · 흐리게 하면 밝은 테마에서 대비가 모자라 흰색 그대로 */
   .heroparts a.hl { background: #fff; color: var(--navy); }
   .heroparts a.hl i { color: var(--muted); }
+  .heroparts a em { font-style: normal; font-size: 13px; font-weight: 800; color: var(--accent-dark); } /* 고른 칸의 '내 파트' */
+  /* 내 파트를 골라 두면 맨 위에 바로 듣는 큰 버튼 */
+  .heromine { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 58px; margin-top: 20px; padding: 10px 14px; border-radius: 14px;
+    background: var(--accent); color: #fff; font-size: 21px; font-weight: 800; text-decoration: none; text-align: center; }
+  .heromine:hover { background: var(--accent-dark); }
+  .heromine + .herolinks { margin-top: 8px; }
+  .partshint { margin: 8px 0 0; font-size: 14px; color: rgb(255 255 255 / .85); text-align: center; }
   .heroshare { display: block; margin: 14px auto 0; min-height: 40px; padding: 6px 14px; border: 0; background: none; color: rgb(255 255 255 / .85); font-size: 18px; font-weight: 600; } /* 14px의 약 1.3배 */
   .heroshare:hover { color: #fff; text-decoration: underline; }
   .hero .note { color: #ffe0e4; border-left-color: rgb(255 224 228 / .7); }
   .heroedit { display: flex; justify-content: flex-end; margin-top: 10px; }
+  /* 처음 불러오는 동안 이번 주 찬양 자리에 보이는 빈 틀 */
+  .heroskel .wrap { display: grid; gap: 12px; padding-block: 8px 26px; }
+  .heroskel i { display: block; height: 18px; border-radius: 8px; background: rgb(255 255 255 / .16); }
+  .heroskel i:nth-child(1) { width: 40%; } .heroskel i:nth-child(2) { width: 30%; height: 28px; }
+  .heroskel i:nth-child(3) { width: 75%; height: 44px; } .heroskel i:nth-child(4) { height: 52px; }
+  /* 카카오톡 안내: 남색 머리글과 이번 주 찬양 사이에 끼어도 이어져 보이게 */
+  .kakaotop { background: var(--navy); }
+  .kakaotop .kakaobar { margin: 0; color: var(--ink); }
   .heroedit .iconbtn { background: rgb(255 255 255 / .15); border-color: rgb(255 255 255 / .4); color: #fff; }
 
 
@@ -153,7 +169,7 @@
   .searchrow .clearbtn:hover { background: #c6cedb; color: var(--ink); }
   .viewhead { margin-bottom: 10px; }
   .viewhead h2 { margin: 0; font-size: 20px; line-height: 1.3; }
-  .summary { color: var(--muted); font-size: 13px; }
+  .summary { color: var(--muted); font-size: 14px; }
 
   /* 보기 고르기: 흰 알약, 고른 것만 남색 (집회 특송·연습 영상은 오른쪽 끝에 나란히) */
   .modebar { display: flex; gap: 6px; flex-wrap: nowrap; margin-bottom: 10px; }
@@ -169,6 +185,7 @@
   .periodbar .arrow:hover { background: var(--navy-soft); }
   .periodmid { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; min-width: 0; }
   .ympick { display: flex; gap: 6px; min-width: 0; }
+  .periodtext { font-size: 15px; font-weight: 700; color: var(--ink); }
   .ympick select { font: inherit; font-size: 16px; font-weight: 700; color: var(--ink); padding: 8px 4px 8px 10px; border: 1px solid var(--line); border-radius: 10px; background: #fff; min-width: 0; } /* 오른쪽 화살표를 글자 가까이 */
 
   .headchips .rowedit { width: 44px; height: 44px; font-size: 16px; }
@@ -196,19 +213,19 @@
   /* 날짜·요일·구분을 한 상자로 묶어 음영 (카드 안쪽 위에 붙음) */
   .date { align-self: start; min-width: 86px; display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 8px; border-radius: 10px; background: var(--navy-soft); text-align: center; }
   .date strong { font-size: 20px; font-weight: 800; color: var(--navy); line-height: 1.2; white-space: nowrap; }
-  .date .dow { font-size: 13px; font-weight: 700; color: var(--muted); }
+  .date .dow { font-size: 13px; font-weight: 700; color: color-mix(in oklab, var(--muted), var(--ink) 35%); } /* 연한 바탕 위라 조금 진하게 */
   .date .kind { margin-top: 2px; font-size: 13px; font-weight: 700; color: var(--navy); white-space: nowrap; }
   .date.special { background: var(--accent-soft); }   /* 주일이 아닌 일정 (집회·특별집회 등) */
   .date.special strong, .date.special .kind { color: var(--accent-dark); }
   .group.tight { margin-top: 6px; }  /* 지휘·반주 줄 바로 아래 파트 연습 버튼 */
   .body { padding: 2px 0; min-width: 0; }
   .titlerow { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; }
-  .titlerow h3 { margin: 0; font-size: 22px; word-break: keep-all; overflow-wrap: anywhere; }
+  .titlerow h4 { margin: 0; font-size: 22px; word-break: keep-all; overflow-wrap: anywhere; }
   .headchips .chip { max-width: 100%; overflow-wrap: anywhere; }
   .headchips { display: flex; flex-wrap: wrap; gap: 6px; margin-left: auto; max-width: 100%; }
   .titlerow .people { order: 1; flex-basis: 100%; margin: 0; }
-  .badge { background: var(--navy); color: #fff; font-size: 12px; font-weight: 700; border-radius: 999px; padding: 1px 9px; }
-  .done { color: var(--muted); font-size: 12px; }
+  .badge { background: var(--navy); color: #fff; font-size: 13px; font-weight: 700; border-radius: 999px; padding: 1px 9px; }
+  .done { color: var(--muted); font-size: 13px; }
   .group { margin-top: 10px; }
   .label { margin: 0 0 6px; font-size: 16px; color: var(--muted); }
   .chips { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
@@ -217,6 +234,13 @@
   .group .chips .chip { font-size: 17px; min-width: 60px; }    /* 파트 연습 버튼 */
   .chip.hl { background: var(--accent); color: #fff; }         /* 듣기·반주·악보·참고연주·실황 */
   .chip.hl:hover { background: var(--accent-dark); }
+  .chip.line { background: #fff; color: var(--accent-dark); box-shadow: inset 0 0 0 1.5px var(--accent); } /* 반주·악보·실황·참고 */
+  .chip.line:hover { background: var(--accent-soft); }
+  .group .chips .chip { flex-direction: column; gap: 0; line-height: 1.2; padding-block: 6px; } /* ▶ S / 소프라노 두 줄 */
+  .chip small { font-size: 13px; font-weight: 600; }
+  .card.past { background: var(--surface-sunken); border-color: transparent; } /* 지난 일정 */
+  .pastsep { margin: 26px 0 0; font-size: 16px; font-weight: 800; color: var(--ink); } /* 검색 결과의 '지난 찬양' */
+  .tbd { color: var(--muted); }                                                /* 곡 미정 */
   /* 내 파트: '고른 것'은 어디서나 남색 — 듣기·악보(강조색)와 한눈에 구분 */
   .chip.mine, .chip.mine:hover { background: var(--navy); color: #fff; box-shadow: 0 0 0 2px var(--card), 0 0 0 4px var(--navy); }
   /* 안내 메모 — 눈에 띄도록 버건디 계열 */
@@ -231,7 +255,7 @@
   .player { position: fixed; left: 0; right: 0; bottom: 0; z-index: 10; background: #0f1a2e; color: #fff; padding: 8px 12px calc(10px + env(safe-area-inset-bottom)); box-shadow: 0 -4px 16px rgb(0 0 0 / .25); }
   .playerhead { max-width: 760px; margin: 0 auto 8px; display: flex; align-items: center; gap: 10px; }
   .playerhead b { flex: 1; min-width: 0; font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .playerhead a { color: #cdd8ec; font-size: 13px; flex-shrink: 0; }
+  .playerhead a { color: #cdd8ec; font-size: 14px; flex-shrink: 0; }
   .playerhead .iconbtn { background: rgb(255 255 255 / .12); border-color: rgb(255 255 255 / .3); color: #fff; }
   /* 영상은 유튜브가 허용하는 가장 작은 16:9 크기 356×200 (최소 200×200을 지키면서 목록을 덜 가리게).
      좁은 휴대폰(360px)에서는 재생창 좌우 여백(12px)을 빌려 써서 356px을 확보 */
@@ -241,14 +265,14 @@
   .footbrand { display: flex; align-items: center; gap: 9px; }
   .footbrand img { height: 27px; width: auto; opacity: .85; }
   .footbrand b { display: block; color: var(--ink); font-size: 14px; line-height: 18px; }
-  .footbrand small { display: block; font-size: 11.5px; line-height: 15px; }
-  .ver { align-self: center; margin-left: 2px; padding: 2px 8px; border-radius: 999px; background: var(--surface-sunken); color: var(--muted); font-size: 11.5px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .footbrand small { display: block; font-size: 13px; line-height: 16px; }
+  .ver { align-self: center; margin-left: 2px; padding: 2px 8px; border-radius: 999px; background: var(--surface-sunken); color: var(--muted); font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; }
   footer.wrap { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; padding-block: 18px 32px; color: var(--muted); font-size: 13px; border-top: 1px solid var(--line); }
 
   /* 관리자 화면 */
   .guide { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; margin-bottom: 14px; font-size: 14px; }
   .login { max-width: 420px; }
-  .hint { font-weight: 400; color: var(--muted); font-size: 12px; }
+  .hint { font-weight: 400; color: var(--muted); font-size: 13px; }
   .titlehist { margin: -6px 0 12px; padding: 8px 11px; border-radius: 10px; background: var(--warn-bg); border: 1px solid var(--warn-line); font-size: 13.5px; }
   .login .hint, .edhint { margin: 0 0 12px; font-size: 14px; }
   /* 저장·삭제 결과 알림: 화면 위 가운데에 떠 있음 (아래쪽은 재생창·순서 저장 막대 자리) */
@@ -275,17 +299,17 @@
   #edList > .monthsep:first-child { margin-top: 4px; }
   .eddate { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 6px 0; border-radius: 10px; background: var(--navy-soft); text-align: center; }
   .eddate strong { font-size: 20px; line-height: 1.15; color: var(--navy); }
-  .eddate small { font-size: 12px; line-height: 1.3; color: var(--muted); }
+  .eddate small { font-size: 13px; line-height: 1.3; color: color-mix(in oklab, var(--muted), var(--ink) 35%); } /* 연한 남색 바탕에서도 4.5:1 넘게 */
   .eddate .kind { font-weight: 700; color: var(--navy); word-break: keep-all; }
   .eddate.special { background: var(--accent-soft); }            /* 특별집회 등 주일이 아닌 일정 */
   .eddate.special strong, .eddate.special small { color: var(--accent-dark); }
   .edinfo { flex: 1; min-width: 0; }
   .edinfo b { display: block; font-size: 17px; line-height: 1.35; word-break: keep-all; overflow-wrap: anywhere; }
-  .edpeople { font-size: 13px; color: var(--muted); margin-top: 1px; }
+  .edpeople { font-size: 14px; color: var(--muted); margin-top: 1px; }
   .edpeople .missing { color: #a7616c; }              /* 비어 있는 지휘·반주 */
   /* 편집 목록: 항목별 입력 여부 (칠해짐 = 입력됨, 점선 = 비어 있음) */
   .edtags { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; margin-top: 6px; }
-  .edtags .edtag { font-size: 12px; line-height: 1.5; padding: 0 7px; border-radius: 6px; border: 1px solid transparent; background: var(--navy-soft); color: var(--navy); font-weight: 600; }
+  .edtags .edtag { font-size: 13px; line-height: 1.5; padding: 0 7px; border-radius: 6px; border: 1px solid transparent; background: var(--navy-soft); color: var(--navy); font-weight: 600; }
   .edtags .edtag.off { background: #fff; color: #707780; border: 1px dashed #cfd6e0; font-weight: 400; }
   .edtags .edtag.part { background: var(--warn-bg); color: var(--ink); border-color: var(--warn-line); } /* 일부만 입력됨 */
   /* 방금 저장한 줄 */
@@ -299,7 +323,7 @@
   .reactions .summary { margin-right: auto; font-size: 14px; color: var(--ink); }
   #edBody:has(#reBar:not([hidden])) #edList { padding-bottom: 80px; } /* 막대가 마지막 줄을 가리지 않게 */
   .reslot { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 8px; }
-  .reslot.past { opacity: .6; }
+  .reslot.past .recard { background: var(--surface-sunken); } /* 지난 일정: 흐리게 하지 않고 바탕만 달리 (글자 대비 유지) */
   .recard { display: flex; align-items: center; gap: 10px; min-width: 0; min-height: 60px; background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 8px 10px 8px 6px; cursor: grab; user-select: none; -webkit-user-select: none; touch-action: pan-y; }
   .recard.static { cursor: default; padding-left: 12px; }
   .recard.empty { width: 100%; min-height: 48px; justify-content: center; border-style: dashed; color: var(--muted); font-size: 13px; cursor: pointer; }
@@ -308,13 +332,14 @@
   .reslot.over .recard:not(.dragging) { outline: 2px dashed var(--accent); outline-offset: 2px; }
   .reslot.moved .recard { background: var(--warn-bg); border-color: var(--warn-line); }
   .reslot.selected .recard { background: #e3edff; border-color: var(--navy); box-shadow: inset 4px 0 0 var(--navy); } /* 고른 곡 */
-  .linkbtn { border: 0; background: none; padding: 0; color: var(--navy); font-size: 13px; font-weight: 600; text-decoration: underline; }
+  .linkbtn { border: 0; background: none; padding: 0; color: var(--navy); font-size: 14px; font-weight: 600; text-decoration: underline; }
   /* 잡는 손잡이 — 마우스로는 끌고, 키보드로는 Alt+↑/↓로 옮김 */
   .recard .handle { border: 0; background: none; font-size: 22px; line-height: 1; color: var(--muted); padding: 6px 8px; touch-action: none; cursor: grab; }
   .recard .handle[aria-pressed="true"] { color: var(--navy); }
   .recard.empty:disabled { opacity: .5; cursor: default; }
   .movednote { color: #9a6b00; font-weight: 700; }   /* 옮긴 곡의 원래 날짜 */
-  .edbtns .btn { padding: 5px 9px; font-size: 13px; }
+  .edbtns .btn { min-height: 40px; padding: 6px 11px; font-size: 14px; }
+  .edbtns .btn.danger { margin-left: 8px; } /* 복제 옆에 붙어 잘못 누르지 않게 */
 
   /* 창(대화상자) */
   dialog { border: 0; border-radius: 16px; padding: 0; width: min(560px, calc(100% - 24px)); max-height: calc(100% - 24px); }
@@ -344,7 +369,7 @@
   .autorow .btn, .refsearch .btn { padding: 7px 12px; font-size: 14px; }
   .partrow input.autofilled { background: var(--warn-bg); border-color: var(--warn-line); } /* 자동으로 채운 칸 — 고치면 원래 색 */
   .refsearch { margin: -6px 0 12px; }
-  .liverow { grid-template-columns: minmax(0, 1fr) auto auto; margin-bottom: 12px; }
+  .partrow.liverow { grid-template-columns: minmax(0, 1fr) auto auto; margin-bottom: 12px; }
   /* 집회 일정 한 번에 추가 */
   .bulkday { border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; margin-bottom: 10px; }
   .bulkhead { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
@@ -405,7 +430,7 @@
     .card .headchips, .card .group, .card .note, .card .muted, .card .badge, .card .done { display: none !important; }
     .date strong { font-size: 13px; }
     .date .dow, .date .kind, .card .label { font-size: 11px; margin: 0; }
-    .titlerow h3 { font-size: 14px; }
+    .titlerow h4 { font-size: 14px; }
   }
   /* 인쇄 — A4 한 장에 2단 목록 (시안 B). 화면에서는 숨기고, 인쇄할 때만 이 쪽만 보임 */
   #printSheet { display: none; }
@@ -445,8 +470,10 @@
     .card { gap: 8px; padding: 8px; }
     .date { min-width: 68px; padding: 8px 4px; }
     .date strong { font-size: 17px; }
-    .date .dow, .date .kind { font-size: 12px; }
+    .date .dow, .date .kind { font-size: 13px; }
     .group .chips { gap: 5px; }
+    #printBtn { display: none; } /* 인쇄는 넓은 화면에서만 */
+    body.big .group .chips .chip { flex-basis: calc(50% - 3px); } /* 크게 보기에서는 두 칸씩 */
     /* 휴대폰: 제목 → 지휘·반주 → 듣기·반주·악보 순서로 읽히게 */
     .titlerow .headchips { order: 2; flex-basis: 100%; margin-left: 0; }
     .group .chips .chip { font-size: 16px; min-width: 0; flex: 1 1 0; padding: 8px 2px; order: 0; }
@@ -466,6 +493,12 @@
     /* 아이폰 사파리는 16px보다 작은 칸을 누르면 화면 전체를 확대해 버림 — 칸만 16px로 */
     .field input, .field textarea, .field select, .searchrow input, .partrow input,
     .ytsearch input, .bulkhead input, .bulkpeople input, .bulkday textarea { font-size: 16px; }
+  }
+  /* 480px 규칙보다 뒤에 둬야 이김 */
+  @media (max-width: 360px) {
+    #modeAssembly { margin-left: 0; }  /* 두 줄로 접힐 때 '집회 특송'만 오른쪽 끝에 남지 않게 */
+    .group .chips .chip { flex-basis: calc(50% - 3px); } /* 파트 버튼 두 칸씩 */
+    .heroparts a i { font-size: 14px; letter-spacing: -.03em; }
   }
 </style>
 <!-- 고른 화면 색을 그리기 전에 먼저 입혀, 열 때 색이 한 번 바뀌어 보이지 않게 함 -->
@@ -490,6 +523,15 @@
 <div id="topZone">
   <!-- 쪽 제목 — 화면에는 로고가 대신하고, 화면 읽기 프로그램에는 이 글이 읽힘 -->
   <h1 class="sronly">찬양대 알리미 — 인천영종교회</h1>
+  <div class="kakaotop" id="kakaoTop" hidden>
+    <div class="wrap">
+      <div class="kakaobar" id="kakaoBar">
+        <p id="kakaoMsg"></p>
+        <button type="button" class="iconbtn" id="kakaoClose" aria-label="안내 닫기">✕</button>
+      </div>
+    </div>
+  </div>
+  <section class="hero heroskel" id="heroSkel" hidden aria-hidden="true"><div class="wrap"><i></i><i></i><i></i><i></i></div></section>
   <section class="hero" id="hero" hidden>
     <div class="wrap">
       <h2 class="eyebrow" id="heroLabel"></h2>
@@ -501,10 +543,6 @@
 </div>
 
 <main class="wrap">
-  <div class="kakaobar" id="kakaoBar" hidden>
-    <p id="kakaoMsg"></p>
-    <button type="button" class="iconbtn" id="kakaoClose" aria-label="안내 닫기">✕</button>
-  </div>
   <div class="kakaobar installbar" id="installBar" hidden>
     <p id="installMsg"></p>
     <button type="button" class="btn" id="installBtn" hidden>설치</button>
@@ -543,6 +581,7 @@
       <div class="periodbar" id="periodBar">
         <button type="button" class="arrow" id="prev" aria-label="이전 기간">‹</button>
         <div class="periodmid">
+          <span class="periodtext" id="periodText" hidden></span>
           <div class="ympick" id="ympick" hidden>
             <select id="yearSel" aria-label="연도"></select>
             <select id="monthSel" aria-label="월"></select>
@@ -563,7 +602,6 @@
 
   <!-- 관리자 로그인 (#edit) -->
   <div id="loginView" hidden>
-    <p class="eyebrow">ADMIN</p>
     <h1>관리자 로그인</h1>
     <form id="loginForm" class="guide login" novalidate>
       <p class="hint">일정 편집은 관리자만 할 수 있습니다.</p>
@@ -579,7 +617,6 @@
 
   <!-- 편집 화면 (#edit, 로그인 후) -->
   <div id="editorView" hidden>
-    <p class="eyebrow">EDIT</p>
     <h1>찬양 일정 편집</h1>
     <div id="edBody">
       <details class="help">
@@ -806,7 +843,6 @@ const TYPES = ['주일 찬양', '대집회 특송', '중집회 특송', '모두�
 const ASSEMBLY_TYPES = ['대집회 특송', '중집회 특송'];  // [집회특송] 화면에 모아 보는 구분
 const typeLabel = type => ({ '주일 찬양': '주일', '대집회 특송': '집회', '중집회 특송': '중집회', '모두회 특송': '모두회', '구역모임 특송': '구역' })[type] || type;
 const TYPE_CUSTOM = '__custom__'; // 목록에 없는 구분을 직접 적을 때
-const NOTICE_HEAD = 30;   // 첫 화면에 보이는 공지 글자 수
 const UPCOMING_WEEKS = 8; // 첫 화면에 보여 줄 기간
 const URL_LINE = /^(.*?)\s*(https?:\/\/\S+)$/;
 const TOKEN_KEY = 'choir-token', CACHE_KEY = 'choir-cache', BIG_KEY = 'choir-big', PART_KEY = 'choir-part', SORT_KEY = 'choir-sort', THEME_KEY = 'choir-theme';
@@ -901,6 +937,15 @@ let myPart = '';            // 내 파트 (이 기기에만 저장)
 try { myPart = MY_PARTS.includes(localStorage.getItem(PART_KEY)) ? localStorage.getItem(PART_KEY) : ''; } catch {}
 let token = null;
 try { token = localStorage.getItem(TOKEN_KEY); } catch {} // 이 기기에서 30일 로그인 유지 (서버가 기한 관리)
+
+// 이 기기 번호 (로그인 실패를 기기마다 따로 세려고 — 남이 틀려서 관리자가 잠기지 않게)
+function deviceId() {
+  try {
+    let d = localStorage.getItem('choir-device');
+    if (!d) localStorage.setItem('choir-device', d = newId());
+    return d;
+  } catch { return ''; }
+}
 
 function setToken(t) {
   token = t;
@@ -1051,10 +1096,10 @@ function youtube(url) {
   } catch { return null; }
 }
 
-// 유튜브 재생 화면 (자동 재생 없음 — ▶를 눌러야 재생)
+// 유튜브 재생 화면 — 파트를 누른 것이 곧 재생 요청이라 바로 재생 (막는 기기에서는 ▶를 한 번 더)
 const embed = (id, start, title) => el('iframe', {
-  src: `https://www.youtube-nocookie.com/embed/${id}?playsinline=1&rel=0${start ? '&start=' + start : ''}`,
-  title, allow: 'encrypted-media; picture-in-picture; fullscreen; clipboard-write; web-share', // 복사·공유 버튼용
+  src: `https://www.youtube-nocookie.com/embed/${id}?playsinline=1&rel=0&autoplay=1${start ? '&start=' + start : ''}`,
+  title, allow: 'autoplay; encrypted-media; picture-in-picture; fullscreen; clipboard-write; web-share', // 복사·공유 버튼용
   allowfullscreen: '', referrerpolicy: 'strict-origin-when-cross-origin',
 });
 
@@ -1080,7 +1125,7 @@ const chip = (x, icon, caption, extra) => {
   const yt = youtube(x.url);
   // bare: 이번 주 찬양처럼 칩 모양을 쓰지 않는 곳 (자리마다 따로 꾸밈)
   return el('a', {
-    class: ((x.bare ? '' : 'chip' + (x.hl ? ' hl' : '')) + (extra ? ' ' + extra : '')).trim() || null,
+    class: ((x.bare ? '' : 'chip' + (x.hl ? ' hl' : x.line ? ' line' : '')) + (extra ? ' ' + extra : '')).trim() || null,
     href: x.url, target: '_blank', rel: 'noopener',
     'aria-label': x.full || x.label, title: x.full || x.label,
     onclick: yt && (e => { e.preventDefault(); play(yt, x.url, `${caption} · ${x.full || x.label}`); }),
@@ -1094,11 +1139,14 @@ const editBtn = ev => el('button', {
 }, '✎');
 
 // "지휘 김흥수" / "반주 심가영"을 각각 묶어서, 줄이 바뀌면 사람 단위로 나뉘게 함
-const peopleEls = e => [e.conductor && `지휘 ${e.conductor}`, e.pianist && `반주 ${e.pianist}`]
+const known = v => v && v.trim() !== '미정';
+const isTbd = ev => /^미정\d*$/.test(String(ev.title || '').trim()); // '미정', '미정1'처럼 곡이 아직 없는 자리
+const titleEl = (tag, ev) => isTbd(ev) ? el(tag, { class: 'tbd' }, '곡 미정') : el(tag, {}, ev.title);
+const peopleEls = e => [known(e.conductor) && `지휘 ${e.conductor}`, known(e.pianist) && `반주 ${e.pianist}`]
   .filter(Boolean).flatMap((t, i) => (i ? [' · '] : []).concat(el('span', { class: 'nowrap' }, t)));
 
 // 파트 버튼: 누르면 재생하면서 '내 파트'로 기억 (같은 파트를 다시 눌러도 풀리지 않음)
-const partChip = (x, caption, extra, icon = '▶') => {
+const partChip = (x, caption, extra, icon = null) => {
   const a = chip(x, icon, caption, extra);
   a.addEventListener('click', () => setMyPart(x.full));
   return a;
@@ -1114,13 +1162,17 @@ function heroSong(ev) {
     ...linkList(ev.refs, '참고').map(x => ({ ...x, bare: true })),
   ];
   const parts = PARTS.filter(p => !HEAD_PARTS.some(h => h.part === p))
-    .map(p => ({ label: [el('b', {}, PART_SHORT[p] || p), el('i', {}, p)], full: p, url: safeUrl(ev.parts?.[p]), mine: p === myPart, bare: true })) // S / 소프라노 두 줄
+    .map(p => ({ label: [el('b', {}, PART_SHORT[p] || p), el('i', {}, p), p === myPart && el('em', {}, '내 파트')], full: p, url: safeUrl(ev.parts?.[p]), mine: p === myPart, bare: true })) // S / 소프라노 두 줄
     .filter(x => x.url);
+  const mine = parts.find(x => x.mine);
   return el('div', { class: 'herosong' },
-    el('h3', {}, ev.title),
+    titleEl('h3', ev),
     people.length > 0 && el('p', { class: 'heroppl' }, people),
-    links.length > 0 && el('div', { class: 'herolinks' }, links.map(x => chip(x, null, ev.title, x.hi && 'hi'))),
-    parts.length > 0 && el('div', { class: 'heroparts' }, parts.map(x => partChip(x, ev.title, x.mine && 'hl', null))), // 고른 파트는 하얗게
+    // 내 파트를 골라 두었으면 맨 앞에 바로 듣는 큰 버튼 — 이때는 '듣기'를 흰 버튼으로 낮춤
+    mine && partChip({ ...mine, label: `▶ 내 파트(${mine.full}) 연습 듣기` }, ev.title, 'heromine'),
+    links.length > 0 && el('div', { class: 'herolinks' }, links.map(x => chip(x, null, ev.title, x.hi && !mine && 'hi'))),
+    parts.length > 0 && el('div', { class: 'heroparts' }, parts.map(x => partChip(x, ev.title, x.mine && 'hl'))), // 고른 파트는 하얗게
+    parts.length > 0 && !myPart && el('p', { class: 'partshint' }, '내 파트를 한 번 누르면 다음부터 맨 위에 바로 보여요'),
     !links.length && !parts.length && !ev.note && el('p', { class: 'heroppl' }, '연습 자료 준비 중'),
     ev.note && el('p', { class: 'note' }, ev.note),
     token && el('div', { class: 'heroedit' }, editBtn(ev)));
@@ -1131,15 +1183,16 @@ function card(ev, badge) {
   const past = ev.date < TODAY;
   const people = peopleEls(ev);
   // 제목 오른쪽: 듣기·반주·실황·악보·참고연주
+  // 듣기만 칠한 버튼, 반주·실황·악보·참고는 테두리 버튼 (한 카드에서 눈이 갈 곳을 하나로)
   const headChips = [
-    ...HEAD_PARTS.map(h => ({ label: h.label, url: safeUrl(ev.parts?.[h.part]), hl: true })).filter(x => x.url),
-    ...(liveUrl(ev) ? [{ label: '실황', url: liveUrl(ev), hl: true }] : []),
-    ...linkList(ev.scores, '악보'),
-    ...linkList(ev.refs, '참고'),
+    ...HEAD_PARTS.map(h => ({ label: h.label, url: safeUrl(ev.parts?.[h.part]), hl: h.part === '전체', line: h.part !== '전체' })).filter(x => x.url),
+    ...(liveUrl(ev) ? [{ label: '실황', url: liveUrl(ev), line: true }] : []),
+    ...linkList(ev.scores, '악보').map(x => ({ ...x, hl: false, line: true })),
+    ...linkList(ev.refs, '참고').map(x => ({ ...x, hl: false, line: true })),
   ];
-  // 아래: 파트 연습 (S·A·T·B)
+  // 아래: 파트 연습 — '▶ S / 소프라노' 두 줄 (맨 위와 같은 표기)
   const partChips = PARTS.filter(p => !HEAD_PARTS.some(h => h.part === p))
-    .map(p => ({ label: PART_SHORT[p] || p, full: p, url: safeUrl(ev.parts?.[p]), mine: p === myPart })).filter(x => x.url);
+    .map(p => ({ label: [el('b', {}, `▶ ${PART_SHORT[p] || p}`), el('small', {}, p)], full: p, url: safeUrl(ev.parts?.[p]), mine: p === myPart })).filter(x => x.url);
 
   return el('article', { class: 'card' + (past ? ' past' : '') + (badge ? ' next' : '') + (justSaved(ev.id) ? ' justsaved' : ''), 'data-id': ev.id },
     el('div', { class: 'date' + (typeOf(ev) !== '주일 찬양' ? ' special' : '') },
@@ -1147,7 +1200,7 @@ function card(ev, badge) {
       el('span', { class: 'dow' }, `(${DOW[dowOf(ev.date)]})`),
       el('span', { class: 'kind' }, typeLabel(typeOf(ev)))),
     el('div', { class: 'body' },
-      el('div', { class: 'titlerow' }, el('h3', {}, ev.title),
+      el('div', { class: 'titlerow' }, titleEl('h4', ev),
         badge && el('span', { class: 'badge' }, badge),
         past && el('span', { class: 'done' }, '지난 찬양'),
         (headChips.length > 0 || token) && el('div', { class: 'headchips' },
@@ -1158,7 +1211,7 @@ function card(ev, badge) {
         !people.length && el('p', { class: 'label' }, '파트 연습'),
         el('div', { class: 'chips' }, partChips.map(x => partChip(x, ev.title, x.mine && 'mine')))), // 고른 파트는 남색
       ev.note && el('p', { class: 'note' }, ev.note),
-      !headChips.length && !partChips.length && !ev.note && el('p', { class: 'muted' }, '연습 자료 준비 중')));
+      !past && !headChips.length && !partChips.length && !ev.note && el('p', { class: 'muted' }, '연습 자료 준비 중')));
 }
 
 // 글 속의 주소를 눌러서 열 수 있게 바꿈 (문장부호는 링크 밖에 남김)
@@ -1188,19 +1241,18 @@ function renderNotices() {
   const slots = notices.map((n, idx) => ({ text: String(n || '').trim(), idx })).filter(x => x.text);
   $('notices').replaceChildren(...slots.map(({ text: full, idx }, i) => {
     const flat = full.replace(/\s+/g, ' ');
-    const long = flat.length > NOTICE_HEAD;
     return el('button', {
       type: 'button', class: 'noticebar',
       onclick: () => {
         openNotice = idx;
-        $('noticeDlgTitle').textContent = list.length > 1 ? `공지사항 ${i + 1}` : '공지사항';
+        $('noticeDlgTitle').textContent = '공지사항';
         $('noticeFull').replaceChildren(...linkify(full));
         $('noticeEditBtn').hidden = !token; // 관리자로 로그인했을 때만 수정 버튼
         $('noticeDlg').showModal();
       },
     }, el('span', { class: 'tag' }, '공지'),
-      el('span', { class: 'txt' }, long ? flat.slice(0, NOTICE_HEAD) : flat),
-      el('span', { class: 'more', 'aria-hidden': 'true' }, long ? '전체 보기 ›' : '›')); // 잘려 보여도 눌러서 전체를 볼 수 있다는 표시
+      el('span', { class: 'txt' }, flat), // 두 줄까지 보이고 넘치면 … (CSS)
+      el('span', { class: 'more', 'aria-hidden': 'true' }, '›')); // 눌러서 전체를 볼 수 있다는 표시
   }));
 }
 
@@ -1220,15 +1272,15 @@ async function shareEvents(list) {
     if (navigator.share) await navigator.share({ title: '찬양대 알리미', text, url });
     else {
       await navigator.clipboard.writeText(`${text}\n\n${url}`);
-      alert('복사했습니다. 카카오톡에 붙여 넣으세요.');
+      flash('복사했습니다. 카카오톡에 붙여 넣으세요.');
     }
   } catch (e) {
     if (e.name === 'AbortError') return; // 공유 창을 닫은 경우는 조용히 넘어감
     try { // 공유 창이 열리지 않으면 복사로 대신함
       await navigator.clipboard.writeText(`${text}\n\n${url}`);
-      alert('공유 창을 열지 못해 대신 복사했습니다. 카카오톡에 붙여 넣으세요.');
+      flash('공유 창을 열지 못해 대신 복사했습니다. 카카오톡에 붙여 넣으세요.');
     } catch {
-      alert('공유하지 못했습니다. 찬양 제목을 길게 눌러 직접 복사해 주세요.');
+      flash('공유하지 못했습니다. 찬양 제목을 길게 눌러 직접 복사해 주세요.', true);
     }
   }
 }
@@ -1340,10 +1392,13 @@ const inPeriod = date => +date.slice(0, 4) === viewY && periodMonths().includes(
 function buildView(heroEvents = []) {
   if (query) {
     const key = query.toLowerCase();
-    const list = events.filter(e => [e.title, e.conductor, e.pianist]
+    const found = events.filter(e => [e.title, e.conductor, e.pianist]
       .some(v => String(v || '').toLowerCase().includes(key)));
+    const coming = found.filter(e => e.date >= TODAY), past = found.filter(e => e.date < TODAY).reverse();
+    const list = [...coming, ...past];
     return {
       list,
+      pastFrom: past.length ? coming.length : -1, // 여기서부터 '지난 찬양'
       title: `"${query}" 검색 결과`,
       summary: `${list.length}건 · 곡 제목·지휘자·반주자에서 전체 기간을 찾았습니다`,
       empty: '찾는 내용이 없습니다.',
@@ -1360,7 +1415,8 @@ function buildView(heroEvents = []) {
       list,
       all, // 인쇄에는 맨 위에 따로 보여 준 이번 주 찬양도 넣음
       title: '찬양 일정 미리보기',
-      summary: `${periodDate(start)} – ${periodDate(dayKey(utc(end) - 864e5), start.slice(0, 4))} · ${list.length}곡 등록`,
+      range: `${periodDate(start)} – ${periodDate(dayKey(utc(end) - 864e5), start.slice(0, 4))}`, // ‹ › 사이에 표시
+      summary: `${list.length}곡 등록`,
       empty: heroEvents.some(e => e.date >= start && e.date < end)
         ? '위 찬양 외에 선택한 기간에 등록된 일정이 없습니다.'
         : '선택한 기간에 등록된 찬양이 없습니다.',
@@ -1436,10 +1492,12 @@ function renderPublic() {
     ? view.list.flatMap((e, i) => {
       const month = e.date.slice(0, 7);
       const yearList = mode === 'year' && !query;
-      const separator = i === 0 || month !== view.list[i - 1].date.slice(0, 7) // 첫 달도 빠뜨리지 않고
-        ? [el('h3', { class: 'monthsep' }, yearList ? `${+month.slice(5)}월` : `${yearLabel(month.slice(0, 4))} ${+month.slice(5)}월`)] : [];
+      const pastStart = i === view.pastFrom;
+      const separator = i === 0 || pastStart || month !== view.list[i - 1].date.slice(0, 7) // 첫 달도 빠뜨리지 않고
+        // 월별은 제목에 이미 '26년 9월'이 있어 화면에서는 숨기고 화면 읽기용 제목으로만 둠
+        ? [el('h3', { class: 'monthsep' + (mode === 'month' && !query ? ' sronly' : '') }, yearList ? `${+month.slice(5)}월` : `${yearLabel(month.slice(0, 4))} ${+month.slice(5)}월`)] : [];
       const b = e.date === nextDate ? badge : null;
-      return [...separator, card(e, b)];
+      return [...(pastStart ? [el('p', { class: 'pastsep' }, '지난 찬양')] : []), ...separator, card(e, b)];
     })
     : [el('p', { class: 'empty' }, view.empty)]));
   // 일정이 하나도 없으면 "등록된 찬양이 없습니다" 안내만 보여 줌
@@ -1449,6 +1507,9 @@ function renderPublic() {
   $('periodBar').hidden = !!query;
   $('searchSummary').hidden = !query;
   $('searchSummary').textContent = query ? view.summary : '';
+  $('summary').hidden = !!query; // 검색 중에는 검색 요약 하나만
+  $('periodText').hidden = !view.range;
+  $('periodText').textContent = view.range || '';
   $('modeUpcoming').textContent = '미리보기'; // 눌렀을 때 뜨는 제목('찬양 일정 미리보기')과 같은 말로
   $('modeUpcoming').setAttribute('aria-pressed', String(mode === 'upcoming'));
   $('modeAssembly').setAttribute('aria-pressed', String(mode === 'assembly'));
@@ -1509,7 +1570,7 @@ $('loginForm').addEventListener('submit', async e => {
   if (!user || !password) return loginError('아이디와 비밀번호를 입력해 주세요.');
   busy($('loginSubmit'), true, '확인 중…');
   try {
-    setToken((await api({ action: 'login', user, password })).token);
+    setToken((await api({ action: 'login', user, password, device: deviceId() })).token);
     f.reset();
     $('loginErr').hidden = true;
     route();
@@ -1630,6 +1691,7 @@ const edBtns = (ev, locked) => el('div', { class: 'edbtns' },
   el('button', { type: 'button', class: 'btn', disabled: locked || null, onclick: () => openForm(ev, true) }, '복제'),
   el('button', { type: 'button', class: 'btn danger', disabled: locked || null, onclick: () => removeEvent(ev) }, '삭제'));
 
+let lastPointer = 'mouse'; // 마지막으로 누른 방식 (mouse / touch / pen)
 function slotRow(i, locked) {
   const s = board.slots[i], c = board.contents[i];
   if (!c) {
@@ -1641,10 +1703,11 @@ function slotRow(i, locked) {
   return el('div', { class: 'reslot' + (moved ? ' moved' : '') + (sel.has(c.srcId) ? ' selected' : '') + (justSaved(c.srcId) ? ' justsaved' : ''), 'data-id': c.srcId },
     dateBox(s.date, s.type),
     el('div', {
-      class: 'recard', onpointerdown: e => startDrag(e, i),
-      onclick: e => { // 한 번 누르면 고르기/풀기 (⠿를 눌러도 고를 수 있게)
+      class: 'recard', onpointerdown: e => { lastPointer = e.pointerType; startDrag(e, i); },
+      onclick: e => { // 마우스는 카드 어디든, 손가락은 ⠿를 눌렀을 때만 고르기/풀기
         if (dragged) { dragged = false; return; }
         if (e.target.closest('button:not(.handle)')) return;
+        if (lastPointer !== 'mouse' && !e.target.closest('.handle')) return;
         sel.has(c.srcId) ? sel.delete(c.srcId) : sel.add(c.srcId);
         renderEditor();
       },
@@ -2296,7 +2359,7 @@ $('bulkDaysSel').append(...Array.from({ length: 7 }, (_, i) => el('option', { va
 /* ===== 공지사항 수정 창 ===== */
 let openNotice = 0; // 전체 보기 창에서 열어 둔 공지 번호 (수정 창에서 그 칸으로 커서를 보냄)
 
-$('noticeHint').textContent = `첫 화면에는 각 공지의 앞 ${NOTICE_HEAD}자만 보이고, 누르면 전체 내용이 열립니다. 비워 두면 표시되지 않습니다.`;
+$('noticeHint').textContent = '첫 화면에는 각 공지가 두 줄까지 보이고(휴대폰에서 약 40자), 누르면 전체 내용이 열립니다. 비워 두면 표시되지 않습니다.';
 
 function openNoticeEdit(focusIndex = 0, values = notices) {
   const f = $('noticeForm');
@@ -2454,6 +2517,12 @@ const showPeriod = m => {
   mode = m;
   viewY = +TODAY.slice(0, 4);
   viewB = thisPeriod();
+  // 연습 영상: 달이 바뀌어 이번 구간이 비었으면 가장 최근 영상이 있는 구간을 보여 줌 (방금 올린 영상이 사라져 보이지 않게)
+  const latest = rehearsals[0]?.date; // 최근부터 정렬됨
+  if (m === 'rehearsal' && latest && !rehearsals.some(r => inPeriod(r.date))) {
+    viewY = +latest.slice(0, 4);
+    viewB = Math.floor((+latest.slice(5, 7) - 1) / 2);
+  }
   renderPublic();
 };
 $('modeAssembly').onclick = () => showPeriod('assembly');
@@ -2521,6 +2590,7 @@ function route() {
   $('edBody').hidden = !ready;
 
   $('loadBox').hidden = ready || showLogin;
+  $('heroSkel').hidden = edit || loadState !== 'loading'; // 저장해 둔 내용도 없이 처음 불러올 때만
   $('loadMsg').textContent = loadState === 'loading' ? '일정을 불러오는 중입니다…' : loadMsg;
   $('retryBtn').hidden = loadState !== 'error';
   // 공개 화면과 편집 화면 모두에 최신 내용 확인 상태를 알림
@@ -2572,17 +2642,16 @@ const KAKAO_KEY = 'choir-kakao-hide';
 if (/KAKAOTALK/i.test(navigator.userAgent)) {
   const android = /Android/i.test(navigator.userAgent);
   const external = 'kakaotalk://web/openExternal?url=' + encodeURIComponent(location.href);
-  if (android) location.href = external; // 안드로이드는 크롬으로 바로 넘김
   let hide = false;
   try { hide = localStorage.getItem(KAKAO_KEY) === '1'; } catch {}
   if (!hide) {
     $('kakaoMsg').replaceChildren(...(android
-      ? ['카카오톡 안에서 열렸습니다. ', el('a', { href: external }, '크롬으로 열기'), '를 누르면 홈 화면에 추가할 수 있어요.']
+      ? ['카카오톡 안에서 열렸습니다. 이대로 보셔도 되고, ', el('a', { href: external }, '크롬으로 열기'), '를 누르면 홈 화면에 추가할 수 있어요.']
       : ['카카오톡 안에서 열렸습니다. 오른쪽 아래 ', el('b', {}, '⋯'), ' 버튼 → ', el('b', {}, 'Safari로 열기'), '를 누르면 홈 화면에 추가할 수 있어요.']));
-    $('kakaoBar').hidden = false;
+    $('kakaoTop').hidden = false;
   }
   $('kakaoClose').onclick = () => {
-    $('kakaoBar').hidden = true;
+    $('kakaoTop').hidden = true;
     try { localStorage.setItem(KAKAO_KEY, '1'); } catch {}
   };
 }
