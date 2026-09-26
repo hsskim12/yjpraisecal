@@ -106,43 +106,45 @@
   /* 이번 주 찬양 (개선안 2) — 머리글과 이어진 남색 면, 아래 모서리만 둥글게.
      흐린 글씨는 흰색 투명도로 두어 어느 테마에서나 읽히게 */
   .hero { background: linear-gradient(180deg, var(--navy), color-mix(in oklab, var(--navy), #fff 12%)); color: #fff; border-radius: 0 0 28px 28px; }
-  .hero > .wrap { padding-block: 4px 18px; }
+  .hero > .wrap { padding-block: 4px 10px; }
   /* 이번 주 찬양이 보일 때는 머리글도 같은 남색으로 이어 붙임 (편집 화면은 흰 머리글 그대로) */
   body:has(#topZone:not([hidden]) :is(#hero, #heroSkel):not([hidden])) .top { background: linear-gradient(180deg, color-mix(in oklab, var(--navy), #000 16%), var(--navy)); border-bottom: 0; color: #fff; }
   body:has(#topZone:not([hidden]) :is(#hero, #heroSkel):not([hidden])) .brand small { color: rgb(255 255 255 / .75); }
   body:has(#topZone:not([hidden]) :is(#hero, #heroSkel):not([hidden])) .topnav .btn { background: rgb(255 255 255 / .15); border-color: transparent; color: #fff; border-radius: 999px; }
   body:has(#topZone:not([hidden]) :is(#hero, #heroSkel):not([hidden])) .topnav .btn:hover { background: rgb(255 255 255 / .26); }
   body:has(#topZone:not([hidden]) :is(#hero, #heroSkel):not([hidden])) #fontBtn[aria-pressed="true"] { background: #fff; color: var(--navy); }
-  .hero .eyebrow { color: rgb(255 255 255 / .8); margin: 0 0 8px; font-size: 14px; letter-spacing: .02em; } /* 한글은 자간을 벌리지 않음 */
+  .hero .eyebrow { color: rgb(255 255 255 / .8); margin: 0 0 4px; font-size: 14px; letter-spacing: .02em; } /* 한글은 자간을 벌리지 않음 */
   /* 날짜 줄: '9월 27일 [일요일]' — 요일 알약은 날짜와 같은 줄 */
   .herodate { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin: 0; font-size: 25px; font-weight: 800; letter-spacing: -.02em; line-height: 1.15; }
   .herodate em { font-style: normal; font-size: 14px; font-weight: 700; letter-spacing: 0; background: rgb(255 255 255 / .18); border-radius: 7px; padding: 3px 10px; }
   .herosong + .herosong { margin-top: 22px; padding-top: 18px; border-top: 1px solid rgb(255 255 255 / .2); }
-  .herosong h3 { margin: 20px 0 6px; font-size: 38px; font-weight: 800; letter-spacing: -.03em; line-height: 1.18; text-wrap: balance; word-break: keep-all; overflow-wrap: anywhere; }
+  .herosong h3 { margin: 12px 0 2px; font-size: 38px; font-weight: 800; letter-spacing: -.03em; line-height: 1.18; text-wrap: balance; word-break: keep-all; overflow-wrap: anywhere; }
   .heroppl { margin: 0; font-size: 14px; color: rgb(255 255 255 / .8); }
   /* 듣기는 강조색, 반주·악보·실황은 흰 버튼 */
-  .herolinks { display: grid; grid-template-columns: repeat(auto-fit, minmax(88px, 1fr)); gap: 7px; margin-top: 20px; } /* 좁아져도 한 버튼만 한 줄을 다 차지하지 않게 */
-  .herolinks a { min-width: 0; min-height: 48px; display: inline-flex; align-items: center; justify-content: center;
+  .herolinks { display: grid; grid-template-columns: repeat(auto-fit, minmax(88px, 1fr)); gap: 7px; margin-top: 12px; } /* 좁아져도 한 버튼만 한 줄을 다 차지하지 않게 */
+  .herolinks a { min-width: 0; min-height: 44px; display: inline-flex; align-items: center; justify-content: center;
     font-size: 19.5px; font-weight: 700; color: var(--navy); background: #fff; border-radius: 13px; padding: 8px 12px; text-decoration: none; } /* 15px의 1.3배 */
   .herolinks a:hover { background: var(--navy-soft); }
   .herolinks a.hi { background: var(--accent); color: #fff; }
   .herolinks a.hi:hover { background: var(--accent-dark); }
   /* 파트 버튼 — 큼직한 네 칸, S / 소프라노 두 줄. 고른 파트(내 파트)는 하얗게 */
-  .heroparts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 7px; margin-top: 8px; }
-  .heroparts a { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; padding: 12px 2px 10px;
+  .heroparts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 7px; margin-top: 12px; } /* 위 테두리에 걸친 '내 파트' 표시 자리 */
+  .heroparts a { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0; padding: 6px 2px 5px;
     color: #fff; background: rgb(255 255 255 / .14); border-radius: 13px; text-decoration: none; }
   .heroparts a:not(.hl):hover { box-shadow: inset 0 0 0 2px rgb(255 255 255 / .6); } /* 바탕을 밝히면 흰 글자 대비가 모자라 테두리로 */
-  .heroparts a b { font-size: 25px; font-weight: 800; line-height: 1.2; } /* 19px의 1.3배 */
-  .heroparts a i { font-style: normal; font-size: 15.5px; font-weight: 500; color: #fff; } /* 12px의 1.3배 · 흐리게 하면 밝은 테마에서 대비가 모자라 흰색 그대로 */
+  .heroparts a b { font-size: 25px; font-weight: 800; line-height: 1.05; } /* 19px의 1.3배 */
+  .heroparts a i { font-style: normal; font-size: 15.5px; line-height: 1.25; font-weight: 500; color: #fff; } /* 12px의 1.3배 · 흐리게 하면 밝은 테마에서 대비가 모자라 흰색 그대로 */
   .heroparts a.hl { background: #fff; color: var(--navy); }
   .heroparts a.hl i { color: var(--muted); }
-  .heroparts a em { display: none; font-style: normal; font-size: 13px; font-weight: 800; color: var(--accent-dark); } /* '내 파트' — 고른 칸에만 */
+  /* '내 파트' — 고른 칸에만, 칸 위 테두리에 걸친 작은 표시 (칸이 세 줄로 커지지 않게) */
+  .heroparts a em { display: none; position: absolute; top: 0; left: 50%; transform: translate(-50%, -50%); white-space: nowrap;
+    padding: 1px 8px; border-radius: 999px; background: var(--accent); color: #fff; font-style: normal; font-size: 13px; font-weight: 800; line-height: 1.4; }
   .heroparts a.hl em { display: block; }
   .hero .tbd { color: rgb(255 255 255 / .75); }   /* 남색 바탕 위 '곡 미정' */
   .herotbd { display: inline-block; margin: 0 0 12px; padding: 5px 11px; border-radius: 9px; background: rgb(255 255 255 / .14); font-size: 14px; font-weight: 600; }
   .herotype { margin: 0 0 -12px; font-size: 14px; font-weight: 700; color: rgb(255 255 255 / .85); } /* 같은 날 여러 곡일 때 곡마다 구분 */
   .sharemsg { margin: 6px 0 0; text-align: center; font-size: 15px; font-weight: 600; color: #fff; }
-  .heroshare { display: flex; align-items: center; justify-content: center; gap: 6px; width: fit-content; margin: 14px auto 0; min-height: 40px; padding: 6px 14px; border: 0; background: none; color: rgb(255 255 255 / .85); font-size: 18px; font-weight: 600; } /* 14px의 약 1.3배 */
+  .heroshare { display: flex; align-items: center; justify-content: center; gap: 6px; width: fit-content; margin: 6px auto 0; min-height: 40px; padding: 4px 14px; border: 0; background: none; color: rgb(255 255 255 / .85); font-size: 18px; font-weight: 600; } /* 14px의 약 1.3배 */
   .heroshare:hover { color: #fff; text-decoration: underline; }
   .hero .note { color: #fff; border-left-color: rgb(255 255 255 / .6); margin-top: 12px; }
   .heroedit { display: flex; justify-content: flex-end; margin-top: 10px; }
