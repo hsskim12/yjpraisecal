@@ -174,7 +174,7 @@
 
   /* 검색·달 선택 */
   /* 검색창 — 알약 모양, 왼쪽 돋보기, 글자를 치면 오른쪽 안에 지우기(×) */
-  .searchrow { position: relative; display: flex; align-items: center; margin-bottom: 16px; }
+  .searchrow { position: relative; display: flex; align-items: center; margin-bottom: 16px; scroll-margin-top: max(16px, env(safe-area-inset-top)); }
   .searchrow .glass { position: absolute; left: 16px; display: grid; place-items: center; color: var(--muted); pointer-events: none; }
   .searchrow input {
     flex: 1; min-width: 0; font: inherit; font-size: 15px;
@@ -2798,7 +2798,13 @@ $('yearSel').onchange = e => {
   showMonth(+e.target.value, viewM);
 };
 $('monthSel').onchange = e => showMonth(viewY, +e.target.value);
-$('modeMonth').onclick = () => showMonth(viewY, viewM);
+// 하단 플로팅 메뉴로 화면을 바꾸면 검색창부터 바로 볼 수 있게 이동
+const scrollToScheduleSearch = () => requestAnimationFrame(() => {
+  const row = $('searchInput').closest('.searchrow');
+  row?.scrollIntoView({ block: 'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+});
+const chooseMode = change => { change(); scrollToScheduleSearch(); };
+$('modeMonth').onclick = () => chooseMode(() => showMonth(viewY, viewM));
 // 버튼을 다시 누르면 오늘이 속한 기간으로 돌아옴 (앞서 옮겨 둔 기간은 잊음)
 const showPeriod = m => {
   clearSearch();
@@ -2815,9 +2821,9 @@ const showPeriod = m => {
   }
   renderPublic();
 };
-$('modeAssembly').onclick = () => showPeriod('assembly');
-$('modeRehearsal').onclick = () => showPeriod('rehearsal');
-$('modeYear').onclick = () => showYear(viewY);
+$('modeAssembly').onclick = () => chooseMode(() => showPeriod('assembly'));
+$('modeRehearsal').onclick = () => chooseMode(() => showPeriod('rehearsal'));
+$('modeYear').onclick = () => chooseMode(() => showYear(viewY));
 // 연도별은 [인쇄 · 목록]과 [인쇄 · 한눈에] 두 가지. 브라우저 메뉴로 인쇄하면 목록
 let printStyle = null;
 let printOrientation = null;
@@ -2963,7 +2969,7 @@ fetch('sw.js', { cache: 'no-store' }).then(r => r.text()).then(t => {
   if (n) { $('appVer').textContent = `v${Math.floor(n / 10)}${n % 10 ? '.' + n % 10 : ''}`; $('appVer').hidden = false; }
 }).catch(() => {}); // [인쇄] 버튼이든 브라우저 메뉴의 인쇄든 모두
 // 모드를 다시 고르면 오늘 기준으로 돌아옴
-$('modeUpcoming').onclick = () => { mode = 'upcoming'; upcomingStart = nextSunday(); renderPublic(); };
+$('modeUpcoming').onclick = () => chooseMode(() => { mode = 'upcoming'; upcomingStart = nextSunday(); renderPublic(); });
 $('nowBtn').onclick = () => {
   upcomingStart = nextSunday();
   renderPublic();
