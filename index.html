@@ -2798,9 +2798,17 @@ $('modeRehearsal').onclick = () => showPeriod('rehearsal');
 $('modeYear').onclick = () => showYear(viewY);
 // 연도별은 [인쇄 · 목록]과 [인쇄 · 한눈에] 두 가지. 브라우저 메뉴로 인쇄하면 목록
 let printStyle = null;
-$('printBtn').onclick = () => { printStyle = 'list'; print(); };
-$('printBtn2').onclick = () => { printStyle = 'glance'; print(); };
-addEventListener('afterprint', () => { printStyle = null; });
+// 모바일 인쇄 엔진은 beforeprint를 늦게 보내거나 생략할 수 있으므로 버튼을 누를 때 종이용 DOM을 먼저 완성한다.
+function startPrint(style) {
+  printStyle = style;
+  buildPrintSheet();
+  requestAnimationFrame(() => requestAnimationFrame(() => setTimeout(() => window.print(), 100)));
+}
+$('printBtn').onclick = () => startPrint('list');
+$('printBtn2').onclick = () => startPrint('glance');
+// Android는 미리보기가 내용을 읽기 전에 afterprint를 보낼 수 있어 printSheet를 비우지 않는다.
+// 다음 인쇄는 buildPrintSheet가 현재 화면 내용으로 통째로 교체한다.
+addEventListener('afterprint', () => { setTimeout(() => { printStyle = null; }, 30000); });
 
 /* ===== 인쇄 — 화면마다 사용자가 고른 모양 (2026-09-26 시안에서 선택) =====
    미리보기·검색: 표 / 월별: 큰 카드 + 공지 + 사이트 QR / 연도별: 2단 목록 또는 1년 한눈에(가로) / 집회 특송: 집회별 순서표
