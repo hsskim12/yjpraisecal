@@ -405,6 +405,13 @@
   .field input, .field textarea, .field select { display: block; width: 100%; margin-top: 4px; font: inherit; font-weight: 400; padding: 9px 10px; border: 1px solid var(--line); border-radius: 9px; }
   fieldset { border: 1px solid var(--line); border-radius: 12px; margin: 0 0 12px; padding: 10px 12px 8px; }
   legend { font-size: 14px; font-weight: 600; padding: 0 4px; }
+  .porient { padding: 8px 0 2px; border: 0; }
+  .porient legend { margin-bottom: 7px; color: var(--ink); font-weight: 700; }
+  .porient div { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .porient label { position: relative; display: grid; place-items: center; min-height: 44px; padding: 9px 12px; border: 1px solid var(--line); border-radius: 10px; background: #fff; color: var(--ink); font-weight: 700; cursor: pointer; }
+  .porient label:has(input:checked) { border-color: var(--navy); background: var(--navy-soft); color: var(--navy); }
+  .porient input { position: absolute; inline-size: 1px; block-size: 1px; opacity: 0; }
+  .porient label:has(input:focus-visible) { outline: 3px solid color-mix(in srgb, var(--navy) 28%, transparent); outline-offset: 2px; }
   .partrow { display: grid; grid-template-columns: 64px 1fr auto auto; align-items: center; gap: 8px; margin-bottom: 10px; font-size: 14px; }
   .partrow input { font: inherit; padding: 8px 10px; border: 1px solid var(--line); border-radius: 9px; min-width: 0; }
   .partrow .iconbtn { width: 42px; height: 42px; }
@@ -524,8 +531,7 @@
     .psnote { margin-top: 6mm; border: 1.5px solid var(--accent); border-radius: 3mm; padding: 3mm 4mm; break-inside: avoid; }
     .psnote .h { font-weight: 800; color: var(--accent); font-size: 10pt; } .psnote p { margin: 1mm 0 0; font-size: 12pt; white-space: pre-line; }
     /* 연도별 ②: 1년 한눈에 (가로 A4) */
-    #printSheet.land { page: land; }
-    @page land { size: A4 landscape; margin: 12mm; }
+    #printSheet.land { width: auto; }
     .psyear { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3mm; }
     .psmb { border: 1px solid #c5ccd6; border-radius: 2mm; padding: 1.8mm 2.2mm; min-height: 38mm; break-inside: avoid; } .psmb.empty { background: #f5f5f5; }
     .psmb .psmon { margin: 0 0 1mm; font-size: 11pt; }
@@ -937,6 +943,18 @@
       <button type="button" class="btn" id="cancelBtn">취소</button>
       <button type="submit" class="btn primary" id="saveBtn">저장</button>
     </div>
+  </form>
+</dialog>
+
+<dialog id="printDlg" aria-labelledby="printDlgTitle">
+  <form method="dialog">
+    <div class="dlghead"><h2 id="printDlgTitle">인쇄 방향</h2><button type="button" class="btn" id="printCancel">닫기</button></div>
+    <p class="hint">용지의 방향을 고른 뒤 인쇄하세요.</p>
+    <fieldset class="porient"><legend>인쇄 방향</legend><div>
+      <label><input type="radio" name="print-orientation" value="portrait">세로</label>
+      <label><input type="radio" name="print-orientation" value="landscape">가로</label>
+    </div></fieldset>
+    <div class="actions"><button type="submit" class="btn primary">선택한 방향으로 인쇄</button></div>
   </form>
 </dialog>
 
@@ -2798,14 +2816,33 @@ $('modeRehearsal').onclick = () => showPeriod('rehearsal');
 $('modeYear').onclick = () => showYear(viewY);
 // 연도별은 [인쇄 · 목록]과 [인쇄 · 한눈에] 두 가지. 브라우저 메뉴로 인쇄하면 목록
 let printStyle = null;
+let printOrientation = null;
+const PRINT_ORIENTATION_KEY = 'choir-print-orientation';
+const preferredPrintOrientation = style => { try { return localStorage.getItem(PRINT_ORIENTATION_KEY) || (style === 'glance' ? 'landscape' : 'portrait'); } catch { return style === 'glance' ? 'landscape' : 'portrait'; } };
+function setPrintPageOrientation(orientation) {
+  let s = $('printPageStyle');
+  if (!s) { s = document.createElement('style'); s.id = 'printPageStyle'; document.head.append(s); }
+  s.textContent = `@media print{@page{size:A4 ${orientation};margin:12mm}}`;
+}
 // 모바일 인쇄 엔진은 beforeprint를 늦게 보내거나 생략할 수 있으므로 버튼을 누를 때 종이용 DOM을 먼저 완성한다.
 function startPrint(style) {
   printStyle = style;
-  buildPrintSheet();
-  requestAnimationFrame(() => requestAnimationFrame(() => setTimeout(() => window.print(), 100)));
+  const v = preferredPrintOrientation(style), d = $('printDlg');
+  d.querySelector(`input[value="${v}"]`).checked = true;
+  d.showModal();
 }
 $('printBtn').onclick = () => startPrint('list');
 $('printBtn2').onclick = () => startPrint('glance');
+$('printCancel').onclick = () => { printStyle = null; $('printDlg').close(); };
+$('printDlg').addEventListener('cancel', () => { printStyle = null; });
+$('printDlg').querySelector('form').onsubmit = e => {
+  e.preventDefault();
+  printOrientation = new FormData(e.currentTarget).get('print-orientation');
+  try { localStorage.setItem(PRINT_ORIENTATION_KEY, printOrientation); } catch {}
+  $('printDlg').close();
+  buildPrintSheet();
+  requestAnimationFrame(() => requestAnimationFrame(() => setTimeout(() => window.print(), 100)));
+};
 // Android는 미리보기가 내용을 읽기 전에 afterprint를 보낼 수 있어 printSheet를 비우지 않는다.
 // 다음 인쇄는 buildPrintSheet가 현재 화면 내용으로 통째로 교체한다.
 addEventListener('afterprint', () => { setTimeout(() => { printStyle = null; }, 30000); });
@@ -2898,11 +2935,13 @@ function buildPrintSheet() {
   const next = events.find(e => e.date >= TODAY && !isTbd(e))?.date; // 화면의 이번 주 찬양과 같은 곡을 강조
   const stamp = `${TODAY.slice(2, 4)}. ${+TODAY.slice(5, 7)}. ${+TODAY.slice(8, 10)}. 기준`;
   const glance = kind === 'year' && printStyle === 'glance';
+  const orientation = printOrientation || preferredPrintOrientation(printStyle);
+  setPrintPageOrientation(orientation);
   const body = kind === 'month' ? psMonth(list, next) : kind === 'assembly' ? psAssembly(list)
     : kind === 'year' ? (glance ? psGlance(list, next) : psYearList(list, next)) : psTable(list, next);
   const qr = kind === 'month' && el('div', { class: 'psqr', 'aria-hidden': 'true' });
   if (qr) qr.innerHTML = SITE_QR; // 미리 만들어 둔 그림 (사용자 입력 아님)
-  $('printSheet').className = glance ? 'land' : ''; // 1년 한눈에는 가로 A4
+  $('printSheet').className = orientation === 'landscape' ? 'land' : '';
   $('printSheet').replaceChildren(
     el('div', { class: 'pshead' },
       el('div', {}, el('div', { class: 'psorg' }, '인천영종교회 찬양대'), el('h1', {}, glance ? title.replace('일정', '한눈에') : title)),
