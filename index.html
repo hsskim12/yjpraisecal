@@ -193,12 +193,25 @@
   .viewhead h2 { margin: 0; font-size: 20px; line-height: 1.3; }
   .summary { color: var(--muted); font-size: 14px; }
 
-  /* 보기 고르기: 흰 알약, 고른 것만 남색 (집회 특송·연습 영상은 오른쪽 끝에 나란히) */
-  .modebar { display: flex; gap: 6px; flex-wrap: nowrap; margin-bottom: 10px; }
-  .modebar .btn { white-space: nowrap; min-height: 40px; padding: 8px 16px; border: 0; border-radius: 999px; background: #fff; color: #3d4757; font-size: 15px; font-weight: 700; box-shadow: 0 1px 2px rgb(16 24 40 / .06); }
+  /* 보기 고르기: 공개 일정 화면 아래에 한 줄로 떠 있는 메뉴 */
+  .modebar {
+    position: fixed; left: 50%; bottom: max(12px, env(safe-area-inset-bottom)); z-index: 8;
+    transform: translateX(-50%); display: grid; grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 5px; width: min(728px, calc(100vw - 24px)); margin: 0; padding: 6px;
+    border: 1px solid rgb(197 204 214 / .82); border-radius: 22px;
+    background: rgb(255 255 255 / .94); box-shadow: 0 10px 30px rgb(16 24 40 / .18), 0 2px 8px rgb(16 24 40 / .08);
+    -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px);
+  }
+  .modebar .btn {
+    min-width: 0; min-height: 48px; padding: 8px 4px; border: 0; border-radius: 16px;
+    background: transparent; color: #3d4757; font-size: 14px; line-height: 1.15; font-weight: 750;
+    white-space: nowrap; box-shadow: none;
+  }
   .modebar .btn:hover { background: var(--navy-soft); }
-  .modebar .btn[aria-pressed="true"] { background: var(--navy); color: #fff; }
-  #modeAssembly { margin-left: auto; }
+  .modebar .btn[aria-pressed="true"] { background: var(--navy); color: #fff; box-shadow: 0 3px 10px rgb(31 58 99 / .24); }
+  body.big .modebar { zoom: calc(1 / 1.2); } /* 전체 1.2배 확대가 고정 메뉴 폭까지 늘리지 않게 */
+  body:has(#schedule:not([hidden]) #modeBar:not([hidden])) { padding-bottom: calc(82px + env(safe-area-inset-bottom)); }
+  body:has(#player:not([hidden])) .modebar { display: none; }
 
   /* 기간 이동 */
   .periodbar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
@@ -550,10 +563,9 @@
   @media (max-width: 480px) {
     /* 연도·기간 칸이 찌그러지지 않게 — 자리가 모자라면 [최근부터 보기]·[인쇄]가 아랫줄로 */
     .periodmid { flex: 1; min-width: max-content; }
-    /* 좁은 화면에서도 보기 버튼 네 개가 한 줄에 들어가도록 */
-    /* 다섯 개가 360px 화면에서도 한 줄에 들어가도록 좌우 여백과 글자를 줄임 */
-    .modebar { gap: 4px; flex-wrap: wrap; }
-    .modebar .btn { padding: 8px 9px; font-size: 13px; }
+    /* 하단 보기 메뉴는 360px에서도 다섯 항목을 한 줄로 유지 */
+    .modebar { gap: 3px; width: calc(100vw - 16px); padding: 5px; border-radius: 20px; }
+    .modebar .btn { min-height: 46px; padding: 7px 2px; border-radius: 15px; font-size: 12px; letter-spacing: -.025em; }
     /* 파트 연습 S·A·T·B는 한 줄에 */
     .card { gap: 8px; padding: 8px; }
     .date { min-width: 68px; padding: 8px 4px; }
@@ -561,10 +573,6 @@
     .date .dow, .date .kind { font-size: 14px; }
     .group .chips { gap: 5px; }
     #printBtn, #printBtn2 { display: none; } /* 인쇄는 넓은 화면에서만 */
-    /* 보기 버튼 5개: 위 3개·아래 2개 격자 (한 개만 떨어져 남지 않게, 글자는 크게) */
-    .modebar { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
-    .modebar .btn { grid-column: span 2; font-size: 15px !important; padding: 8px 4px !important; }
-    .modebar #modeAssembly, .modebar #modeRehearsal { grid-column: span 3; margin-left: 0; }
     /* 머리글 한 줄: 로고·이름을 줄이고 버튼을 같은 줄에 */
     .top .wrap { flex-wrap: nowrap; gap: 8px; padding-block: 10px; }
     .logo { height: 40px; }
@@ -605,13 +613,9 @@
     body.big .brand b { font-size: 18px; }            /* 크게 보기(1.2배)에서 머리글이 한 줄에 들어가게 */
     body.big .brand small { white-space: nowrap; }
     body.big .topnav .btn { padding: 8px 8px; }
-    body.big .modebar { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
-    body.big .modebar .btn { grid-column: span 2; padding: 8px 4px; }
-    body.big .modebar #modeAssembly, body.big .modebar #modeRehearsal { grid-column: span 3; margin-left: 0; }
   }
   @media (max-width: 360px) {
     .top .wrap { flex-wrap: wrap; }    /* 아주 좁으면 버튼은 아랫줄로 */
-    #modeAssembly { margin-left: 0; }  /* 두 줄로 접힐 때 '집회 특송'만 오른쪽 끝에 남지 않게 */
     .group .chips .chip { flex-basis: calc(50% - 3px); } /* 파트 버튼 두 칸씩 */
     .heroparts a i { font-size: 14px; letter-spacing: -.03em; }
   }
