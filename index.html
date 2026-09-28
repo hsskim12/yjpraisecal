@@ -199,7 +199,7 @@
     position: fixed; left: 50%; bottom: max(12px, env(safe-area-inset-bottom)); z-index: 8;
     transform: translateX(-50%); display: grid; grid-template-columns: repeat(6, minmax(0, 1fr));
     gap: 5px; width: min(728px, calc(100vw - 24px)); margin: 0; padding: 6px;
-    border: 1px solid rgb(197 204 214 / .82); border-radius: 22px; /* 테두리·바탕은 이전 모양(얇은 회색 선·흰 바탕), 그림자는 지금 그대로 (2026-09-28 요청) */
+    border: 0; border-radius: 22px; /* 흰 바탕 + 그림자 하나로 떠 보이게 (얇은 테두리와 넓은 그림자를 함께 쓰지 않음 — impeccable 권고) */
     background: rgb(255 255 255 / .94); box-shadow: 0 16px 38px rgb(16 24 40 / .26), 0 5px 14px rgb(16 24 40 / .18), inset 0 1px 0 rgb(255 255 255 / .8);
     -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px);
   }
@@ -234,6 +234,9 @@
   .rthumb { width: 112px; flex-shrink: 0; aspect-ratio: 16 / 9; border-radius: 8px; overflow: hidden; background: var(--navy-soft); display: grid; place-items: center; color: var(--navy); font-size: 22px; text-decoration: none; }
   .rthumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .rinfo { flex: 1; min-width: 0; }
+  .rrow.live { flex-wrap: wrap; }
+  .rrow.live .rthumb { width: 224px; } /* 실황은 사진을 연습 영상의 2배로 */
+  .rrow.live .rinfo { flex: 1 1 180px; } /* 자리가 모자라면 제목·날짜는 사진 아래로 */
   .rname { display: block; font-size: 17px; font-weight: 700; color: var(--ink); text-decoration: none; word-break: keep-all; overflow-wrap: anywhere; }
   .rname:hover { text-decoration: underline; }
   .rinfo small { color: var(--muted); font-size: 15px; }
@@ -595,6 +598,7 @@
     /* 연습 영상 줄: 썸네일을 줄이고 [수정][삭제]는 아랫줄 오른쪽으로 (제목이 눌리지 않게) */
     .rrow { flex-wrap: wrap; }
     .rthumb { width: 96px; }
+    .rrow.live .rthumb { width: 192px; } /* 휴대폰도 연습 영상(96px)의 2배 */
     .rrow .edbtns { flex: 0 0 100%; justify-content: flex-end; }
     /* 편집 목록: 입력 표시를 넓게 쓰고 버튼은 아래 오른쪽으로 */
     .reslot { grid-template-columns: 56px minmax(0, 1fr); gap: 6px; }
@@ -1535,7 +1539,7 @@ function rehearsalRow(r) {
 function liveRow(e) {
   const url = liveUrl(e), yt = youtube(url), name = showTitle(e);
   const go = ev => { ev.preventDefault(); play(yt, url, `${name} · 실황`); };
-  return el('div', { class: 'rrow' + (justSaved(e.id) ? ' justsaved' : ''), 'data-id': e.id },
+  return el('div', { class: 'rrow live' + (justSaved(e.id) ? ' justsaved' : ''), 'data-id': e.id },
     el('a', { class: 'rthumb', href: url, target: '_blank', rel: 'noopener', 'aria-label': `${name} 실황 재생`, onclick: go },
       el('img', { src: `https://i.ytimg.com/vi/${yt.id}/mqdefault.jpg`, alt: '', loading: 'lazy' })),
     el('div', { class: 'rinfo' },
