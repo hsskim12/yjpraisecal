@@ -568,7 +568,7 @@
     .modebar { gap: 2px; width: calc(100vw - 8px); padding: 4px; border-radius: 20px; }
     /* 6칸이라 두 단어 이름('집회 특송', '연습 영상')은 두 줄로 — 글자는 줄이지 않고 */
     .modebar .btn { min-height: 52px; padding: 5px 1px; border-radius: 15px; font-size: 15px; line-height: 1.12; letter-spacing: -.03em; }
-    .modebar .btn span { display: block; } /* '집회 / 특송', '연습 / 영상' 두 줄 */
+    .modebar .btn span { display: block; } /* 휴대폰은 모든 메뉴를 두 줄로: 미리/보기, 월별/보기, 연간/보기, 집회/특송, 연습/영상, 실황/보기 */
     /* 파트 연습 S·A·T·B는 한 줄에 */
     .card { gap: 8px; padding: 8px; }
     .date { min-width: 68px; padding: 8px 4px; }
@@ -693,12 +693,12 @@
       </div>
 
       <div class="modebar" id="modeBar" role="group" aria-label="조회 모드">
-        <button type="button" class="btn" id="modeUpcoming" aria-pressed="true"></button>
-        <button type="button" class="btn" id="modeMonth" aria-pressed="false">월별</button>
-        <button type="button" class="btn" id="modeYear" aria-pressed="false">연도별</button>
+        <button type="button" class="btn" id="modeUpcoming" aria-pressed="true"><span>미리</span> <span>보기</span></button>
+        <button type="button" class="btn" id="modeMonth" aria-pressed="false"><span>월별</span> <span>보기</span></button>
+        <button type="button" class="btn" id="modeYear" aria-pressed="false"><span>연간</span> <span>보기</span></button>
         <button type="button" class="btn" id="modeAssembly" aria-pressed="false"><span>집회</span> <span>특송</span></button>
         <button type="button" class="btn" id="modeRehearsal" aria-pressed="false"><span>연습</span> <span>영상</span></button>
-        <button type="button" class="btn" id="modeLive" aria-pressed="false">실황</button>
+        <button type="button" class="btn" id="modeLive" aria-pressed="false"><span>실황</span> <span>보기</span></button>
       </div>
 
       <p class="summary periodsummary" id="summary"></p>
@@ -1763,7 +1763,6 @@ function renderPublic() {
   $('summary').hidden = !!query; // 검색 중에는 검색 요약 하나만
   $('periodText').hidden = !view.range;
   $('periodText').textContent = view.range || '';
-  $('modeUpcoming').textContent = '미리보기'; // 눌렀을 때 뜨는 제목('찬양 일정 미리보기')과 같은 말로
   $('modeUpcoming').setAttribute('aria-pressed', String(mode === 'upcoming'));
   $('modeAssembly').setAttribute('aria-pressed', String(mode === 'assembly'));
   $('modeRehearsal').setAttribute('aria-pressed', String(mode === 'rehearsal'));
