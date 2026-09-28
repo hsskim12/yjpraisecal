@@ -226,7 +226,7 @@
   .ympick select { font: inherit; font-size: 16px; font-weight: 700; color: var(--ink); padding: 8px 4px 8px 10px; border: 1px solid var(--line); border-radius: 10px; background: #fff; min-width: 0; } /* 오른쪽 화살표를 글자 가까이 */
 
   .headchips .rowedit { width: 44px; height: 44px; font-size: 16px; }
-  .nowrap { white-space: nowrap; }   /* 지휘·반주 이름이 가운데서 잘리지 않게 */
+  .nowrap { display: inline-block; max-width: 100%; overflow-wrap: anywhere; }   /* 지휘·반주 이름이 가운데서 잘리지 않게 — 이름이 화면보다 길 때만 줄바꿈(가로 넘침 방지) */
 
   /* 연습 영상 목록 */
   .rrow { display: flex; align-items: center; gap: 12px; background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 8px 12px 8px 8px; }
@@ -509,7 +509,7 @@
     @page { size: A4; margin: 12mm; }
     html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     body.pssheet > *:not(#printSheet) { display: none !important; }
-    body.pssheet #printSheet { display: block; color: #111; }
+    body.pssheet #printSheet { display: block; color: #111; overflow-wrap: anywhere; } /* 띄어쓰기 없는 긴 제목·이름도 종이 밖으로 나가지 않게 */
     .pshead { display: flex; align-items: flex-end; justify-content: space-between; gap: 8mm; border-bottom: 2.2px solid var(--navy); padding-bottom: 2.5mm; margin-bottom: 3.5mm; }
     .psorg { font-size: 8.5pt; font-weight: 700; color: var(--navy); letter-spacing: .06em; }
     .pshead h1 { margin: 1mm 0 0; font-size: 19pt; letter-spacing: -.02em; line-height: 1.1; }
@@ -520,7 +520,7 @@
     .psmonth { break-inside: avoid; }
     .psmonth:first-child .psmon { margin-top: 0; }
     .psmon small { font-size: 8.5pt; color: #666; font-weight: 600; }
-    .psrow { display: grid; grid-template-columns: 16mm 1fr; column-gap: 2.5mm; padding: 1.6mm 0; border-bottom: .5px dotted #bbb; break-inside: avoid; }
+    .psrow { display: grid; grid-template-columns: 16mm minmax(0, 1fr); column-gap: 2.5mm; padding: 1.6mm 0; border-bottom: .5px dotted #bbb; break-inside: avoid; }
     .psd { font-weight: 800; font-size: 10pt; line-height: 1.2; }
     .psd small { display: block; font-size: 9pt; font-weight: 600; color: #666; }
     .pst { font-weight: 700; font-size: 10.5pt; line-height: 1.3; }
@@ -545,7 +545,7 @@
     .pstable tr.next td { background: #fff4c7; }
     /* 월별: 큰 카드 + 공지 */
     .psbig { display: grid; gap: 1mm; }
-    .psb { display: grid; grid-template-columns: 22mm 1fr; gap: 5mm; align-items: center; border-bottom: 1px solid #ccc; padding: 2.5mm 0; break-inside: avoid; }
+    .psb { display: grid; grid-template-columns: 22mm minmax(0, 1fr); gap: 5mm; align-items: center; border-bottom: 1px solid #ccc; padding: 2.5mm 0; break-inside: avoid; }
     .psb.next { background: #fff4c7; }
     .psb .d { text-align: center; } .psb .d b { display: block; font-size: 26pt; line-height: 1; color: var(--navy); } .psb .d span { font-size: 11pt; font-weight: 700; color: #555; }
     .psb .k { font-size: 9pt; font-weight: 800; color: var(--accent-dark); } .psb .t { font-size: 18pt; font-weight: 800; letter-spacing: -.02em; line-height: 1.25; } .psb .t.tbd { color: #777; } .psb .p { font-size: 11pt; color: #444; }
