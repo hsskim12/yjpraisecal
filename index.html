@@ -56,7 +56,9 @@
     -webkit-text-size-adjust: 100%;
     word-break: keep-all; overflow-wrap: break-word; /* 한글이 단어 중간에서 끊기지 않게 */
   }
-  body.big { zoom: 1.2; } /* 큰 글씨 보기 */
+  body.big { zoom: 1.2; } /* 크게 보기 */
+  body.small { zoom: .85; } /* 작게 보기 — 한 화면에 더 많이 (2026-09-29 요청: 보통·크게·작게 세 단계) */
+  body.small :is(.player, .modebar) { zoom: calc(1 / .85); } /* 재생창·아래 메뉴는 보통 크기 그대로 (누르기 쉽게) */
   /* 글자 크기 기준 (2026-09-28): 본문 16px, 보조 글자 15px 이상, 지휘·반주·월 구분 16px. 14px은 칸이 좁아 더 키우면 잘리는 곳(파트 이름 등)에만 */
   body.big .player { zoom: calc(1 / 1.2); } /* 재생창은 확대하지 않음 (영상이 화면 밖으로 넘치지 않게) */
   body.big .herosong h3 { font-size: 32px; }          /* ×1.2 = 38px — 보통 크기와 같게 */
@@ -120,7 +122,7 @@
   body:has(#topZone:not([hidden]) :is(#hero, #heroSkel):not([hidden])) .brand small { color: rgb(255 255 255 / .75); }
   body:has(#topZone:not([hidden]) :is(#hero, #heroSkel):not([hidden])) .topnav .btn { background: rgb(255 255 255 / .15); border-color: transparent; color: #fff; border-radius: 999px; }
   body:has(#topZone:not([hidden]) :is(#hero, #heroSkel):not([hidden])) .topnav .btn:hover { background: rgb(255 255 255 / .26); }
-  body:has(#topZone:not([hidden]) :is(#hero, #heroSkel):not([hidden])) #fontBtn[aria-pressed="true"] { background: #fff; color: var(--navy); }
+  body:has(#topZone:not([hidden]) :is(#hero, #heroSkel):not([hidden])) #fontBtn[data-size] { background: #fff; color: var(--navy); }
   .hero .eyebrow { color: rgb(255 255 255 / .8); margin: 0 0 4px; font-size: 15px; letter-spacing: .02em; } /* 한글은 자간을 벌리지 않음 */
   /* 날짜 줄: '9월 27일 [일요일]' — 요일 알약은 날짜와 같은 줄 */
   .herohead { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 12px; }
@@ -303,7 +305,7 @@
     /* 보기 메뉴: 화면 아래에 떠 있지 않고 제자리 메뉴로 (영상 창이 열려도 가리지 않음) */
     body.pc:has(#topZone:not([hidden])) .modebar { position: static; transform: none; width: auto; margin: 0; padding: 8px; gap: 4px; border-radius: 18px; box-shadow: 0 4px 14px rgb(16 24 40 / .10); }
     body.pc:has(#topZone:not([hidden])) .modebar .btn span { display: inline; }
-    body.pc.big:has(#topZone:not([hidden])) .modebar { zoom: 1; }
+    body.pc:is(.big, .small):has(#topZone:not([hidden])) .modebar { zoom: 1; }
     body.pc:has(#topZone:not([hidden])):has(#player:not([hidden])) .modebar { display: grid; }
     body.pc:has(#topZone:not([hidden])):has(#schedule[hidden]) :is(.side, #modeBar) { visibility: hidden; } /* 목록이 뜨기 전에는 메뉴도 숨김 */
     body.pc .side .modebar { grid-template-columns: 1fr; }
@@ -520,7 +522,7 @@
   /* 일정 편집 — 대원용 화면에서 튀지 않게 회색 톤 */
   #toEdit, #toPublic { background: var(--surface-sunken); border-color: var(--line-strong); color: #4a5568; }
   #toEdit:hover, #toPublic:hover { background: #e3e8ef; color: var(--ink); }
-  #fontBtn[aria-pressed="true"] { background: var(--navy); color: #fff; border-color: var(--navy); }
+  #fontBtn[data-size] { background: var(--navy); color: #fff; border-color: var(--navy); }
   /* 화면 색 고르기 (바닥글) */
   .themepick { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; }
   .themepick .tplabel { font-size: 15px; font-weight: 700; color: var(--muted); margin-right: 2px; }
@@ -688,7 +690,7 @@
       <span class="brand"><b>찬양대 알리미</b><small>인천영종교회</small></span>
     </button>
     <nav class="topnav">
-      <button type="button" class="btn" id="fontBtn" aria-pressed="false" title="글자 크기 확대" aria-label="글자 크기 확대">크게 보기</button>
+      <button type="button" class="btn" id="fontBtn" title="글자 크기: 지금 보통 — 누르면 크게" aria-label="글자 크기: 지금 보통 — 누르면 크게">크게 보기</button>
       <button type="button" class="btn" id="layoutBtn" title="PC 화면 배치 바꾸기"></button>
       <button type="button" class="btn" id="toPublic" hidden>일정 보기</button>
       <a class="btn" href="#edit" id="toEdit">일정 편집</a>
@@ -2789,14 +2791,20 @@ $('themePick').append(...THEMES.map(t => el('button', {
 }, el('span', { class: 'dots', 'aria-hidden': 'true' }, ...t.dots.map(c => el('i', { style: `background:${c}` }))),
   `테마 ${t.id}`)));
 
-/* ===== 큰 글씨 보기 (이 기기에만 저장) ===== */
-function applyBig(on) {
-  document.body.classList.toggle('big', on);
-  $('fontBtn').textContent = on ? '작게 보기' : '크게 보기'; // 확대 중에는 되돌리기
-  $('fontBtn').setAttribute('aria-pressed', on ? 'true' : 'false');
-  $('fontBtn').title = on ? '글자 크기 기본으로' : '글자 크기 확대';
-  $('fontBtn').setAttribute('aria-label', $('fontBtn').title);
-  try { on ? localStorage.setItem(BIG_KEY, '1') : localStorage.removeItem(BIG_KEY); } catch {}
+/* ===== 글자 크기: 보통 → 크게(1.2배) → 작게(0.85배) → 보통 (이 기기에만 저장) ===== */
+// 버튼 글자는 '누르면 바뀔 크기' (보통일 때 [크게 보기], 크게일 때 [작게 보기], 작게일 때 [보통 보기])
+const SIZES = { normal: ['크게 보기', '보통', 'big'], big: ['작게 보기', '크게', 'small'], small: ['보통 보기', '작게', 'normal'] };
+const curSize = () => document.body.classList.contains('big') ? 'big' : document.body.classList.contains('small') ? 'small' : 'normal';
+function applySize(size) {
+  if (!SIZES[size]) size = 'normal';
+  const [label, now] = SIZES[size], b = $('fontBtn');
+  document.body.classList.toggle('big', size === 'big');
+  document.body.classList.toggle('small', size === 'small');
+  b.textContent = label;
+  size === 'normal' ? b.removeAttribute('data-size') : b.dataset.size = size; // 보통이 아닐 때 버튼을 칠해 바뀐 상태임을 보임
+  b.title = `글자 크기: 지금 ${now} — 누르면 ${label.replace(' 보기', '')}`;
+  b.setAttribute('aria-label', b.title);
+  try { size === 'normal' ? localStorage.removeItem(BIG_KEY) : localStorage.setItem(BIG_KEY, size === 'big' ? '1' : 's'); } catch {}
 }
 
 /* ===== 입력 창을 닫기 전 확인 =====
@@ -2877,7 +2885,7 @@ $('noticeDlg').addEventListener('click', e => { if (e.target === $('noticeDlg'))
 $('retryBtn').onclick = load;
 $('playerClose').onclick = closePlayer;
 $('brandBtn').onclick = () => location.reload(); // 이름·음표를 누르면 새로고침
-$('fontBtn').onclick = () => { applyBig(!document.body.classList.contains('big')); placePc(); };
+$('fontBtn').onclick = () => { applySize(SIZES[curSize()][2]); placePc(); };
 
 $('searchInput').oninput = e => { query = e.target.value.trim(); renderPublic(); };
 // 키보드에서 확인(엔터)을 누르면 키보드를 닫아 목록이 바로 보이게 함
@@ -3205,7 +3213,7 @@ if (/KAKAOTALK/i.test(navigator.userAgent)) {
 
 /* ===== 시작 ===== */
 applyTheme(themeId);
-try { applyBig(localStorage.getItem(BIG_KEY) === '1'); } catch { applyBig(false); }
+try { const v = localStorage.getItem(BIG_KEY); applySize(v === '1' ? 'big' : v === 's' ? 'small' : 'normal'); } catch { applySize('normal'); }
 load();
 
 // 홈 화면 설치(안드로이드 크롬)에 필요한 파일 등록 — 실패해도 사이트는 그대로 동작
