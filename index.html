@@ -86,7 +86,7 @@
   .brandlink { display: flex; align-items: stretch; gap: 12px; background: none; border: 0; padding: 0; min-width: 0; text-align: left; }
   /* 교회 로고: 글자 두 줄(44px)보다 조금 크게, 가운데 맞춤 (가로는 그림 비율대로) */
   .logo { height: 54px; width: auto; flex-shrink: 0; align-self: center; }
-  .brand { min-width: 0; display: flex; flex-direction: column; justify-content: center; padding-top: 8px; } /* 글자를 로고 가운데보다 조금 아래로 */
+  .brand { min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: 4px; padding-top: 8px; } /* 글자를 로고 가운데보다 조금 아래로 */
   .brand b { display: block; font-size: 26px; line-height: 28px; }
   .brand small { color: var(--muted); font-size: 15px; line-height: 16px; }
   .topnav { margin-left: auto; flex-shrink: 0; display: flex; gap: 6px; }
@@ -295,9 +295,9 @@
      편집 화면(topZone 숨김)은 그대로 한 칸 */
   .side, #layoutBtn { display: none; }
   @media screen { /* 켜고 끄기는 JS(placePc)가 body.pc로 */
-    body.pc:has(#topZone:not([hidden])) { display: grid; grid-template-columns: minmax(0, 1fr) max-content minmax(0, 760px) minmax(300px, 360px) minmax(0, 1fr); column-gap: 24px; align-items: start; }
+    body.pc:has(#topZone:not([hidden])) { display: grid; grid-template-columns: minmax(0, 1fr) max-content minmax(0, 760px) minmax(390px, 468px) minmax(0, 1fr); column-gap: 24px; align-items: start; }
     body.pc:has(#topZone:not([hidden])) > :is(.top, footer) { grid-column: 1 / -1; }
-    body.pc:has(#topZone:not([hidden])) :is(.top > .wrap, footer.wrap) { width: 100%; max-width: 1344px; padding-inline: 32px; }
+    body.pc:has(#topZone:not([hidden])) :is(.top > .wrap, footer.wrap) { width: 100%; max-width: 1452px; padding-inline: 32px; }
     body.pc:has(#topZone:not([hidden])) #layoutBtn { display: inline-block; }
     body.pc:has(#topZone:not([hidden])) > .side { display: block; grid-column: 2; grid-row: 2; position: sticky; top: 16px; margin-top: 24px; }
     body.pc:has(#topZone:not([hidden])) > main.wrap { grid-column: 3; grid-row: 2; max-width: none; margin: 0; padding-inline: 0; }
@@ -321,13 +321,13 @@
     body.pc #topZone .playerhead { max-width: none; }
     body.pc #topZone .playerframe { width: 100%; margin-inline: 0; }
     /* 두 칸(H) */
-    body.pc.pcH:has(#topZone:not([hidden])) { grid-template-columns: minmax(0, 1fr) minmax(300px, 340px) minmax(0, 860px) minmax(0, 1fr); }
-    body.pc.pcH:has(#topZone:not([hidden])) :is(.top > .wrap, footer.wrap) { max-width: 1288px; }
+    body.pc.pcH:has(#topZone:not([hidden])) { grid-template-columns: minmax(0, 1fr) minmax(390px, 442px) minmax(0, 860px) minmax(0, 1fr); } /* 왼쪽 기둥 30% 넓힘 (2026-09-29 요청) */
+    body.pc.pcH:has(#topZone:not([hidden])) :is(.top > .wrap, footer.wrap) { max-width: 1390px; }
     body.pc.pcH:has(#topZone:not([hidden])) > .side { display: none; }
     body.pc.pcH:has(#topZone:not([hidden])) > #topZone { grid-column: 2; }
     body.pc #topZone .modebar { margin-top: 14px; grid-template-columns: 1fr 1fr; padding: 6px; }
     body.pc #topZone .modebar .btn { font-size: 17px; min-height: 46px; }
-    body.pc.pcH #list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; align-items: start; }
+    body.pc.pcH #list { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; align-items: start; }
     body.pc.pcH #list > * + * { margin-top: 0; }
     body.pc.pcH #list > :not(.card, .rrow) { grid-column: 1 / -1; }
     body.pc.pcH #list > .monthsep { margin-top: 10px; }
