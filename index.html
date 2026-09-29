@@ -284,20 +284,44 @@
   .pastsep ~ .card .done { display: none; } /* 검색 결과: '지난 찬양' 제목 아래 카드에는 따로 붙이지 않음 */
   @media (min-width: 481px) { .group .chips .chip { flex: 1 1 0; max-width: 150px; } }
   @media (min-width: 1024px) { .hero { border-radius: 0; } } /* 큰 화면에서는 화면 폭 전체 띠 — 둥근 모서리가 화면 끝에 걸리지 않게 */ /* 넓은 화면에서도 파트 칸이 한쪽에 작게 모이지 않게 */
-  /* PC 화면 (가로 1100px 이상이면 저절로): 왼쪽 = 이번 주 찬양·공지(스크롤해도 제자리), 오른쪽 = 목록.
-     가운데 두 칸 380 + 32 + 760 = 1172px, 양옆 여백 32px. 편집 화면(topZone 숨김)은 그대로 한 칸 */
-  @media (min-width: 1100px) {
-    body:has(#topZone:not([hidden])) { display: grid; grid-template-columns: minmax(0, 1fr) minmax(300px, 380px) minmax(0, 760px) minmax(0, 1fr); column-gap: 32px; align-items: start; }
-    body:has(#topZone:not([hidden])) > :is(.top, footer) { grid-column: 1 / -1; }
-    body:has(#topZone:not([hidden])) :is(.top > .wrap, footer.wrap) { width: 100%; max-width: 1236px; padding-inline: 32px; }
-    body:has(#topZone:not([hidden])) > #topZone { grid-column: 2; position: sticky; top: 16px; margin-top: 24px; max-height: calc(100vh - 32px); overflow-y: auto; overscroll-behavior: contain; border-radius: 22px; }
-    body:has(#topZone:not([hidden])) > main.wrap { grid-column: 3; max-width: none; margin: 0; padding-inline: 0; }
-    #topZone .hero { border-radius: 22px; }
-    #topZone .hero > .wrap { padding: 14px 20px 16px; }
-    #topZone .notices { margin: 12px 0 0; }
-    body:has(#topZone:not([hidden])) .modebar { left: calc(50% + 206px); width: min(728px, calc(100vw - 508px)); } /* 아래 메뉴는 목록 칸 가운데 */
-    body.big:has(#topZone:not([hidden])) .modebar { left: calc(50% + 247px); width: min(728px, calc(100vw - 610px)); } /* 크게 보기(1.2배): 왼쪽 칸 폭도 1.2배 */
+  /* PC 화면 (가로 1100px 이상이면 저절로, 크게 보기는 1400px 이상) — 머리글 [두 칸 보기]/[세 칸 보기]로 두 가지 배치를 바꿈 (2026-09-29 사용자 선택: 시안 B·H 둘 다)
+     세 칸(기본, B): 왼쪽 세로 보기 메뉴 · 가운데 목록 · 오른쪽 이번 주 찬양·공지 (메뉴·이번 주는 스크롤해도 제자리)
+     두 칸(H): 왼쪽 기둥 = 이번 주 찬양 + 보기 메뉴(2칸×3줄) + 공지, 오른쪽 = 목록 카드 두 줄
+     편집 화면(topZone 숨김)은 그대로 한 칸 */
+  .side, #layoutBtn { display: none; }
+  @media screen { /* 켜고 끄기는 JS(placePc)가 body.pc로 — 크게 보기는 1400px부터 */
+    body.pc:has(#topZone:not([hidden])) { display: grid; grid-template-columns: minmax(0, 1fr) 190px minmax(0, 700px) minmax(300px, 360px) minmax(0, 1fr); column-gap: 32px; align-items: start; }
+    body.pc:has(#topZone:not([hidden])) > :is(.top, footer) { grid-column: 1 / -1; }
+    body.pc:has(#topZone:not([hidden])) :is(.top > .wrap, footer.wrap) { width: 100%; max-width: 1410px; padding-inline: 32px; }
+    body.pc:has(#topZone:not([hidden])) #layoutBtn { display: inline-block; }
+    body.pc:has(#topZone:not([hidden])) > .side { display: block; grid-column: 2; grid-row: 2; position: sticky; top: 16px; margin-top: 24px; }
+    body.pc:has(#topZone:not([hidden])) > main.wrap { grid-column: 3; grid-row: 2; max-width: none; margin: 0; padding-inline: 0; }
+    body.pc:has(#topZone:not([hidden])) > #topZone { grid-column: 4; grid-row: 2; position: sticky; top: 16px; margin-top: 24px; max-height: calc(100vh - 32px); overflow-y: auto; overscroll-behavior: contain; border-radius: 22px; }
+    body.pc #topZone .hero { border-radius: 22px; }
+    body.pc #topZone .hero > .wrap { padding: 14px 20px 16px; }
+    body.pc #topZone .notices { margin: 12px 0 0; }
+    /* 보기 메뉴: 화면 아래에 떠 있지 않고 제자리 메뉴로 (영상 창이 열려도 가리지 않음) */
+    body.pc:has(#topZone:not([hidden])) .modebar { position: static; transform: none; width: auto; margin: 0; padding: 8px; gap: 4px; border-radius: 18px; box-shadow: 0 4px 14px rgb(16 24 40 / .10); }
+    body.pc:has(#topZone:not([hidden])) .modebar .btn span { display: inline; }
+    body.pc.big:has(#topZone:not([hidden])) .modebar { zoom: 1; }
+    body.pc:has(#topZone:not([hidden])):has(#player:not([hidden])) .modebar { display: grid; }
+    body.pc:has(#topZone:not([hidden])):has(#schedule[hidden]) :is(.side, #modeBar) { visibility: hidden; } /* 목록이 뜨기 전에는 메뉴도 숨김 */
+    body.pc .side .modebar { grid-template-columns: 1fr; }
+    body.pc .side .modebar .btn { text-align: left; padding: 12px 16px; min-height: 50px; }
+    body.pc .sidelabel { margin: 0 0 8px 8px; font-size: 15px; font-weight: 800; color: var(--muted); }
+    /* 두 칸(H) */
+    body.pc.pcH:has(#topZone:not([hidden])) { grid-template-columns: minmax(0, 1fr) minmax(300px, 340px) minmax(0, 860px) minmax(0, 1fr); }
+    body.pc.pcH:has(#topZone:not([hidden])) :is(.top > .wrap, footer.wrap) { max-width: 1296px; }
+    body.pc.pcH:has(#topZone:not([hidden])) > .side { display: none; }
+    body.pc.pcH:has(#topZone:not([hidden])) > #topZone { grid-column: 2; }
+    body.pc #topZone .modebar { margin-top: 14px; grid-template-columns: 1fr 1fr; padding: 6px; }
+    body.pc #topZone .modebar .btn { font-size: 17px; min-height: 46px; }
+    body.pc.pcH #list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; align-items: start; }
+    body.pc.pcH #list > * + * { margin-top: 0; }
+    body.pc.pcH #list > :not(.card, .rrow) { grid-column: 1 / -1; }
+    body.pc.pcH #list > .monthsep { margin-top: 10px; }
   }
+
   .card.past { background: var(--surface-sunken); border-color: transparent; } /* 지난 일정 */
   .pastsep { margin: 26px 0 0; font-size: 16px; font-weight: 800; color: var(--ink); } /* 검색 결과의 '지난 찬양' */
   .tbd { color: var(--muted); }                                                /* 곡 미정 */
@@ -658,6 +682,7 @@
     </button>
     <nav class="topnav">
       <button type="button" class="btn" id="fontBtn" aria-pressed="false" title="글자 크기 확대" aria-label="글자 크기 확대">크게 보기</button>
+      <button type="button" class="btn" id="layoutBtn" title="PC 화면 배치 바꾸기"></button>
       <button type="button" class="btn" id="toPublic" hidden>일정 보기</button>
       <a class="btn" href="#edit" id="toEdit">일정 편집</a>
     </nav>
@@ -682,6 +707,8 @@
     </div>
   </section>
 </div>
+
+<nav class="side" id="side" aria-label="보기 메뉴"><p class="sidelabel" aria-hidden="true">보기</p></nav>
 
 <main class="wrap">
   <div class="kakaobar installbar" id="kakaoBar" hidden>
@@ -2831,7 +2858,7 @@ $('noticeDlg').addEventListener('click', e => { if (e.target === $('noticeDlg'))
 $('retryBtn').onclick = load;
 $('playerClose').onclick = closePlayer;
 $('brandBtn').onclick = () => location.reload(); // 이름·음표를 누르면 새로고침
-$('fontBtn').onclick = () => applyBig(!document.body.classList.contains('big'));
+$('fontBtn').onclick = () => { applyBig(!document.body.classList.contains('big')); placePc(); };
 
 $('searchInput').oninput = e => { query = e.target.value.trim(); renderPublic(); };
 // 키보드에서 확인(엔터)을 누르면 키보드를 닫아 목록이 바로 보이게 함
@@ -2915,10 +2942,25 @@ function startPrint(style) {
   d.querySelector(`input[value="${v}"]`).checked = true;
   d.showModal();
 }
-// PC 화면(가로 1100px 이상): 공지를 왼쪽 이번 주 찬양 아래로, 좁아지면 다시 목록 위로
-const pcMq = matchMedia('(min-width: 1100px)');
-const placeNotices = () => pcMq.matches ? $('topZone').append($('notices')) : $('publicView').prepend($('notices'));
-pcMq.addEventListener('change', placeNotices); placeNotices();
+// PC 화면(가로 1100px 이상): 공지는 이번 주 찬양 아래로, 보기 메뉴는 세 칸이면 왼쪽 세로 메뉴, 두 칸이면 이번 주 찬양 아래로.
+// 좁아지면 원래 자리(목록 위·화면 아래 떠 있는 메뉴)로. 옮기면 키보드 순서도 보이는 순서와 같아짐
+const pcMq = matchMedia('(min-width: 1100px)'), pcBigMq = matchMedia('(min-width: 1400px)'); // 크게 보기(1.2배)는 칸이 좁아지므로 더 넓을 때만
+const PC_LAYOUT_KEY = 'choir-pc-layout';
+let pcLayout = (() => { try { return localStorage.getItem(PC_LAYOUT_KEY) === 'H' ? 'H' : 'B'; } catch { return 'B'; } })();
+const placePc = () => {
+  const pc = pcMq.matches && (!document.body.classList.contains('big') || pcBigMq.matches), two = pcLayout === 'H';
+  document.body.classList.toggle('pc', pc);
+  document.body.classList.toggle('pcH', two);
+  pc ? $('topZone').append($('notices')) : $('publicView').prepend($('notices'));
+  !pc ? $('summary').before($('modeBar')) : two ? $('hero').after($('modeBar')) : $('side').append($('modeBar'));
+  $('layoutBtn').textContent = two ? '세 칸 보기' : '두 칸 보기';
+};
+$('layoutBtn').onclick = () => {
+  pcLayout = pcLayout === 'H' ? 'B' : 'H';
+  try { localStorage.setItem(PC_LAYOUT_KEY, pcLayout); } catch {}
+  placePc();
+};
+pcMq.addEventListener('change', placePc); pcBigMq.addEventListener('change', placePc); placePc();
 $('printBtn').onclick = () => startPrint('list');
 $('printBtn2').onclick = () => startPrint('glance');
 $('printCancel').onclick = () => { printStyle = null; $('printDlg').close(); };
