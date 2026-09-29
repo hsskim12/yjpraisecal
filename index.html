@@ -2975,10 +2975,12 @@ function startPrint(style) {
 // PC 화면(가로 1100px 이상): 공지는 이번 주 찬양 아래로, 보기 메뉴는 세 칸이면 왼쪽 세로 메뉴, 두 칸이면 이번 주 찬양 아래로.
 // 좁아지면 원래 자리(목록 위·화면 아래 떠 있는 메뉴)로. 옮기면 키보드 순서도 보이는 순서와 같아짐
 const pcMq = matchMedia('(min-width: 1100px)');
+// 폴드처럼 가로로 편 넓은 화면(폭 880px↑·높이 500px↑)도 PC 화면으로 — 크게 보기는 이 폭에 칸이 모자라 휴대폰 화면 유지 (2026-09-29 요청). 가로로 돌린 휴대폰은 높이가 낮아 해당 없음
+const landMq = matchMedia('(orientation: landscape) and (min-width: 880px) and (min-height: 500px)');
 const PC_LAYOUT_KEY = 'choir-pc-layout';
 let pcLayout = (() => { try { return localStorage.getItem(PC_LAYOUT_KEY) === 'H' ? 'H' : 'B'; } catch { return 'B'; } })();
 const placePc = () => {
-  const pc = pcMq.matches, two = pcLayout === 'H';
+  const pc = pcMq.matches || (landMq.matches && curSize() !== 'big'), two = pcLayout === 'H';
   document.body.classList.toggle('pc', pc);
   document.body.classList.toggle('pcH', two);
   pc ? $('topZone').insertBefore($('notices'), $('player').parentElement === $('topZone') ? $('player') : null) : $('publicView').prepend($('notices'));
@@ -2991,7 +2993,7 @@ $('layoutBtn').onclick = () => {
   try { localStorage.setItem(PC_LAYOUT_KEY, pcLayout); } catch {}
   placePc();
 };
-pcMq.addEventListener('change', placePc); placePc();
+pcMq.addEventListener('change', placePc); landMq.addEventListener('change', placePc); placePc();
 $('printBtn').onclick = () => startPrint('list');
 $('printBtn2').onclick = () => startPrint('glance');
 $('printCancel').onclick = () => { printStyle = null; $('printDlg').close(); };
@@ -3218,6 +3220,7 @@ if (/KAKAOTALK/i.test(navigator.userAgent)) {
 /* ===== 시작 ===== */
 applyTheme(themeId);
 try { const v = localStorage.getItem(BIG_KEY); applySize(v === '1' ? 'big' : v === 'm' ? 'mid' : 'small'); } catch { applySize('small'); }
+placePc(); // 저장된 글자 크기에 따라 PC 화면 여부가 달라짐 (가로로 편 폴드)
 load();
 
 // 홈 화면 설치(안드로이드 크롬)에 필요한 파일 등록 — 실패해도 사이트는 그대로 동작
