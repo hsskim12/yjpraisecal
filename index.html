@@ -317,7 +317,6 @@
     body.pc #topZone .player { position: static; margin-top: 12px; border-radius: 22px; padding: 10px 12px 12px; box-shadow: 0 4px 14px rgb(16 24 40 / .14); zoom: 1; }
     body.pc #topZone .playerhead { max-width: none; }
     body.pc #topZone .playerframe { width: 100%; margin-inline: 0; }
-    body.pc .sidelabel { margin: 0 0 8px 8px; font-size: 15px; font-weight: 800; color: var(--muted); }
     /* 두 칸(H) */
     body.pc.pcH:has(#topZone:not([hidden])) { grid-template-columns: minmax(0, 1fr) minmax(300px, 340px) minmax(0, 860px) minmax(0, 1fr); }
     body.pc.pcH:has(#topZone:not([hidden])) :is(.top > .wrap, footer.wrap) { max-width: 1288px; }
@@ -717,7 +716,7 @@
   </section>
 </div>
 
-<nav class="side" id="side" aria-label="보기 메뉴"><p class="sidelabel" aria-hidden="true">보기</p></nav>
+<nav class="side" id="side" aria-label="보기 메뉴"></nav>
 
 <main class="wrap">
   <div class="kakaobar installbar" id="kakaoBar" hidden>
