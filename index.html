@@ -284,6 +284,20 @@
   .pastsep ~ .card .done { display: none; } /* 검색 결과: '지난 찬양' 제목 아래 카드에는 따로 붙이지 않음 */
   @media (min-width: 481px) { .group .chips .chip { flex: 1 1 0; max-width: 150px; } }
   @media (min-width: 1024px) { .hero { border-radius: 0; } } /* 큰 화면에서는 화면 폭 전체 띠 — 둥근 모서리가 화면 끝에 걸리지 않게 */ /* 넓은 화면에서도 파트 칸이 한쪽에 작게 모이지 않게 */
+  /* PC 화면 (가로 1100px 이상이면 저절로): 왼쪽 = 이번 주 찬양·공지(스크롤해도 제자리), 오른쪽 = 목록.
+     가운데 두 칸 380 + 32 + 760 = 1172px, 양옆 여백 32px. 편집 화면(topZone 숨김)은 그대로 한 칸 */
+  @media (min-width: 1100px) {
+    body:has(#topZone:not([hidden])) { display: grid; grid-template-columns: minmax(0, 1fr) minmax(300px, 380px) minmax(0, 760px) minmax(0, 1fr); column-gap: 32px; align-items: start; }
+    body:has(#topZone:not([hidden])) > :is(.top, footer) { grid-column: 1 / -1; }
+    body:has(#topZone:not([hidden])) :is(.top > .wrap, footer.wrap) { width: 100%; max-width: 1236px; padding-inline: 32px; }
+    body:has(#topZone:not([hidden])) > #topZone { grid-column: 2; position: sticky; top: 16px; margin-top: 24px; max-height: calc(100vh - 32px); overflow-y: auto; overscroll-behavior: contain; border-radius: 22px; }
+    body:has(#topZone:not([hidden])) > main.wrap { grid-column: 3; max-width: none; margin: 0; padding-inline: 0; }
+    #topZone .hero { border-radius: 22px; }
+    #topZone .hero > .wrap { padding: 14px 20px 16px; }
+    #topZone .notices { margin: 12px 0 0; }
+    body:has(#topZone:not([hidden])) .modebar { left: calc(50% + 206px); width: min(728px, calc(100vw - 508px)); } /* 아래 메뉴는 목록 칸 가운데 */
+    body.big:has(#topZone:not([hidden])) .modebar { left: calc(50% + 247px); width: min(728px, calc(100vw - 610px)); } /* 크게 보기(1.2배): 왼쪽 칸 폭도 1.2배 */
+  }
   .card.past { background: var(--surface-sunken); border-color: transparent; } /* 지난 일정 */
   .pastsep { margin: 26px 0 0; font-size: 16px; font-weight: 800; color: var(--ink); } /* 검색 결과의 '지난 찬양' */
   .tbd { color: var(--muted); }                                                /* 곡 미정 */
@@ -2901,6 +2915,10 @@ function startPrint(style) {
   d.querySelector(`input[value="${v}"]`).checked = true;
   d.showModal();
 }
+// PC 화면(가로 1100px 이상): 공지를 왼쪽 이번 주 찬양 아래로, 좁아지면 다시 목록 위로
+const pcMq = matchMedia('(min-width: 1100px)');
+const placeNotices = () => pcMq.matches ? $('topZone').append($('notices')) : $('publicView').prepend($('notices'));
+pcMq.addEventListener('change', placeNotices); placeNotices();
 $('printBtn').onclick = () => startPrint('list');
 $('printBtn2').onclick = () => startPrint('glance');
 $('printCancel').onclick = () => { printStyle = null; $('printDlg').close(); };
