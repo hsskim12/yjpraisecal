@@ -311,6 +311,10 @@
     body.pc .rrow { flex-wrap: wrap; } /* 연습 영상도 실황처럼 사진 크게 (224px, 자리가 모자라면 제목은 사진 아래로) */
     body.pc .rrow .rthumb { width: 224px; }
     body.pc .rrow .rinfo { flex: 1 1 180px; }
+    /* 재생창: 화면 아래 띠가 아니라 이번 주 찬양·공지 아래 칸에 */
+    body.pc #topZone .player { position: static; margin-top: 12px; border-radius: 22px; padding: 10px 12px 12px; box-shadow: 0 4px 14px rgb(16 24 40 / .14); zoom: 1; }
+    body.pc #topZone .playerhead { max-width: none; }
+    body.pc #topZone .playerframe { width: 100%; margin-inline: 0; }
     body.pc .sidelabel { margin: 0 0 8px 8px; font-size: 15px; font-weight: 800; color: var(--muted); }
     /* 두 칸(H) */
     body.pc.pcH:has(#topZone:not([hidden])) { grid-template-columns: minmax(0, 1fr) minmax(300px, 340px) minmax(0, 860px) minmax(0, 1fr); }
@@ -1334,16 +1338,28 @@ function play(yt, url, caption, ev, part) {
     onclick: () => { play(youtube(u), u, `${showTitle(ev)} · ${p === '전체' ? '듣기' : p}`, ev, p); if (PART_SHORT[p]) setMyPart(p); },
   }, p === '전체' ? '듣기' : PART_SHORT[p] || p)));
   $('player').hidden = false;
-  const h = $('player').offsetHeight;
-  document.body.style.paddingBottom = h + 'px'; // 재생창이 목록 끝을 가리지 않게
-  document.documentElement.style.scrollPaddingBottom = h + 'px'; // 누른 버튼을 재생창 위로 올릴 때 쓰는 여백
+  placePlayer();
+}
+// 재생창 자리: PC 화면은 이번 주 찬양·공지 아래 칸에 붙이고(2026-09-29 요청), 그 밖에는 화면 아래 고정.
+// 이미 제자리면 옮기지 않음 (옮기면 영상이 처음부터 다시 불러와짐)
+function placePlayer() {
+  const p = $('player'), docked = document.body.classList.contains('pc') && !$('topZone').hidden;
+  if (docked && p.parentElement !== $('topZone')) $('topZone').append(p);
+  if (!docked && p.parentElement !== document.body) $('edStatus').after(p);
+  const h = docked || p.hidden ? 0 : p.offsetHeight;
+  document.body.style.paddingBottom = h ? h + 'px' : ''; // 재생창이 목록 끝을 가리지 않게
+  document.documentElement.style.scrollPaddingBottom = h ? h + 'px' : ''; // 누른 버튼을 재생창 위로 올릴 때 쓰는 여백
+  if (docked && !p.hidden) { // 영상이 화면 아래로 잘리면: 칸이 위에 붙을 만큼만(머리글 높이) 화면을 올리고, 나머지는 칸 안에서 내림
+    const z = $('topZone'), over = p.getBoundingClientRect().bottom - innerHeight;
+    if (over > 0) scrollBy(0, Math.min(over, Math.max(0, z.getBoundingClientRect().top - 16)));
+    z.scrollTop = z.scrollHeight;
+  }
 }
 
 function closePlayer() {
   $('playerFrame').replaceChildren(); // 창을 없애야 소리도 멈춤
   $('player').hidden = true;
-  document.body.style.paddingBottom = '';
-  document.documentElement.style.scrollPaddingBottom = '';
+  placePlayer();
 }
 // Esc로 재생창 닫기 (열린 창이 없을 때)
 addEventListener('keydown', e => { if (e.key === 'Escape' && !$('player').hidden && !document.querySelector('dialog[open]')) closePlayer(); });
@@ -2954,9 +2970,10 @@ const placePc = () => {
   const pc = pcMq.matches && (!document.body.classList.contains('big') || pcBigMq.matches), two = pcLayout === 'H';
   document.body.classList.toggle('pc', pc);
   document.body.classList.toggle('pcH', two);
-  pc ? $('topZone').append($('notices')) : $('publicView').prepend($('notices'));
+  pc ? $('topZone').insertBefore($('notices'), $('player').parentElement === $('topZone') ? $('player') : null) : $('publicView').prepend($('notices'));
   !pc ? $('summary').before($('modeBar')) : two ? $('hero').after($('modeBar')) : $('side').append($('modeBar'));
   $('layoutBtn').textContent = two ? '세 칸 보기' : '두 칸 보기';
+  placePlayer();
 };
 $('layoutBtn').onclick = () => {
   pcLayout = pcLayout === 'H' ? 'B' : 'H';
@@ -3110,6 +3127,7 @@ function route() {
 
   $('publicView').hidden = edit;
   $('topZone').hidden = edit; // 이번 주 찬양(남색 영역)은 공개 화면에서만
+  if (!$('player').hidden) placePlayer(); // PC에서 칸에 붙어 있던 재생창은 편집 화면에서는 아래로
   $('loginView').hidden = !showLogin;
   $('editorView').hidden = !edit || showLogin;
   $('toEdit').hidden = edit;
