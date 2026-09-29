@@ -717,6 +717,16 @@
       <p class="sharemsg" id="shareMsg" role="status" hidden></p>
     </div>
   </section>
+  <!-- 영상 재생창 (유튜브 버튼을 누르면 열림) -->
+  <div class="player" id="player" hidden>
+    <div class="playerhead">
+      <b id="playerTitle" aria-live="polite"></b>
+      <div class="playerparts" id="playerParts" role="group" aria-label="다른 파트 듣기" hidden></div>
+      <a id="playerOpen" target="_blank" rel="noopener">유튜브에서 열기</a>
+      <button type="button" class="iconbtn" id="playerClose" aria-label="재생 닫기" title="재생 닫기">✕</button>
+    </div>
+    <div class="playerframe" id="playerFrame"></div>
+  </div>
 </div>
 
 <nav class="side" id="side" aria-label="보기 메뉴"></nav>
@@ -860,17 +870,6 @@
 
 <!-- 저장·삭제 결과 알림 — 어디까지 내려가 있든 화면 위에 떠서 보임 -->
 <div class="status" id="edStatus" role="status"></div>
-
-<!-- 영상 재생창 (유튜브 버튼을 누르면 열림) -->
-<div class="player" id="player" hidden>
-  <div class="playerhead">
-    <b id="playerTitle" aria-live="polite"></b>
-    <div class="playerparts" id="playerParts" role="group" aria-label="다른 파트 듣기" hidden></div>
-    <a id="playerOpen" target="_blank" rel="noopener">유튜브에서 열기</a>
-    <button type="button" class="iconbtn" id="playerClose" aria-label="재생 닫기" title="재생 닫기">✕</button>
-  </div>
-  <div class="playerframe" id="playerFrame"></div>
-</div>
 
 <!-- 공지 전체 보기 -->
 <dialog id="noticeDlg" aria-labelledby="noticeDlgTitle">
@@ -1349,12 +1348,12 @@ function play(yt, url, caption, ev, part) {
   $('player').hidden = false;
   placePlayer();
 }
-// 재생창 자리: PC 화면은 이번 주 찬양·공지 아래 칸에 붙이고(2026-09-29 요청), 그 밖에는 화면 아래 고정.
-// 이미 제자리면 옮기지 않음 (옮기면 영상이 처음부터 다시 불러와짐)
+// 재생창 자리: 공개 화면에서는 항상 topZone 안에 둠 — PC 화면은 CSS로 그 칸에 붙이고(2026-09-29 요청), 그 밖에는 화면 아래 고정(position: fixed).
+// 화면 방향을 돌려 PC↔모바일이 바뀌어도 옮기지 않음 (옮기면 재생 중인 영상이 처음부터 다시 불러와짐). 편집 화면(topZone 숨김)에서만 아래로 옮김
 function placePlayer() {
-  const p = $('player'), docked = document.body.classList.contains('pc') && !$('topZone').hidden;
-  if (docked && p.parentElement !== $('topZone')) $('topZone').append(p);
-  if (!docked && p.parentElement !== document.body) $('edStatus').after(p);
+  const p = $('player'), inZone = !$('topZone').hidden, docked = inZone && document.body.classList.contains('pc');
+  if (inZone && p.parentElement !== $('topZone')) $('topZone').append(p);
+  if (!inZone && p.parentElement !== document.body) $('edStatus').after(p);
   const h = docked || p.hidden ? 0 : p.offsetHeight;
   document.body.style.paddingBottom = h ? h + 'px' : ''; // 재생창이 목록 끝을 가리지 않게
   document.documentElement.style.scrollPaddingBottom = h ? h + 'px' : ''; // 누른 버튼을 재생창 위로 올릴 때 쓰는 여백
