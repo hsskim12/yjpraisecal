@@ -56,16 +56,19 @@
     -webkit-text-size-adjust: 100%;
     word-break: keep-all; overflow-wrap: break-word; /* 한글이 단어 중간에서 끊기지 않게 */
   }
-  body.big { zoom: 1.2; } /* 크게 보기 */
-  body.small { zoom: .85; } /* 작게 보기 — 한 화면에 더 많이 (2026-09-29 요청: 보통·크게·작게 세 단계) */
-  body.small :is(.player, .modebar) { zoom: calc(1 / .85); } /* 재생창·아래 메뉴는 보통 크기 그대로 (누르기 쉽게) */
+  /* 글자 크기 세 단계 (2026-09-29 사용자 지정): 작게 0.75(처음 화면) · 보통 0.9 · 크게 1.1 */
+  body.small { zoom: .75; }
+  body.mid { zoom: .9; }
+  body.big { zoom: 1.1; }
+  body.small :is(.player, .modebar) { zoom: calc(1 / .75); } /* 재생창·아래 메뉴는 원래 크기 그대로 (누르기 쉽게) */
+  body.mid :is(.player, .modebar) { zoom: calc(1 / .9); }
   /* 글자 크기 기준 (2026-09-28): 본문 16px, 보조 글자 15px 이상, 지휘·반주·월 구분 16px. 14px은 칸이 좁아 더 키우면 잘리는 곳(파트 이름 등)에만 */
-  body.big .player { zoom: calc(1 / 1.2); } /* 재생창은 확대하지 않음 (영상이 화면 밖으로 넘치지 않게) */
-  body.big .herosong h3 { font-size: 32px; }          /* ×1.2 = 38px — 보통 크기와 같게 */
-  body.big .herosong.compact h3 { font-size: 22px; }
-  body.big .herodate { font-size: 21px; }             /* ×1.2 = 25px */
-  body.big .heroparts a b { font-size: 21px; }        /* ×1.2 = 25px */
-  body.big .herolinks a { font-size: 16.5px; }        /* ×1.2 = 19.8px */
+  body.big .player { zoom: calc(1 / 1.1); } /* 재생창은 확대하지 않음 (영상이 화면 밖으로 넘치지 않게) */
+  body.big .herosong h3 { font-size: 34.5px; }        /* ×1.1 = 38px — 이번 주 찬양은 더 커지지 않게 */
+  body.big .herosong.compact h3 { font-size: 24px; }
+  body.big .herodate { font-size: 23px; }             /* ×1.1 ≈ 25px */
+  body.big .heroparts a b { font-size: 23px; }
+  body.big .herolinks a { font-size: 18px; }
   /* 키보드로 움직일 때 어디에 있는지 잘 보이게 (남색 바탕 위에서는 흰색) */
   /* 두 겹(안쪽 흰 선 + 바깥 남색 선) — 남색 버튼 위에서도 보임. 남색 바탕에서는 반대로 */
   :focus-visible { outline: 3px solid var(--navy) !important; outline-offset: 2px; box-shadow: 0 0 0 2px #fff !important; } /* 요소 자체의 그림자 규칙보다 우선 */
@@ -212,7 +215,7 @@
   }
   .modebar .btn:hover { background: var(--navy-soft); }
   .modebar .btn[aria-pressed="true"] { background: var(--navy); color: #fff; box-shadow: 0 3px 10px rgb(31 58 99 / .24); }
-  body.big .modebar { zoom: calc(1 / 1.2); } /* 전체 1.2배 확대가 고정 메뉴 폭까지 늘리지 않게 */
+  body.big .modebar { zoom: calc(1 / 1.1); } /* 전체 확대가 고정 메뉴 폭까지 늘리지 않게 */
   body:has(#schedule:not([hidden]) #modeBar:not([hidden])) { padding-bottom: calc(82px + env(safe-area-inset-bottom)); }
   body:has(#player:not([hidden])) .modebar { display: none; }
 
@@ -286,12 +289,12 @@
   .pastsep ~ .card .done { display: none; } /* 검색 결과: '지난 찬양' 제목 아래 카드에는 따로 붙이지 않음 */
   @media (min-width: 481px) { .group .chips .chip { flex: 1 1 0; max-width: 150px; } }
   @media (min-width: 1024px) { .hero { border-radius: 0; } } /* 큰 화면에서는 화면 폭 전체 띠 — 둥근 모서리가 화면 끝에 걸리지 않게 */ /* 넓은 화면에서도 파트 칸이 한쪽에 작게 모이지 않게 */
-  /* PC 화면 (가로 1100px 이상이면 저절로, 크게 보기는 1400px 이상) — 머리글 [두 칸 보기]/[세 칸 보기]로 두 가지 배치를 바꿈 (2026-09-29 사용자 선택: 시안 B·H 둘 다)
+  /* PC 화면 (가로 1100px 이상이면 저절로) — 머리글 [두 칸 보기]/[세 칸 보기]로 두 가지 배치를 바꿈 (2026-09-29 사용자 선택: 시안 B·H 둘 다)
      세 칸(기본, B): 왼쪽 세로 보기 메뉴 · 가운데 목록 · 오른쪽 이번 주 찬양·공지 (메뉴·이번 주는 스크롤해도 제자리)
      두 칸(H): 왼쪽 기둥 = 이번 주 찬양 + 보기 메뉴(2칸×3줄) + 공지, 오른쪽 = 목록 카드 두 줄
      편집 화면(topZone 숨김)은 그대로 한 칸 */
   .side, #layoutBtn { display: none; }
-  @media screen { /* 켜고 끄기는 JS(placePc)가 body.pc로 — 크게 보기는 1400px부터 */
+  @media screen { /* 켜고 끄기는 JS(placePc)가 body.pc로 */
     body.pc:has(#topZone:not([hidden])) { display: grid; grid-template-columns: minmax(0, 1fr) max-content minmax(0, 760px) minmax(300px, 360px) minmax(0, 1fr); column-gap: 24px; align-items: start; }
     body.pc:has(#topZone:not([hidden])) > :is(.top, footer) { grid-column: 1 / -1; }
     body.pc:has(#topZone:not([hidden])) :is(.top > .wrap, footer.wrap) { width: 100%; max-width: 1344px; padding-inline: 32px; }
@@ -305,7 +308,7 @@
     /* 보기 메뉴: 화면 아래에 떠 있지 않고 제자리 메뉴로 (영상 창이 열려도 가리지 않음) */
     body.pc:has(#topZone:not([hidden])) .modebar { position: static; transform: none; width: auto; margin: 0; padding: 8px; gap: 4px; border-radius: 18px; box-shadow: 0 4px 14px rgb(16 24 40 / .10); }
     body.pc:has(#topZone:not([hidden])) .modebar .btn span { display: inline; }
-    body.pc:is(.big, .small):has(#topZone:not([hidden])) .modebar { zoom: 1; }
+    body.pc:is(.big, .mid, .small):has(#topZone:not([hidden])) .modebar { zoom: 1; }
     body.pc:has(#topZone:not([hidden])):has(#player:not([hidden])) .modebar { display: grid; }
     body.pc:has(#topZone:not([hidden])):has(#schedule[hidden]) :is(.side, #modeBar) { visibility: hidden; } /* 목록이 뜨기 전에는 메뉴도 숨김 */
     body.pc .side .modebar { grid-template-columns: 1fr; }
@@ -534,7 +537,7 @@
   /* 인쇄 (예비): 종이용 쪽을 만들지 못했을 때 화면 목록을 간단히 */
   @media print {
     .top, .kakaobar, .staleMsg, .notices, .searchrow, .hero, .modebar, .periodbar, .emptySundays, footer, .player { display: none !important; }
-    body { background: #fff; zoom: 1; }
+    body, body:is(.small, .mid, .big) { background: #fff; zoom: 1; } /* 인쇄는 글자 크기 선택과 상관없이 원래 크기 */
     main.wrap { padding: 0; }
     /* 2단 인쇄: 목록을 왼쪽 단부터 채우고, 한 곡이 두 단에 걸쳐 잘리지 않게 */
     .list { column-count: 2; column-gap: 28px; column-rule: 1px solid #ddd; }
@@ -664,10 +667,10 @@
     .ytsearch input, .bulkhead input, .bulkpeople input, .bulkday textarea { font-size: 16px; }
   }
   /* 480px 규칙보다 뒤에 둬야 이김 */
-  /* 크게 보기(1.2배)에서는 실제로 쓸 수 있는 폭이 좁아지므로 576px까지 휴대폰 배치 */
+  /* 크게 보기(1.1배)에서는 실제로 쓸 수 있는 폭이 좁아지므로 576px까지 휴대폰 배치 */
   @media (max-width: 576px) {
     body.big .ympick select { font-size: 14px; padding: 6px 2px 6px 6px; }
-    body.big .brand b { font-size: 18px; }            /* 크게 보기(1.2배)에서 머리글이 한 줄에 들어가게 */
+    body.big .brand b { font-size: 18px; }            /* 크게 보기(1.1배)에서 머리글이 한 줄에 들어가게 */
     body.big .brand small { white-space: nowrap; }
     body.big .topnav .btn { padding: 8px 8px; }
   }
@@ -680,7 +683,7 @@
 <!-- 고른 화면 색을 그리기 전에 먼저 입혀, 열 때 색이 한 번 바뀌어 보이지 않게 함 -->
 <script>try{var t=localStorage.getItem('choir-theme');if(t==='2'||t==='3')document.documentElement.dataset.theme=t;}catch(e){}</script>
 </head>
-<body>
+<body class="small">
 <a class="skip" href="#schedule">일정 목록으로 건너뛰기</a>
 <header class="top">
   <div class="wrap">
@@ -2797,20 +2800,19 @@ $('themePick').append(...THEMES.map(t => el('button', {
 }, el('span', { class: 'dots', 'aria-hidden': 'true' }, ...t.dots.map(c => el('i', { style: `background:${c}` }))),
   `테마 ${t.id}`)));
 
-/* ===== 글자 크기: 보통 → 크게(1.2배) → 작게(0.85배) → 보통 (이 기기에만 저장) ===== */
-// 버튼 글자는 '누르면 바뀔 크기' (보통일 때 [크게 보기], 크게일 때 [작게 보기], 작게일 때 [보통 보기])
-const SIZES = { normal: ['크게 보기', '보통', 'big'], big: ['작게 보기', '크게', 'small'], small: ['보통 보기', '작게', 'normal'] };
-const curSize = () => document.body.classList.contains('big') ? 'big' : document.body.classList.contains('small') ? 'small' : 'normal';
+/* ===== 글자 크기: 작게(0.75배, 처음 화면) → 보통(0.9배) → 크게(1.1배) → 작게 (이 기기에만 저장) ===== */
+// 버튼 글자는 '누르면 바뀔 크기' (작게일 때 [보통 보기], 보통일 때 [크게 보기], 크게일 때 [작게 보기])
+const SIZES = { small: ['보통 보기', '작게', 'mid'], mid: ['크게 보기', '보통', 'big'], big: ['작게 보기', '크게', 'small'] };
+const curSize = () => ['big', 'mid'].find(c => document.body.classList.contains(c)) || 'small';
 function applySize(size) {
-  if (!SIZES[size]) size = 'normal';
+  if (!SIZES[size]) size = 'small';
   const [label, now] = SIZES[size], b = $('fontBtn');
-  document.body.classList.toggle('big', size === 'big');
-  document.body.classList.toggle('small', size === 'small');
+  for (const c of Object.keys(SIZES)) document.body.classList.toggle(c, c === size);
   b.textContent = label;
-  size === 'normal' ? b.removeAttribute('data-size') : b.dataset.size = size; // 보통이 아닐 때 버튼을 칠해 바뀐 상태임을 보임
+  size === 'small' ? b.removeAttribute('data-size') : b.dataset.size = size; // 처음 크기가 아닐 때 버튼을 칠해 바뀐 상태임을 보임
   b.title = `글자 크기: 지금 ${now} — 누르면 ${label.replace(' 보기', '')}`;
   b.setAttribute('aria-label', b.title);
-  try { size === 'normal' ? localStorage.removeItem(BIG_KEY) : localStorage.setItem(BIG_KEY, size === 'big' ? '1' : 's'); } catch {}
+  try { size === 'small' ? localStorage.removeItem(BIG_KEY) : localStorage.setItem(BIG_KEY, size === 'big' ? '1' : 'm'); } catch {}
 }
 
 /* ===== 입력 창을 닫기 전 확인 =====
@@ -2973,11 +2975,11 @@ function startPrint(style) {
 }
 // PC 화면(가로 1100px 이상): 공지는 이번 주 찬양 아래로, 보기 메뉴는 세 칸이면 왼쪽 세로 메뉴, 두 칸이면 이번 주 찬양 아래로.
 // 좁아지면 원래 자리(목록 위·화면 아래 떠 있는 메뉴)로. 옮기면 키보드 순서도 보이는 순서와 같아짐
-const pcMq = matchMedia('(min-width: 1100px)'), pcBigMq = matchMedia('(min-width: 1400px)'); // 크게 보기(1.2배)는 칸이 좁아지므로 더 넓을 때만
+const pcMq = matchMedia('(min-width: 1100px)');
 const PC_LAYOUT_KEY = 'choir-pc-layout';
 let pcLayout = (() => { try { return localStorage.getItem(PC_LAYOUT_KEY) === 'H' ? 'H' : 'B'; } catch { return 'B'; } })();
 const placePc = () => {
-  const pc = pcMq.matches && (!document.body.classList.contains('big') || pcBigMq.matches), two = pcLayout === 'H';
+  const pc = pcMq.matches, two = pcLayout === 'H';
   document.body.classList.toggle('pc', pc);
   document.body.classList.toggle('pcH', two);
   pc ? $('topZone').insertBefore($('notices'), $('player').parentElement === $('topZone') ? $('player') : null) : $('publicView').prepend($('notices'));
@@ -2990,7 +2992,7 @@ $('layoutBtn').onclick = () => {
   try { localStorage.setItem(PC_LAYOUT_KEY, pcLayout); } catch {}
   placePc();
 };
-pcMq.addEventListener('change', placePc); pcBigMq.addEventListener('change', placePc); placePc();
+pcMq.addEventListener('change', placePc); placePc();
 $('printBtn').onclick = () => startPrint('list');
 $('printBtn2').onclick = () => startPrint('glance');
 $('printCancel').onclick = () => { printStyle = null; $('printDlg').close(); };
@@ -3216,7 +3218,7 @@ if (/KAKAOTALK/i.test(navigator.userAgent)) {
 
 /* ===== 시작 ===== */
 applyTheme(themeId);
-try { const v = localStorage.getItem(BIG_KEY); applySize(v === '1' ? 'big' : v === 's' ? 'small' : 'normal'); } catch { applySize('normal'); }
+try { const v = localStorage.getItem(BIG_KEY); applySize(v === '1' ? 'big' : v === 'm' ? 'mid' : 'small'); } catch { applySize('small'); }
 load();
 
 // 홈 화면 설치(안드로이드 크롬)에 필요한 파일 등록 — 실패해도 사이트는 그대로 동작
