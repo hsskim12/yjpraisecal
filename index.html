@@ -326,13 +326,10 @@
     body.pc #topZone .playerframe { width: 100%; margin-inline: 0; }
     /* 두 칸(H) */
     body.pc.pcH:has(#topZone:not([hidden])) { grid-template-columns: minmax(0, 1fr) minmax(390px, 442px) minmax(0, 860px) minmax(0, 1fr); } /* 왼쪽 기둥 30% 넓힘 (2026-09-29 요청) */
-    /* 크게 보기는 이번 주 칸을 절반 폭으로 — 목록 칸이 넓어지게 (2026-09-30 요청) */
-    body.pc.big:has(#topZone:not([hidden])) { grid-template-columns: minmax(0, 1fr) max-content minmax(0, 760px) minmax(195px, 234px) minmax(0, 1fr); }
-    body.pc.pcH.big:has(#topZone:not([hidden])) { grid-template-columns: minmax(0, 1fr) minmax(195px, 221px) minmax(0, 860px) minmax(0, 1fr); }
-    body.pc.big #topZone .herolinks { grid-template-columns: repeat(auto-fit, minmax(52px, 1fr)); gap: 5px; } /* 좁은 칸에서도 듣기·반주·악보 한 줄 */
-    body.pc.big #topZone .herolinks a { font-size: 16px; padding-inline: 4px; }
-    body.pc.big #topZone .heroparts { gap: 4px; }
-    body.pc.big #topZone .heroparts a i { font-size: 11px; letter-spacing: -.06em; } /* '소프라노'가 칸 안에 */
+    /* 크게 보기는 이번 주 칸을 70% 폭으로 — 목록 칸이 넓어지게 (2026-09-30 요청) */
+    body.pc.big:has(#topZone:not([hidden])) { grid-template-columns: minmax(0, 1fr) max-content minmax(0, 760px) minmax(273px, 328px) minmax(0, 1fr); }
+    body.pc.pcH.big:has(#topZone:not([hidden])) { grid-template-columns: minmax(0, 1fr) minmax(273px, 309px) minmax(0, 860px) minmax(0, 1fr); }
+    body.pc.big #topZone .herolinks { grid-template-columns: repeat(auto-fit, minmax(72px, 1fr)); } /* 좁아진 칸에서도 듣기·반주·악보 한 줄 */
     body.pc.pcH:has(#topZone:not([hidden])) :is(.top > .wrap, footer.wrap) { max-width: 1390px; }
     body.pc.pcH:has(#topZone:not([hidden])) > .side { display: none; }
     body.pc.pcH:has(#topZone:not([hidden])) > #topZone { grid-column: 2; }
