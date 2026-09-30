@@ -293,7 +293,7 @@
   .pastsep ~ .card .done { display: none; } /* 검색 결과: '지난 찬양' 제목 아래 카드에는 따로 붙이지 않음 */
   @media (min-width: 481px) { .group .chips .chip { flex: 1 1 0; max-width: 150px; } }
   @media (min-width: 1024px) { .hero { border-radius: 0; } } /* 큰 화면에서는 화면 폭 전체 띠 — 둥근 모서리가 화면 끝에 걸리지 않게 */ /* 넓은 화면에서도 파트 칸이 한쪽에 작게 모이지 않게 */
-  /* PC 화면 (가로 1100px 이상이면 저절로) — 머리글 [두 칸 보기]/[세 칸 보기]로 두 가지 배치를 바꿈 (2026-09-29 사용자 선택: 시안 B·H 둘 다)
+  /* PC 화면 (가로 1080px 이상이면 저절로) — 머리글 [두 칸 보기]/[세 칸 보기]로 두 가지 배치를 바꿈 (2026-09-29 사용자 선택: 시안 B·H 둘 다)
      세 칸(기본, B): 왼쪽 세로 보기 메뉴 · 가운데 목록 · 오른쪽 이번 주 찬양·공지 (메뉴·이번 주는 스크롤해도 제자리)
      두 칸(H): 왼쪽 기둥 = 이번 주 찬양 + 보기 메뉴(2칸×3줄) + 공지, 오른쪽 = 목록 카드 두 줄
      편집 화면(topZone 숨김)은 그대로 한 칸 */
@@ -2976,10 +2976,10 @@ function startPrint(style) {
   d.querySelector(`input[value="${v}"]`).checked = true;
   d.showModal();
 }
-// PC 화면(가로 1100px 이상): 공지는 이번 주 찬양 아래로, 보기 메뉴는 세 칸이면 왼쪽 세로 메뉴, 두 칸이면 이번 주 찬양 아래로.
+// PC 화면(가로 1080px 이상): 공지는 이번 주 찬양 아래로, 보기 메뉴는 세 칸이면 왼쪽 세로 메뉴, 두 칸이면 이번 주 찬양 아래로.
 // 좁아지면 원래 자리(목록 위·화면 아래 떠 있는 메뉴)로. 옮기면 키보드 순서도 보이는 순서와 같아짐
-const pcMq = matchMedia('(min-width: 1100px)');
-// 폭 880px↑·높이 500px↑이면 방향과 상관없이 PC 화면 (가로로 편 폴드, 좁은 PC 창 — 2026-09-29·30 요청). 크게 보기는 이 폭에 칸이 모자라 1100px 전까지 휴대폰 화면 유지. 가로로 돌린 휴대폰은 높이가 낮아 해당 없음
+const pcMq = matchMedia('(min-width: 1080px)');
+// 폭 880px↑·높이 500px↑이면 방향과 상관없이 PC 화면 (가로로 편 폴드, 좁은 PC 창 — 2026-09-29·30 요청). 크게 보기는 이 폭에 칸이 모자라 1080px 전까지 휴대폰 화면 유지. 가로로 돌린 휴대폰은 높이가 낮아 해당 없음
 const wideMq = matchMedia('(min-width: 880px) and (min-height: 500px)');
 const PC_LAYOUT_KEY = 'choir-pc-layout';
 let pcLayout = (() => { try { return localStorage.getItem(PC_LAYOUT_KEY) === 'H' ? 'H' : 'B'; } catch { return 'B'; } })();
