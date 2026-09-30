@@ -2979,12 +2979,12 @@ function startPrint(style) {
 // PC 화면(가로 1100px 이상): 공지는 이번 주 찬양 아래로, 보기 메뉴는 세 칸이면 왼쪽 세로 메뉴, 두 칸이면 이번 주 찬양 아래로.
 // 좁아지면 원래 자리(목록 위·화면 아래 떠 있는 메뉴)로. 옮기면 키보드 순서도 보이는 순서와 같아짐
 const pcMq = matchMedia('(min-width: 1100px)');
-// 폴드처럼 가로로 편 넓은 화면(폭 880px↑·높이 500px↑)도 PC 화면으로 — 크게 보기는 이 폭에 칸이 모자라 휴대폰 화면 유지 (2026-09-29 요청). 가로로 돌린 휴대폰은 높이가 낮아 해당 없음
-const landMq = matchMedia('(orientation: landscape) and (min-width: 880px) and (min-height: 500px)');
+// 폭 880px↑·높이 500px↑이면 방향과 상관없이 PC 화면 (가로로 편 폴드, 좁은 PC 창 — 2026-09-29·30 요청). 크게 보기는 이 폭에 칸이 모자라 1100px 전까지 휴대폰 화면 유지. 가로로 돌린 휴대폰은 높이가 낮아 해당 없음
+const wideMq = matchMedia('(min-width: 880px) and (min-height: 500px)');
 const PC_LAYOUT_KEY = 'choir-pc-layout';
 let pcLayout = (() => { try { return localStorage.getItem(PC_LAYOUT_KEY) === 'H' ? 'H' : 'B'; } catch { return 'B'; } })();
 const placePc = () => {
-  const pc = pcMq.matches || (landMq.matches && curSize() !== 'big'), two = pcLayout === 'H';
+  const pc = pcMq.matches || (wideMq.matches && curSize() !== 'big'), two = pcLayout === 'H';
   document.body.classList.toggle('pc', pc);
   document.body.classList.toggle('pcH', two);
   pc ? $('topZone').insertBefore($('notices'), $('player').parentElement === $('topZone') ? $('player') : null) : $('publicView').prepend($('notices'));
@@ -2997,7 +2997,7 @@ $('layoutBtn').onclick = () => {
   try { localStorage.setItem(PC_LAYOUT_KEY, pcLayout); } catch {}
   placePc();
 };
-pcMq.addEventListener('change', placePc); landMq.addEventListener('change', placePc); placePc();
+pcMq.addEventListener('change', placePc); wideMq.addEventListener('change', placePc); placePc();
 $('printBtn').onclick = () => startPrint('list');
 $('printBtn2').onclick = () => startPrint('glance');
 $('printCancel').onclick = () => { printStyle = null; $('printDlg').close(); };
