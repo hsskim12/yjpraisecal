@@ -658,8 +658,8 @@
     .group .chips .chip { font-size: 16px; min-width: 0; flex: 1 1 0; padding: 8px 2px; order: 0; }
     /* 연습 영상 줄: 썸네일을 줄이고 [수정][삭제]는 아랫줄 오른쪽으로 (제목이 눌리지 않게) */
     .rrow { flex-wrap: wrap; }
-    .rthumb { width: 96px; }
-    .rrow.live .rthumb { width: 192px; } /* 휴대폰도 연습 영상(96px)의 2배 */
+    .rthumb { width: 144px; } /* 폴드 접은 화면에서 작다는 요청으로 96 → 144px (1.5배) */
+    .rrow.live .rthumb { width: 192px; } /* 실황은 그대로 */
     .rrow .edbtns { flex: 0 0 100%; justify-content: flex-end; }
     /* 편집 목록: 입력 표시를 넓게 쓰고 버튼은 아래 오른쪽으로 */
     .reslot { grid-template-columns: 56px minmax(0, 1fr); gap: 6px; }
