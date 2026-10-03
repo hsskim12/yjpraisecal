@@ -109,6 +109,7 @@
   .kakaobar a { font-weight: 700; color: var(--navy); }
   .installbar { align-items: center; background: var(--navy-soft); border-color: var(--line-strong); }
   .installbar .btn { flex-shrink: 0; }
+  .pushpick { display: flex; align-items: center; gap: 6px; font-size: 15px; font-weight: 600; }
   .staleMsg { margin: 0 0 14px; font-size: 15px; color: var(--muted); }
 
   /* 공지사항 */
@@ -749,6 +750,11 @@
     <button type="button" class="btn" id="installBtn" hidden>설치</button>
     <button type="button" class="iconbtn" id="installClose" aria-label="안내 닫기">✕</button>
   </div>
+  <div class="kakaobar installbar" id="pushBar" hidden>
+    <p id="pushMsg"></p>
+    <button type="button" class="btn" id="pushOn">알림 받기</button>
+    <button type="button" class="iconbtn" id="pushClose" aria-label="안내 닫기">✕</button>
+  </div>
   <p class="staleMsg" id="staleMsg" role="status" hidden></p>
 
   <!-- 공개 화면 -->
@@ -845,6 +851,7 @@
         <button type="button" class="btn" id="reUp" aria-label="고른 곡 한 칸 위로">▲ 위로</button>
         <button type="button" class="btn" id="reDown" aria-label="고른 곡 한 칸 아래로">▼ 아래로</button>
         <button type="button" class="btn" id="reCancel">옮긴 것 취소</button>
+        <label class="pushpick" id="rePushRow" hidden><input type="checkbox" id="rePushChk"> 알림 보내기</label>
         <button type="button" class="btn primary" id="reSave">저장</button>
       </div>
       <div class="searchrow">
@@ -873,6 +880,7 @@
     <span><b>찬양대 알리미</b><small>인천영종교회</small></span>
     <span class="ver" id="appVer" hidden></span>
   </div>
+  <button type="button" class="linkbtn" id="pushBtn" hidden></button>
   <div class="themepick" id="themePick" role="group" aria-label="화면 색 고르기"><span class="tplabel">화면 색</span></div>
 </footer>
 
@@ -940,6 +948,7 @@
     <label class="field">며칠 동안<select name="days" id="bulkDaysSel"></select></label>
     <p class="hint">첫날부터 하루씩 이어지는 집회 일정입니다. 고른 기간의 <b>모든 날이 저장</b>되고, 제목을 비워 둔 날은 <b>'미정'</b>으로 저장돼 나중에 채울 수 있습니다.</p>
     <div id="bulkDays"></div>
+    <label class="checkrow"><input type="checkbox" id="bulkPushChk"> <b>저장하면 알림 보내기</b> <span class="hint">(알림 받기를 켠 대원에게 · 밤 10시~아침 8시에 저장하면 아침 8시에 보냄)</span></label>
     <p class="err" id="bulkErr" role="alert" hidden></p>
     <div class="actions">
       <button type="button" class="btn" id="bulkCancel2">취소</button>
@@ -1013,6 +1022,7 @@
       <div class="partpreview" id="pv-live" hidden></div>
     </div>
     <label class="field">안내 메모 <span class="hint">(선택)</span><textarea name="note" rows="3" maxlength="2000" placeholder="연습 시 참고할 내용"></textarea></label>
+    <label class="checkrow"><input type="checkbox" id="pushChk"> <b>저장하면 알림 보내기</b> <span class="hint">(알림 받기를 켠 대원에게 · 밤 10시~아침 8시에 저장하면 아침 8시에 보냄)</span></label>
     <p class="err" id="formErr" role="alert" hidden></p>
     <div class="actions">
       <button type="button" class="btn" id="cancelBtn">취소</button>
@@ -2001,11 +2011,14 @@ function mutate(body, applyNow, okMsg, undo, reopen) {
   flash('화면에는 반영했습니다. 서버에 저장하는 중입니다…');
   const sent = queue.then(() => api(body));
   queue = sent.catch(() => {});
-  sent.then(res => { settle(op, res); flash(okMsg, false, undo); },
+  sent.then(res => { settle(op, res); flash(okMsg + pushNote(res.push), false, undo); },
     err => { settle(op); handleErr(err, reopen); });
 }
 // 저장이 끝나기 전에 창을 닫으려 하면 한 번 물어봄 (옮겨 놓고 저장 안 한 순서도)
 addEventListener('beforeunload', e => { if (ops.length || pending()) e.preventDefault(); });
+
+// 저장 응답에 붙어 온 알림 결과 (Code.gs notify_)
+const pushNote = p => !p ? '' : p.queued ? ' 알림은 아침 8시에 보냅니다.' : p.ok ? ` 알림을 ${p.sent}대에 보냈습니다.` : ' 알림은 보내지 못했습니다.';
 
 /* ===== 편집 목록 (순서 바꾸기 포함) =====
    오늘 이후 일정의 날짜(구분 포함)는 고정된 자리이고, 곡 내용만 끌어서 옮김.
@@ -2139,7 +2152,7 @@ function renderEditor() {
     picked > 0 && `${changed ? '· ' : ''}${picked}곡 선택됨 `,
     picked > 0 && el('button', { type: 'button', class: 'linkbtn', onclick: () => { sel.clear(); renderEditor(); } }, '선택 해제'),
   ].filter(Boolean));
-  $('reCancel').hidden = $('reSave').hidden = !changed;
+  $('reCancel').hidden = $('reSave').hidden = $('rePushRow').hidden = !changed;
   $('reUp').hidden = $('reDown').hidden = !picked || !!edQuery;
 
   // 검색 중: 지난 일정까지 모두에서 찾아 날짜순으로 (검색 결과는 옮기지 않음)
@@ -2237,7 +2250,10 @@ function saveBoard() {
   const touched = new Set([...deletes, ...saved.map(x => x.id)]);
   board = null;
   sel.clear();
-  mutate({ action: 'batch', token, saves, deletes },
+  // 알림 건수 = 새로 저장되는 일정 줄 수 (빠지기만 한 자리는 세지 않음)
+  const notify = $('rePushChk').checked && saves.length ? { count: saves.length, desc: `${md(saves[0].event.date)} 순서 변경` } : null;
+  $('rePushChk').checked = false;
+  mutate({ action: 'batch', token, saves, deletes, ...(notify && { notify }) },
     () => { events = sorted([...events.filter(e => !touched.has(e.id)), ...saved]); },
     '바꾼 순서를 저장했습니다.');
 }
@@ -2486,6 +2502,7 @@ function openForm(ev, asCopy, slot = null) {
   $('typeCustomRow').hidden = !!slot || form.type.value !== TYPE_CUSTOM;
   form.title.value = v.title;
   $('tbdChk').checked = !!v.title && isTbd(v);
+  $('pushChk').checked = false; // 알림은 저장할 때마다 새로 고름 (오타 수정에 알림이 가지 않게)
   if ($('tbdChk').checked && !/^미정/.test(v.title.trim())) form.title.value = '미정'; // 'ㅇ' 같은 임시 제목은 열 때 '미정'으로 (저장하면 바뀜)
   form.title.readOnly = $('tbdChk').checked;
   showTitleHist();
@@ -2633,14 +2650,29 @@ form.addEventListener('submit', async e => {
   if (dup && !confirm(`${fmtDate(ev.date)}에 이미 "${dup.title}"(${typeLabel(ev.type)}) 일정이 있습니다.\n그래도 저장할까요?`)) return;
 
   // 새 일정도 사이트에서 고유 번호를 만들어 보냄 → 응답을 못 받아 다시 보내도 중복되지 않음
+  const prev = editingId && events.find(e => e.id === editingId);
+  const notify = $('pushChk').checked ? { count: 1, desc: changeDesc(prev, ev) } : null;
   if (!editingId) editingId = newId();
   const saved = { ...ev, id: editingId };
   closeDlg($('dlg'));
-  mutate({ action: 'save', token, id: editingId, event: ev },
+  mutate({ action: 'save', token, id: editingId, event: ev, ...(notify && { notify }) },
     () => { events = sorted([...events.filter(e => e.id !== saved.id), saved]); },
     `「${ev.title}」을(를) 저장했습니다.`, null, () => openForm(saved));
   markSaved(saved.id);
 });
+
+// 알림 문구에 넣을 바뀐 내용: "11/15 반주자·악보", 새 일정은 "11/15 새 일정 「곡명」"
+const CHANGE_NAMES = { date: '날짜', type: '구분', title: '제목', conductor: '지휘자', pianist: '반주자', parts: '파트 영상', scores: '악보', refs: '참고연주', live: '실황', note: '메모' };
+function changeDesc(prev, ev) {
+  if (!prev) return `${md(ev.date)} 새 일정 「${ev.title}」`;
+  // 예전 값도 저장할 때와 똑같이 링크를 정리한 뒤 비교 (드롭박스 raw=1 붙이기 등으로 안 바꾼 칸이 바뀐 것처럼 보이지 않게)
+  const old = { ...prev, type: typeOf(prev), parts: collectParts(p => prev.parts?.[p], '', []),
+    scores: cleanLines((prev.scores || []).join('\n'), '', '', []), refs: cleanLines((prev.refs || []).join('\n'), '', '', []),
+    live: cleanLive(prev.live, '', []) };
+  const val = (e, k) => JSON.stringify(e[k] ?? '');
+  const ch = Object.keys(CHANGE_NAMES).filter(k => val(old, k) !== val(ev, k)).map(k => CHANGE_NAMES[k]);
+  return `${md(ev.date)} ${ch.length ? ch.slice(0, 3).join('·') : `「${ev.title}」`}`;
+}
 
 /* ===== 집회 일정 한 번에 추가 =====
    집회는 보통 월~토처럼 며칠 이어지므로, 날짜별 칸을 한 창에서 채워 한 번에 저장 */
@@ -2705,6 +2737,7 @@ function openBulk() {
   $('bulkStart').value = nextMonday();
   $('bulkDaysSel').value = '6';
   $('bulkErr').hidden = true;
+  $('bulkPushChk').checked = false;
   renderBulkDays();
   fillNameLists(); // 지휘·반주 이름 고르기 목록은 본문 창과 같이 씀
   openDlg($('bulkDlg'));
@@ -2742,8 +2775,9 @@ $('bulkForm').addEventListener('submit', e => {
   }
   const dup = events.find(e => saved.some(x => x.date === e.date && typeOf(e) === type));
   if (dup && !confirm(`${fmtDate(dup.date)}에 이미 "${dup.title}"(${typeLabel(type)}) 일정이 있습니다.\n그래도 저장할까요?`)) return;
+  const notify = $('bulkPushChk').checked ? { count: saves.length, desc: `${md(saved[0].date)}~${md(saved[saved.length - 1].date)} ${typeLabel(type)}` } : null;
   closeDlg($('bulkDlg'));
-  mutate({ action: 'batch', token, saves, deletes: [] },
+  mutate({ action: 'batch', token, saves, deletes: [], ...(notify && { notify }) },
     () => { events = sorted([...events, ...saved]); },
     `${saves.length}곡을 저장했습니다.`, null, () => openDlg($('bulkDlg'))); // 창을 닫기만 했으므로 칸에 쓴 내용이 그대로 있음
   markSaved(saves[0].id);
@@ -2868,7 +2902,7 @@ $('logoutBtn').onclick = () => {
 };
 $('addBtn').onclick = () => openForm(null);
 $('bulkBtn').onclick = openBulk;
-$('reCancel').onclick = () => { board = null; sel.clear(); renderEditor(); };
+$('reCancel').onclick = () => { board = null; sel.clear(); $('rePushChk').checked = false; renderEditor(); };
 $('reSave').onclick = saveBoard;
 // 고른 곡(여러 곡이면 한 덩어리)을 한 칸 위·아래로
 const moveSel = d => {
@@ -3224,6 +3258,72 @@ if (/KAKAOTALK/i.test(navigator.userAgent)) {
     try { localStorage.setItem(KAKAO_KEY, '1'); } catch {}
   };
 }
+
+/* ===== 일정 알림 받기 (웹 푸시) =====
+   [알림 받기]를 누른 기기를 서버(Code.gs '알림구독' 시트)에 등록. 아이폰은 홈 화면에 추가한 앱에서만 됨
+   (사파리 창에는 PushManager가 없어 안내도 안 뜸). 카카오톡 속 브라우저도 안 되므로 숨김 */
+const PUSH_KEY = 'choir-push-hide', PUSH_AT = 'choir-push-at';
+const VAPID = 'BK6EF-KvilWDILtbBL7pF7zglHFHmymENOR2fV_rI5WoY1PooGgIK9qslW2Y6v51BFnLTH_2AEGw7ZCikjn5RTs'; // 발송 서명 공개 키 (비밀 키는 Vercel에만)
+const pushOk = 'PushManager' in window && 'Notification' in window && 'serviceWorker' in navigator && !/KAKAOTALK/i.test(navigator.userAgent);
+const pushSub = () => navigator.serviceWorker.ready.then(r => r.pushManager.getSubscription());
+const b64bytes = s => Uint8Array.from(atob(s.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0));
+const pushSay = msg => { $('pushMsg').textContent = msg; $('pushOn').hidden = true; $('pushBar').hidden = false; };
+async function pushRender() {
+  const sub = await pushSub().catch(() => null);
+  const on = !!sub && Notification.permission === 'granted';
+  $('pushBtn').textContent = on ? '🔔 알림 끄기' : '🔔 알림 받기';
+  $('pushBtn').hidden = false;
+  let hide = false;
+  try { hide = localStorage.getItem(PUSH_KEY) === '1'; } catch {}
+  if (!on && !hide && Notification.permission === 'default') {
+    $('pushMsg').textContent = '새 찬양 일정이 올라오면 알림으로 알려 드려요.';
+    $('pushOn').hidden = false;
+    $('pushBar').hidden = false;
+  }
+  // 기기의 신청 정보가 바뀌었을 수 있어 일주일에 한 번 다시 등록 (같은 기기면 서버에서 덮어씀)
+  let at = 0;
+  try { at = +localStorage.getItem(PUSH_AT) || 0; } catch {}
+  if (on && Date.now() - at > 7 * 864e5) api({ action: 'subscribe', sub: sub.toJSON() }).then(() => { try { localStorage.setItem(PUSH_AT, Date.now()); } catch {} }).catch(() => {});
+}
+async function pushStart() {
+  try {
+    if (await Notification.requestPermission() !== 'granted') return pushSay('알림이 허용되지 않았습니다. 휴대폰 설정 → 알림에서 이 앱(또는 브라우저)의 알림을 켠 뒤 다시 눌러 주세요.');
+    const r = await navigator.serviceWorker.ready;
+    const sub = await r.pushManager.getSubscription() || await r.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64bytes(VAPID) });
+    await api({ action: 'subscribe', sub: sub.toJSON() });
+    try { localStorage.setItem(PUSH_AT, Date.now()); } catch {}
+    await pushRender();
+    pushSay('알림을 켰습니다. 새 찬양 일정이 올라오면 알려 드려요.');
+  } catch {
+    pushSay('알림을 켜지 못했습니다. 인터넷 연결을 확인하고 잠시 후 다시 눌러 주세요.');
+  }
+}
+async function pushStop() {
+  const sub = await pushSub().catch(() => null);
+  if (sub) {
+    api({ action: 'unsubscribe', endpoint: sub.endpoint }).catch(() => {});
+    await sub.unsubscribe().catch(() => {});
+  }
+  await pushRender();
+  pushSay('알림을 껐습니다. 다시 받으려면 맨 아래 [알림 받기]를 누르세요.');
+}
+$('pushOn').onclick = pushStart;
+$('pushBtn').onclick = () => $('pushBtn').textContent.includes('끄기') ? pushStop() : pushStart();
+$('pushClose').onclick = () => {
+  $('pushBar').hidden = true;
+  try { localStorage.setItem(PUSH_KEY, '1'); } catch {}
+};
+if (pushOk) pushRender();
+
+// 사이트를 열면 앱 아이콘 숫자와 쌓인 알림을 지움 (숫자는 sw.js가 알림마다 더해 둔 것)
+function clearBadge() {
+  if (document.visibilityState !== 'visible') return;
+  navigator.clearAppBadge?.().catch(() => {});
+  window.caches?.open('choir-badge').then(c => c.delete('/badge-count')).catch(() => {});
+  navigator.serviceWorker?.getRegistration().then(r => r && r.getNotifications()).then(list => list?.forEach(n => n.close())).catch(() => {});
+}
+document.addEventListener('visibilitychange', clearBadge);
+clearBadge();
 
 /* ===== 시작 ===== */
 applyTheme(themeId);

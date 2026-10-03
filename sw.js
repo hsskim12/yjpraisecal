@@ -1,7 +1,8 @@
 /* 홈 화면 설치와 오프라인 대비용 파일.
    화면 파일은 항상 인터넷에서 먼저 받아오고(새로 올린 내용이 바로 보이도록),
    인터넷이 안 될 때만 저장해 둔 것을 보여 줍니다. 일정 데이터(구글)는 건드리지 않습니다. */
-const CACHE = 'choir-notice-v126';
+const CACHE = 'choir-notice-v127';
+const BADGE = 'choir-badge'; // 앱 아이콘 숫자(안 본 알림 건수) — 버전이 바뀌어도 지우지 않음
 const SHELL = ['./', 'index.html', 'manifest.json', 'icon-32.png', 'icon-180.png', 'icon-192.png', 'icon-512.png', 'logo.png'];
 
 self.addEventListener('install', e => {
@@ -11,7 +12,7 @@ self.addEventListener('install', e => {
 self.addEventListener('activate', e => {
   e.waitUntil(
     caches.keys()
-      .then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
+      .then(keys => Promise.all(keys.filter(k => k !== CACHE && k !== BADGE).map(k => caches.delete(k))))
       .then(() => self.clients.claim())
   );
 });
@@ -39,4 +40,26 @@ self.addEventListener('fetch', e => {
     // 저장본이 있으면 인터넷을 3초까지만 기다리고, 늦으면 저장본을 먼저 보여 줌 (새 내용은 뒤에서 저장되어 다음에 보임)
     return Promise.race([net.catch(() => hit), new Promise(r => setTimeout(() => r(hit), 3000))]);
   })());
+});
+
+/* 일정 알림: 관리자가 [알림 보내기]를 체크해 저장하면 옴 (Code.gs → api/push.js)
+   아이콘 숫자는 바뀐 일정 줄 수를 더해 감 (아이폰). 사이트를 열면 index.html이 지움 */
+self.addEventListener('push', e => {
+  let d = {};
+  try { d = e.data.json(); } catch (_) {}
+  e.waitUntil((async () => {
+    try {
+      const c = await caches.open(BADGE);
+      const n = (+(await (await c.match('/badge-count'))?.text()) || 0) + (+d.count || 1);
+      await c.put('/badge-count', new Response(String(n)));
+      if (navigator.setAppBadge) await navigator.setAppBadge(n);
+    } catch (_) {} // 숫자를 못 붙여도 알림은 보냄
+    await self.registration.showNotification(d.title || '찬양대 알리미', { body: d.body || '찬양 일정이 업데이트되었습니다.', icon: 'icon-192.png' });
+  })());
+});
+
+self.addEventListener('notificationclick', e => {
+  e.notification.close();
+  e.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true })
+    .then(list => list.length ? list[0].focus() : self.clients.openWindow('./')));
 });
