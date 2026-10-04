@@ -109,6 +109,20 @@
   .kakaobar a { font-weight: 700; color: var(--navy); }
   .installbar { align-items: center; background: var(--navy-soft); border-color: var(--line-strong); }
   .installbar .btn { flex-shrink: 0; }
+  /* 이번 주일 참석 응답 (남색 영역 안) */
+  .rsvp { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 10px 0 2px; padding: 10px 12px; border-radius: 14px; background: rgb(255 255 255 / .1); font-size: 15px; }
+  .rsvp .q { flex-basis: 100%; font-weight: 700; }
+  .rsvp .pick { flex: 1 1 0; min-height: 40px; padding: 4px 16px; border: 1px solid rgb(255 255 255 / .6); border-radius: 999px; background: none; color: #fff; font-size: 16px; font-weight: 700; }
+  .rsvp .pick[aria-pressed="true"] { background: #fff; color: var(--navy); border-color: #fff; }
+  .rsvp .who { flex-basis: 100%; color: rgb(255 255 255 / .8); }
+  .rsvp .who button { border: 0; background: none; padding: 6px 4px; margin: -6px 0; color: #fff; font: inherit; font-weight: 600; text-decoration: underline; }
+  .mepart { margin: 12px 0 4px; font-size: 15px; font-weight: 700; color: var(--muted); }
+  .menames { display: flex; flex-wrap: wrap; gap: 8px; }
+  .rsvpadmin { margin: 0 0 14px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; background: #fff; font-size: 15px; }
+  .rsvpadmin h2 { margin: 0 0 8px; font-size: 16px; }
+  .rsvpadmin table { width: 100%; border-collapse: collapse; }
+  .rsvpadmin th, .rsvpadmin td { padding: 6px 4px; border-top: 1px solid var(--line); text-align: left; vertical-align: top; }
+  .rsvpadmin td small { display: block; color: var(--muted); overflow-wrap: anywhere; }
   .pushpick { display: flex; align-items: center; gap: 6px; font-size: 15px; font-weight: 600; }
   .staleMsg { margin: 0 0 14px; font-size: 15px; color: var(--muted); }
 
@@ -724,6 +738,7 @@
       <div id="heroCards"></div>
       <button type="button" class="heroshare" id="shareBtn"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 8l5-5 5 5M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg> 파트연습 공유하기</button>
       <p class="sharemsg" id="shareMsg" role="status" hidden></p>
+      <div class="rsvp" id="rsvp" hidden></div>
     </div>
   </section>
   <!-- 영상 재생창 (유튜브 버튼을 누르면 열림) -->
@@ -843,8 +858,10 @@
         <button type="button" class="btn primary" id="addBtn">+ 일정 추가</button>
         <button type="button" class="btn" id="bulkBtn">+ 집회 일정 추가</button>
         <button type="button" class="btn" id="noticeBtn">공지사항 수정</button>
+        <button type="button" class="btn" id="rosterBtn">대원 명단</button>
         <button type="button" class="btn" id="pastBtn" hidden></button>
       </div>
+      <section class="rsvpadmin" id="rsvpAdmin" hidden></section>
       <!-- 곡을 옮기거나 골랐을 때만 나타나는 막대 -->
       <div class="reactions" id="reBar" hidden>
         <span class="summary" id="reSummary" role="status"></span>
@@ -881,6 +898,7 @@
     <span class="ver" id="appVer" hidden></span>
   </div>
   <button type="button" class="linkbtn" id="pushBtn" hidden></button>
+  <button type="button" class="linkbtn" id="calBtn">📅 캘린더 구독</button>
   <div class="themepick" id="themePick" role="group" aria-label="화면 색 고르기"><span class="tplabel">화면 색</span></div>
 </footer>
 
@@ -907,6 +925,7 @@
     <p class="hint" id="noticeHint"></p>
     <label class="field">공지사항 1<textarea name="n1" rows="4" maxlength="2000"></textarea></label>
     <label class="field">공지사항 2<textarea name="n2" rows="4" maxlength="2000"></textarea></label>
+    <label class="checkrow"><input type="checkbox" id="noticePushChk"> <b>저장하면 알림 보내기</b> <span class="hint">(새로 쓰거나 바꾼 공지만 · 밤 10시~아침 8시에 저장하면 아침 8시에 보냄)</span></label>
     <p class="err" id="noticeErr" role="alert" hidden></p>
     <div class="actions">
       <button type="button" class="btn" id="noticeCancel">취소</button>
@@ -1031,6 +1050,49 @@
   </form>
 </dialog>
 
+<!-- 캘린더 구독 -->
+<dialog id="calDlg" aria-labelledby="calTitle">
+  <div class="dlgbody">
+    <div class="dlghead">
+      <h2 id="calTitle">휴대폰 캘린더에 구독</h2>
+      <button type="button" class="iconbtn" id="calClose" aria-label="닫기">✕</button>
+    </div>
+    <p>찬양 일정이 휴대폰 캘린더에 날짜별로 뜹니다. 일정이 바뀌면 캘린더도 저절로 따라 바뀝니다 (몇 시간 걸릴 수 있어요).</p>
+    <div class="actions" style="flex-wrap: wrap; justify-content: flex-start;">
+      <a class="btn primary" id="calApple" href="webcal://yjpraisecal.vercel.app/api/cal">아이폰 · 맥 캘린더</a>
+      <a class="btn" id="calGoogle" target="_blank" rel="noopener" href="https://calendar.google.com/calendar/r?cid=webcal%3A%2F%2Fyjpraisecal.vercel.app%2Fapi%2Fcal">구글 캘린더 (안드로이드)</a>
+      <button type="button" class="btn" id="calCopy">주소 복사</button>
+    </div>
+    <p class="hint" id="calMsg">구글 캘린더는 컴퓨터나 휴대폰 브라우저에서 열려야 추가됩니다. 추가한 뒤 안드로이드 캘린더 앱에서도 보입니다.</p>
+  </div>
+</dialog>
+
+<!-- 내 이름 고르기 (참석 응답용, 이 기기에만 기억) -->
+<dialog id="meDlg" aria-labelledby="meTitle">
+  <div class="dlgbody">
+    <div class="dlghead">
+      <h2 id="meTitle">내 이름 고르기</h2>
+      <button type="button" class="iconbtn" id="meClose" aria-label="닫기">✕</button>
+    </div>
+    <p class="hint">한 번 고르면 이 휴대폰이 기억합니다. 명단에 이름이 없으면 관리자에게 알려 주세요.</p>
+    <div id="meList"></div>
+  </div>
+</dialog>
+
+<!-- 대원 명단 (관리자) -->
+<dialog id="rosterDlg" aria-labelledby="rosterTitle">
+  <form id="rosterForm" novalidate>
+    <h2 id="rosterTitle">대원 명단</h2>
+    <p class="hint">한 줄에 한 명씩 <b>이름 파트</b>로 적어 주세요. 파트: 소프라노 · 알토 · 테너 · 베이스 · 기타<br>예: 홍길동 테너</p>
+    <label class="field">명단<textarea name="list" rows="12" placeholder="홍길동 테너&#10;김영희 소프라노"></textarea></label>
+    <p class="err" id="rosterErr" role="alert" hidden></p>
+    <div class="actions">
+      <button type="button" class="btn" id="rosterCancel">취소</button>
+      <button type="submit" class="btn primary">저장</button>
+    </div>
+  </form>
+</dialog>
+
 <dialog id="printDlg" aria-labelledby="printDlgTitle">
   <form method="dialog">
     <div class="dlghead"><h2 id="printDlgTitle">인쇄 방향</h2><button type="button" class="btn" id="printCancel">닫기</button></div>
@@ -1138,7 +1200,7 @@ function busy(btn, on, label) {
 }
 
 /* ===== 화면 상태 ===== */
-let events = [], notices = [], rehearsals = [];
+let events = [], notices = [], rehearsals = [], roster = []; // roster: 대원 명단 [{ name, part }] (참석 응답용)
 let loadState = 'loading', loadMsg = '', staleMsg = '', refreshing = false, lastLoadAt = 0, slowLoad = false;
 let viewY = +TODAY.slice(0, 4), viewM = +TODAY.slice(5, 7);
 const thisPeriod = () => Math.floor((+TODAY.slice(5, 7) - 1) / 2); // 오늘이 속한 2개월 구간 (0=1·2월 … 5=11·12월)
@@ -1245,12 +1307,13 @@ function applyData(d) {
   events = sorted(d.events || []);
   notices = Array.isArray(d.notices) ? d.notices : [];
   rehearsals = (Array.isArray(d.rehearsals) ? d.rehearsals : []).sort((a, b) => b.date.localeCompare(a.date));
+  roster = Array.isArray(d.roster) ? d.roster : [];
 }
 
 let cachedAt = 0; // 휴대폰에 기억한 내용의 시각
 function saveCache() {
   cachedAt = Date.now();
-  try { localStorage.setItem(CACHE_KEY, JSON.stringify({ events, notices, rehearsals, at: cachedAt })); } catch {}
+  try { localStorage.setItem(CACHE_KEY, JSON.stringify({ events, notices, rehearsals, roster, at: cachedAt })); } catch {}
 }
 
 function readCache() {
@@ -1833,6 +1896,7 @@ function renderPublic() {
     $('shareBtn').hidden = !heroEvents.some(hasLinks); // 보낼 링크가 없으면 숨김
     $('shareMsg').hidden = true;
   }
+  renderRsvp();
 
   const rehearsalMode = mode === 'rehearsal' && !query;
   const liveMode = mode === 'live' && !query;
@@ -2002,7 +2066,7 @@ function settle(op, res) {
 }
 function mutate(body, applyNow, okMsg, undo, reopen) {
   body = { ...body, rid: newId() }; // 같은 요청을 여러 번 보내도 서버는 한 번만 처리 (늦게 온 사본이 뒤의 저장을 덮지 않게)
-  if (!ops.length) confirmed = { events, notices, rehearsals };
+  if (!ops.length) confirmed = { events, notices, rehearsals, roster };
   const op = { applyNow };
   ops.push(op);
   saving = true; // 저장이 끝날 때까지 자동 새로고침을 멈춤
@@ -2141,6 +2205,8 @@ function renderEditor() {
   $('pastBtn').hidden = !pastCount || !!edQuery;
   $('pastBtn').textContent = showPast ? '지난 일정 숨기기' : `지난 일정 ${pastCount}건 보기`;
   $('addBtn').disabled = $('bulkBtn').disabled = locked;
+  renderRsvpAdmin();
+  loadRsvpAdmin();
   $('edSearchClear').hidden = !edQuery;
 
   const changed = reChanged().length;
@@ -2799,6 +2865,7 @@ function openNoticeEdit(focusIndex = 0, values = notices) {
   f.n1.value = values[0] || '';
   f.n2.value = values[1] || '';
   $('noticeErr').hidden = true;
+  $('noticePushChk').checked = false;
   openDlg($('noticeEditDlg'));
   const box = focusIndex === 1 ? f.n2 : f.n1;
   box.focus();
@@ -2808,8 +2875,11 @@ $('noticeForm').addEventListener('submit', e => {
   e.preventDefault();
   const f = e.target;
   const next = [f.n1.value.trim(), f.n2.value.trim()];
+  // 알림은 새로 쓰거나 바꾼 공지만 (지우기만 한 공지는 세지 않음)
+  const changed = next.filter((t, i) => t && t !== String(notices[i] || '').trim());
+  const notify = $('noticePushChk').checked && changed.length ? { count: changed.length, desc: changed[0].replace(/\s+/g, ' ').slice(0, 30) } : null;
   closeDlg($('noticeEditDlg'));
-  mutate({ action: 'notices', token, notices: next },
+  mutate({ action: 'notices', token, notices: next, ...(notify && { notify }) },
     () => { notices = next; },
     '공지사항이 저장되었습니다.', null, () => openNoticeEdit(0, next));
 });
@@ -2875,7 +2945,7 @@ function closeDlg(dlg) {
 function askClose(dlg) {
   if (!isDirty(dlg) || confirm(DISCARD_MSG)) closeDlg(dlg);
 }
-['dlg', 'bulkDlg', 'noticeEditDlg', 'rDlg'].forEach(id => {
+['dlg', 'bulkDlg', 'noticeEditDlg', 'rDlg', 'rosterDlg'].forEach(id => {
   const dlg = $(id);
   dlg.addEventListener('cancel', e => { // Esc·뒤로가기
     if (isDirty(dlg) && !confirm(DISCARD_MSG)) {
@@ -3258,6 +3328,118 @@ if (/KAKAOTALK/i.test(navigator.userAgent)) {
     try { localStorage.setItem(KAKAO_KEY, '1'); } catch {}
   };
 }
+
+/* ===== 이번 주일 참석 응답 =====
+   대원: 남색 영역에서 이름을 한 번 고르고(이 기기에 기억) [참석]/[불참] — 다시 누르면 바뀜. 응답은 관리자만 봄
+   관리자: 편집 화면 위 파트별 표 + [대원 명단]에서 "이름 파트" 줄로 명단 입력 */
+const ROSTER_PARTS = ['소프라노', '알토', '테너', '베이스', '기타'];
+const ME_KEY = 'choir-me', RSVP_KEY = 'choir-rsvp';
+const lsGet = k => { try { return localStorage.getItem(k); } catch { return null; } };
+const lsSet = (k, v) => { try { localStorage.setItem(k, v); } catch {} };
+let rsvpBusy = false, rsvpMsg = '';
+function renderRsvp() {
+  const box = $('rsvp');
+  box.hidden = !roster.length || $('hero').hidden;
+  if (box.hidden) return;
+  const me = lsGet(ME_KEY), date = nextSunday(), member = roster.find(m => m.name === me);
+  const label = `${md(date)}(일) 찬양`;
+  if (!member) return box.replaceChildren(el('span', { class: 'q' }, `${label} 참석 응답`), el('button', { type: 'button', class: 'pick', onclick: openMe }, '내 이름 고르기'));
+  let mine = null;
+  try { const r = JSON.parse(lsGet(RSVP_KEY)); if (r && r.date === date && r.name === me) mine = r.answer; } catch {}
+  const pick = a => el('button', { type: 'button', class: 'pick', 'aria-pressed': String(mine === a), disabled: rsvpBusy, onclick: () => sendRsvp(date, me, a) }, a);
+  box.replaceChildren(el('span', { class: 'q' }, `${label}에 참석하시나요?`), pick('참석'), pick('불참'),
+    el('span', { class: 'who', role: 'status' }, `${member.name} (${member.part}) `, el('button', { type: 'button', onclick: openMe }, '이름 바꾸기'), rsvpMsg && ` · ${rsvpMsg}`));
+}
+async function sendRsvp(date, name, answer) {
+  rsvpBusy = true;
+  rsvpMsg = '보내는 중…';
+  renderRsvp();
+  try {
+    await api({ action: 'rsvp', date, name, answer });
+    lsSet(RSVP_KEY, JSON.stringify({ date, name, answer }));
+    rsvpMsg = `${answer}으로 알렸습니다`;
+  } catch (e) {
+    rsvpMsg = e.server ? e.message : '보내지 못했습니다. 잠시 후 다시 눌러 주세요.';
+  }
+  rsvpBusy = false;
+  renderRsvp();
+}
+function openMe() {
+  const me = lsGet(ME_KEY);
+  $('meList').replaceChildren(...ROSTER_PARTS.flatMap(p => {
+    const ms = roster.filter(m => m.part === p);
+    return ms.length ? [el('p', { class: 'mepart' }, p), el('div', { class: 'menames' }, ...ms.map(m =>
+      el('button', { type: 'button', class: 'btn' + (m.name === me ? ' primary' : ''), onclick: () => {
+        lsSet(ME_KEY, m.name);
+        rsvpMsg = '';
+        $('meDlg').close();
+        renderRsvp();
+      } }, m.name)))] : [];
+  }));
+  $('meDlg').showModal();
+}
+$('meClose').onclick = () => $('meDlg').close();
+
+// 관리자: 이번 주일 응답 (1분에 한 번만 서버에서 다시 받음)
+let rsvpAns = { date: '', at: 0, list: null };
+async function loadRsvpAdmin(force) {
+  const date = nextSunday();
+  if (!token || !roster.length || (!force && rsvpAns.date === date && Date.now() - rsvpAns.at < 60000)) return;
+  rsvpAns = { date, at: Date.now(), list: rsvpAns.date === date ? rsvpAns.list : null };
+  try { rsvpAns.list = (await api({ action: 'rsvplist', token, date })).answers || []; } catch { rsvpAns.at = 0; }
+  renderRsvpAdmin();
+}
+function renderRsvpAdmin() {
+  const box = $('rsvpAdmin');
+  box.hidden = !roster.length;
+  if (box.hidden) return;
+  const date = nextSunday(), list = rsvpAns.date === date ? rsvpAns.list : null;
+  const ans = Object.fromEntries((list || []).map(a => [a.name, a.answer]));
+  const pick = (ms, a) => ms.filter(m => (ans[m.name] || '') === a).map(m => m.name);
+  const cell = names => el('td', {}, `${names.length}명`, names.length > 0 && el('small', {}, names.join(', ')));
+  const row = (label, ms) => el('tr', {}, el('th', { scope: 'row' }, label), cell(pick(ms, '참석')), cell(pick(ms, '불참')), cell(pick(ms, '')));
+  const parts = ROSTER_PARTS.filter(p => roster.some(m => m.part === p));
+  box.replaceChildren(el('h2', {}, `${md(date)}(일) 찬양 참석 응답`),
+    list ? el('table', {}, el('thead', {}, el('tr', {}, ...['파트', '참석', '불참', '미응답'].map(t => el('th', { scope: 'col' }, t)))),
+      el('tbody', {}, ...parts.map(p => row(p, roster.filter(m => m.part === p))), row('합계', roster)))
+      : el('p', { class: 'hint' }, '응답을 불러오는 중…'),
+    el('button', { type: 'button', class: 'linkbtn', onclick: () => loadRsvpAdmin(true) }, '새로 불러오기'));
+}
+
+$('rosterBtn').onclick = () => {
+  $('rosterForm').list.value = roster.map(m => `${m.name} ${m.part}`).join('\n');
+  $('rosterErr').hidden = true;
+  openDlg($('rosterDlg'));
+};
+$('rosterCancel').onclick = () => askClose($('rosterDlg'));
+$('rosterForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const text = e.target.list.value, bad = [], list = [], seen = new Set();
+  text.split('\n').map(l => l.trim()).filter(Boolean).forEach((line, i) => {
+    const m = line.match(/^(.+?)\s+(\S+)$/), part = m && ROSTER_PARTS.find(p => p === m[2]);
+    const name = m && m[1].trim();
+    if (!part || name.length > 20) return bad.push(`${i + 1}번째 줄 "${line}"`);
+    if (seen.has(name)) return bad.push(`같은 이름 "${name}"`);
+    seen.add(name);
+    list.push({ name, part });
+  });
+  if (bad.length) {
+    $('rosterErr').textContent = `확인해 주세요: ${bad.join(', ')} — 한 줄에 "이름 파트" (파트: ${ROSTER_PARTS.join('·')})`;
+    $('rosterErr').hidden = false;
+    return;
+  }
+  closeDlg($('rosterDlg'));
+  mutate({ action: 'roster', token, list }, () => { roster = list; },
+    `대원 명단을 저장했습니다 (${list.length}명).`, null, () => { openDlg($('rosterDlg')); $('rosterForm').list.value = text; });
+});
+
+/* ===== 캘린더 구독 (api/cal.js) ===== */
+const CAL_URL = 'https://yjpraisecal.vercel.app/api/cal';
+$('calBtn').onclick = () => $('calDlg').showModal();
+$('calClose').onclick = () => $('calDlg').close();
+$('calCopy').onclick = () => navigator.clipboard.writeText(CAL_URL).then(
+  () => { $('calMsg').textContent = '주소를 복사했습니다. 캘린더 앱의 [구독 추가]·[URL로 추가]에 붙여 넣으세요.'; },
+  () => { $('calMsg').textContent = `주소: ${CAL_URL}`; });
 
 /* ===== 일정 알림 받기 (웹 푸시) =====
    [알림 받기]를 누른 기기를 서버(Code.gs '알림구독' 시트)에 등록. 아이폰은 홈 화면에 추가한 앱에서만 됨
