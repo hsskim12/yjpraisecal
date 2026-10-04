@@ -1253,6 +1253,8 @@ async function send(body, query, ms, stop, keepalive = false) {
       ? await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(body), signal: ac.signal, keepalive })
       : await fetch(`${API_URL}${API_URL.includes('?') ? '&' : '?'}${new URLSearchParams({ ...query, t: Date.now() })}`, { signal: ac.signal });
     const data = await res.json(); // 구글이 오류 화면(HTML)을 주면 여기서 실패 → 다른 요청의 답을 기다림
+    // 서버가 바빠 기다리다 끝난 사본 — 먼저 보낸 사본이 아직 저장 중일 수 있으니 실패로 끝내지 않고 다른 사본의 답을 기다림
+    if (data.error === 'busy') throw new Error(data.message || 'busy');
     if (!data.ok) {
       const auth = data.error === 'auth';
       throw Object.assign(new Error(auth ? '로그인이 만료되었습니다. 다시 로그인해 주세요.' : data.error || '요청에 실패했습니다.'), { auth, server: true });
@@ -2027,6 +2029,8 @@ $('loginForm').addEventListener('submit', async e => {
 // 실패 알림은 직접 닫을 때까지 남겨 둠 (놓치면 저장된 줄 알 수 있으므로)
 function flash(msg, isErr, undo) {
   const s = $('edStatus');
+  // 실패 알림이 떠 있으면 뒤이은 성공 알림으로 덮지 않음 (실패한 수정과 [입력한 내용 다시 열기]가 모르게 사라지지 않게 — ✕로 닫음)
+  if (!isErr && s.classList.contains('err') && s.childElementCount) return;
   const hide = () => { clearTimeout(flash.t); s.replaceChildren(); };
   s.className = 'status' + (isErr ? ' err' : '');
   s.replaceChildren(...[el('span', {}, msg), // 없는 버튼(false·undefined)이 글자로 찍히지 않게 걸러 냄
@@ -2305,8 +2309,20 @@ function startDrag(e, from) {
 function saveBoard() {
   const { slots, contents } = board;
   const saves = [], deletes = [], saved = [];
-  reChanged().forEach(s => {
-    const c = contents[slots.indexOf(s)];
+  const moved = reChanged();
+  // 옮겨 놓은 사이 다른 기기에서 바뀐 내용을 옛 값으로 덮지 않게: 곡 내용은 지금 목록(events)의 최신 값에서 가져옴
+  const byId = Object.fromEntries(events.map(e => [e.id, e]));
+  const gone = moved.map(s => contents[slots.indexOf(s)]).find(c => c && !byId[c.srcId]);
+  const taken = moved.find(s => !s.id && events.some(e => e.date === s.date && typeOf(e) === s.type));
+  if (gone || taken) {
+    board = null;
+    sel.clear();
+    renderEditor();
+    return flash(gone ? `그사이 지워진 곡(「${gone.title}」)이 있어 옮긴 순서를 취소했습니다. 다시 옮겨 주세요.`
+      : `그사이 ${md(taken.date)}에 새 곡이 들어와 옮긴 순서를 취소했습니다. 다시 옮겨 주세요.`, true);
+  }
+  moved.forEach(s => {
+    const c = contents[slots.indexOf(s)] && byId[contents[slots.indexOf(s)].srcId];
     if (!c) { deletes.push(s.id); return; } // 곡이 빠져나간 자리는 지움
     const id = s.id || newId();
     const event = { date: s.date, type: s.type, ...Object.fromEntries(CONTENT_KEYS.map(k => [k, c[k] ?? (k === 'parts' ? {} : ['scores', 'refs'].includes(k) ? [] : '')])) };
@@ -2824,7 +2840,7 @@ $('bulkForm').addEventListener('submit', e => {
     const parts = collectParts(p => r.parts[p].value, where, bad);
     const scores = cleanLines(r.scores.value, '악보', where, bad);
     const live = cleanLive(r.live.value, where, bad);
-    const id = newId();
+    const id = r.id || (r.id = newId()); // 다시 저장해도 같은 번호 → 서버가 덮어써서 두 번 들어가지 않음
     const event = { date: r.date, type, title, conductor: r.conductor.value.trim(), pianist: r.pianist.value.trim(), parts, scores, refs: [], note: '', live };
     saves.push({ id, event });
     saved.push({ ...event, id });
