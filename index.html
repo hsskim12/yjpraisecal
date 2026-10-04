@@ -328,7 +328,17 @@
     body.pc:has(#topZone:not([hidden])) > main.wrap { grid-column: 3; grid-row: 2; max-width: none; margin: 0; padding-inline: 0; }
     body.pc:has(#topZone:not([hidden])) > #topZone { grid-column: 4; grid-row: 2; position: sticky; top: 16px; margin-top: 24px; max-height: calc((100vh - 32px) / var(--z, 1)); overflow-y: auto; overscroll-behavior: contain; border-radius: 22px; }
     body.pc #topZone .hero { border-radius: 22px; }
-    body.pc #topZone .hero > .wrap { padding: 14px 20px 16px; }
+    body.pc #topZone .hero > .wrap { padding: 10px 18px 8px; }
+    /* PC 이번 주 칸은 세로를 줄임 (2026-10-04 사용자 요청) — 마우스로 누르므로 버튼은 실제 36~44px, ✎는 제목 옆으로. 높이는 / var(--z)로 글자 배율과 상관없이 같게 */
+    body.pc #topZone .herosong { position: relative; }
+    body.pc #topZone .herosong h3 { margin: 4px 0 0; font-size: 30px; }
+    body.pc #topZone .herosong:has(.heroedit) h3 { padding-right: 52px; }
+    body.pc #topZone .heroedit { position: absolute; top: 0; right: 0; margin: 0; }
+    body.pc #topZone .herolinks { margin-top: 8px; gap: 6px; }
+    body.pc #topZone :is(.herolinks a, .herolinks button) { min-height: calc(38px / var(--z, 1)); padding-block: 2px; }
+    body.pc #topZone .heroparts { margin-top: 6px; gap: 6px; }
+    body.pc #topZone .heroparts a { min-height: calc(44px / var(--z, 1)); padding-block: 2px; }
+    body.pc #topZone .heroshare { margin-top: 2px; min-height: calc(36px / var(--z, 1)); }
     body.pc #topZone .notices { margin: 12px 0 0; }
     /* 보기 메뉴: 화면 아래에 떠 있지 않고 제자리 메뉴로 (영상 창이 열려도 가리지 않음) */
     body.pc:has(#topZone:not([hidden])) .modebar { position: static; transform: none; width: auto; margin: 0; padding: 8px; gap: 4px; border-radius: 18px; box-shadow: 0 4px 14px rgb(16 24 40 / .10); }
