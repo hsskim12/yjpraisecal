@@ -61,6 +61,10 @@
   body.mid { zoom: .9; }
   body.big { zoom: 1.1; }
   body.small :is(.player, .modebar) { zoom: calc(1 / .75); } /* 재생창·아래 메뉴는 원래 크기 그대로 (누르기 쉽게) */
+  /* 작게(0.75배)에서도 보조 글씨는 실제 13.5px, 누르는 칸은 실제 44px 아래로 내려가지 않게 (2026-10-04 시안 A) — 제목·이번 주 곡 제목은 작은 그대로 */
+  body.small :is(.summary, .date .dow, .date .kind, .chip small, .monthsep, .people, .heroppl, .label, .done, .badge, .eyebrow, footer, .themebtn, .linkbtn, .herolinks a, .heroparts a small, .heroshare, .tplabel, .ver, .brand small, .topnav .btn, .herodate em, .noticebar .tag, .heroparts a i, .rsvp, .rsvp .pick) { font-size: 18px; }
+  body.small #fontBtn { font-size: 18px; } /* #fontBtn 자체 규칙이 더 강해서 따로 */
+  body.small :is(.chip, .themebtn, .linkbtn, .arrow, .topnav .btn, .heroshare, .heroparts a, .herolinks a, .btn, .rsvp .pick) { min-height: 58px; }
   body.mid :is(.player, .modebar) { zoom: calc(1 / .9); }
   /* 글자 크기 기준 (2026-09-28): 본문 16px, 보조 글자 15px 이상, 지휘·반주·월 구분 16px. 14px은 칸이 좁아 더 키우면 잘리는 곳(파트 이름 등)에만 */
   body.big .player { zoom: calc(1 / 1.1); } /* 재생창은 확대하지 않음 (영상이 화면 밖으로 넘치지 않게) */
@@ -112,10 +116,11 @@
   /* 이번 주일 참석 응답 (남색 영역 안) */
   .rsvp { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 10px 0 2px; padding: 10px 12px; border-radius: 14px; background: rgb(255 255 255 / .1); font-size: 15px; }
   .rsvp .q { flex-basis: 100%; font-weight: 700; }
+  .rsvp .q b { color: #ffe08a; } /* 날짜를 이번 주 찬양 날짜와 같은 노랑으로 — 위에 집회가 보여도 주일 응답임을 분명히 */
   .rsvp .pick { flex: 1 1 0; min-height: 40px; padding: 4px 16px; border: 1px solid rgb(255 255 255 / .6); border-radius: 999px; background: none; color: #fff; font-size: 16px; font-weight: 700; }
   .rsvp .pick[aria-pressed="true"] { background: #fff; color: var(--navy); border-color: #fff; }
   .rsvp .who { flex-basis: 100%; color: rgb(255 255 255 / .8); }
-  .rsvp .who button { border: 0; background: none; padding: 6px 4px; margin: -6px 0; color: #fff; font: inherit; font-weight: 600; text-decoration: underline; }
+  .rsvp .who button { border: 0; background: none; min-height: 44px; padding: 6px 4px; margin: -10px 0; color: #fff; font: inherit; font-weight: 600; text-decoration: underline; }
   .mepart { margin: 12px 0 4px; font-size: 15px; font-weight: 700; color: var(--muted); }
   .menames { display: flex; flex-wrap: wrap; gap: 8px; }
   .rsvpadmin { margin: 0 0 14px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; background: #fff; font-size: 15px; }
@@ -269,7 +274,7 @@
   .rinfo small { color: var(--muted); font-size: 15px; }
 
   /* 월이 바뀌는 지점 구분선 */
-  .monthsep { margin: 0; display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 16px; font-weight: 700; }
+  .monthsep { margin: 0; display: flex; align-items: center; gap: 10px; color: var(--ink); font-size: 16px; font-weight: 700; }
   .monthsep::before, .monthsep::after { content: ""; flex: 1; height: 1px; background: var(--line); }
 
   /* 일정 카드 */
@@ -379,7 +384,10 @@
   .playerhead a { color: #cdd8ec; font-size: 15px; flex-shrink: 0; display: inline-flex; align-items: center; min-height: 44px; padding: 0 6px; }
   .playerhead b { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; white-space: normal !important; }
   .playerparts { flex: 1; min-width: 0; display: flex; gap: 6px; }
-  .player.withparts .playerhead b { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); } /* 화면 읽기용 */
+  /* 파트 버튼이 있으면 곡 제목 한 줄 + 아랫줄에 파트 버튼 (무슨 곡을 듣는지 늘 보이게) */
+  .player.withparts .playerhead { flex-wrap: wrap; row-gap: 6px; }
+  .player.withparts .playerhead b { flex: 1 1 calc(100% - 60px); -webkit-line-clamp: 1; line-clamp: 1; }
+  .player.withparts .playerparts { order: 2; flex-basis: 100%; }
   .player.withparts #playerOpen { display: none; }
   .playerparts button { flex: 1; min-width: 0; padding: 0; min-height: 40px; border: 0; border-radius: 9px; background: rgb(255 255 255 / .14); color: #fff; font-size: 16px; font-weight: 700; }
   .playerparts button[aria-pressed="true"] { background: #fff; color: var(--navy); }
@@ -520,6 +528,9 @@
   .bulkhead input { flex: 1; min-width: 0; font: inherit; padding: 9px 10px; border: 1px solid var(--line); border-radius: 9px; color: var(--navy); }
   .bulkpeople { margin-bottom: 8px; }
   .bulkpeople input { font: inherit; padding: 8px 10px; border: 1px solid var(--line); border-radius: 9px; min-width: 0; color: var(--navy); }
+  .linkfold { margin: 0 0 14px; border: 1px solid var(--line); border-radius: 12px; padding: 4px 12px; }
+  .linkfold[open] { padding-bottom: 10px; }
+  .linkfold > summary { cursor: pointer; min-height: 44px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 16px; font-weight: 700; color: var(--navy); }
   .bulkday summary { cursor: pointer; font-size: 15px; font-weight: 600; color: var(--navy); padding: 4px 0; }
   .bulkday textarea { color: var(--navy); }
   .partpreview { grid-column: 1 / -1; }
@@ -1025,6 +1036,8 @@
     </div>
     <datalist id="conductorList"></datalist>
     <datalist id="pianistList"></datalist>
+    <details class="linkfold" id="linkFold">
+    <summary>영상 · 악보 · 실황 링크 <span class="hint" id="linkCount"></span></summary>
     <fieldset id="partFields"><legend>유튜브 파트 연습 링크 <span class="hint">(선택)</span></legend></fieldset>
     <label class="field">악보 링크 <span class="hint">(한 줄에 하나 · 링크 앞에 이름을 붙일 수 있어요)</span>
       <textarea name="scores" rows="3" placeholder="https://drive.google.com/...&#10;소프라노 악보 https://..."></textarea>
@@ -1040,6 +1053,7 @@
       <button type="button" class="iconbtn" id="liveSearch" title="실황 영상 유튜브에서 찾기" aria-label="실황 영상 유튜브에서 찾기">🔍</button>
       <div class="partpreview" id="pv-live" hidden></div>
     </div>
+    </details>
     <label class="field">안내 메모 <span class="hint">(선택)</span><textarea name="note" rows="3" maxlength="2000" placeholder="연습 시 참고할 내용"></textarea></label>
     <label class="checkrow"><input type="checkbox" id="pushChk"> <b>저장하면 알림 보내기</b> <span class="hint">(알림 받기를 켠 대원에게 · 밤 10시~아침 8시에 저장하면 아침 8시에 보냄)</span></label>
     <p class="err" id="formErr" role="alert" hidden></p>
@@ -1083,7 +1097,7 @@
 <dialog id="rosterDlg" aria-labelledby="rosterTitle">
   <form id="rosterForm" novalidate>
     <h2 id="rosterTitle">대원 명단</h2>
-    <p class="hint">한 줄에 한 명씩 <b>이름 파트</b>로 적어 주세요. 파트: 소프라노 · 알토 · 테너 · 베이스 · 기타<br>예: 홍길동 테너</p>
+    <p class="hint">한 줄에 한 명씩 <b>이름 파트</b>로 적어 주세요. 파트: 소프라노 · 알토 · 테너 · 베이스 · 기타 (S·A·T·B, 소프·알·테·베도 됩니다)<br>예: 홍길동 테너 / 김영희 S</p>
     <label class="field">명단<textarea name="list" rows="12" placeholder="홍길동 테너&#10;김영희 소프라노"></textarea></label>
     <p class="err" id="rosterErr" role="alert" hidden></p>
     <div class="actions">
@@ -2596,6 +2610,8 @@ function openForm(ev, asCopy, slot = null) {
   form.refs.value = (v.refs || []).join('\n');
   form.note.value = v.note || '';
   form.live.value = v.live || '';
+  $('linkFold').open = false; // 지휘·반주만 바꿀 때 링크 칸을 지나지 않게 접어 둠 (요약에 입력 개수)
+  linkCount();
   closePartPreviews();
   $('formErr').hidden = true;
   openDlg($('dlg'));
@@ -2719,6 +2735,7 @@ form.addEventListener('submit', async e => {
   if (!bad.length && dupParts.length && !confirm(`같은 영상이 두 곳에 들어 있습니다: ${dupParts.join(', ')}\n그래도 저장할까요?`)) return;
 
   if (bad.length) {
+    if (bad.some(b => /링크|악보|참고연주|실황/.test(b))) $('linkFold').open = true; // 접힌 칸의 잘못도 보이게
     $('formErr').textContent = badMsg(bad);
     $('formErr').hidden = false;
     return;
@@ -2755,6 +2772,14 @@ function changeDesc(prev, ev) {
   const ch = Object.keys(CHANGE_NAMES).filter(k => val(old, k) !== val(ev, k)).map(k => CHANGE_NAMES[k]);
   return `${md(ev.date)} ${ch.length ? ch.slice(0, 3).join('·') : `「${ev.title}」`}`;
 }
+
+// 접힌 링크 칸 요약: "영상 4/6 · 악보 1 · 참고 0 · 실황 있음"
+function linkCount() {
+  const lines = t => String(t || '').split('\n').filter(x => x.trim()).length;
+  const parts = PARTS.filter(p => form['part-' + p].value.trim()).length;
+  $('linkCount').textContent = `(영상 ${parts}/${PARTS.length} · 악보 ${lines(form.scores.value)} · 참고 ${lines(form.refs.value)} · 실황 ${form.live.value.trim() ? '있음' : '없음'})`;
+}
+$('linkFold').addEventListener('input', linkCount);
 
 /* ===== 집회 일정 한 번에 추가 =====
    집회는 보통 월~토처럼 며칠 이어지므로, 날짜별 칸을 한 창에서 채워 한 번에 저장 */
@@ -3349,6 +3374,10 @@ if (/KAKAOTALK/i.test(navigator.userAgent)) {
    대원: 남색 영역에서 이름을 한 번 고르고(이 기기에 기억) [참석]/[불참] — 다시 누르면 바뀜. 응답은 관리자만 봄
    관리자: 편집 화면 위 파트별 표 + [대원 명단]에서 "이름 파트" 줄로 명단 입력 */
 const ROSTER_PARTS = ['소프라노', '알토', '테너', '베이스', '기타'];
+// 명단 파트 줄임말: S·소프·Sop, A·알·Alto, T·테·Ten, B·베·Bass (대소문자 무관)
+const PART_ALIAS = { s: '소프라노', sop: '소프라노', soprano: '소프라노', 소프: '소프라노', 소: '소프라노', a: '알토', alto: '알토', 알: '알토',
+  t: '테너', ten: '테너', tenor: '테너', 테: '테너', b: '베이스', bass: '베이스', 베: '베이스', 기: '기타' };
+const partOf = w => ROSTER_PARTS.includes(w) ? w : PART_ALIAS[w.toLowerCase()] || null;
 const ME_KEY = 'choir-me', RSVP_KEY = 'choir-rsvp';
 const lsGet = k => { try { return localStorage.getItem(k); } catch { return null; } };
 const lsSet = (k, v) => { try { localStorage.setItem(k, v); } catch {} };
@@ -3358,12 +3387,12 @@ function renderRsvp() {
   box.hidden = !roster.length || $('hero').hidden;
   if (box.hidden) return;
   const me = lsGet(ME_KEY), date = nextSunday(), member = roster.find(m => m.name === me);
-  const label = `${md(date)}(일) 찬양`;
-  if (!member) return box.replaceChildren(el('span', { class: 'q' }, `${label} 참석 응답`), el('button', { type: 'button', class: 'pick', onclick: openMe }, '내 이름 고르기'));
+  const label = el('b', {}, `${md(date)}(일) 주일 찬양`);
+  if (!member) return box.replaceChildren(el('span', { class: 'q' }, label, ' 참석 응답'), el('button', { type: 'button', class: 'pick', onclick: openMe }, '내 이름 고르기'));
   let mine = null;
   try { const r = JSON.parse(lsGet(RSVP_KEY)); if (r && r.date === date && r.name === me) mine = r.answer; } catch {}
   const pick = a => el('button', { type: 'button', class: 'pick', 'aria-pressed': String(mine === a), disabled: rsvpBusy, onclick: () => sendRsvp(date, me, a) }, a);
-  box.replaceChildren(el('span', { class: 'q' }, `${label}에 참석하시나요?`), pick('참석'), pick('불참'),
+  box.replaceChildren(el('span', { class: 'q' }, label, '에 참석하시나요?'), pick('참석'), pick('불참'),
     el('span', { class: 'who', role: 'status' }, `${member.name} (${member.part}) `, el('button', { type: 'button', onclick: openMe }, '이름 바꾸기'), rsvpMsg && ` · ${rsvpMsg}`));
 }
 async function sendRsvp(date, name, answer) {
@@ -3432,7 +3461,7 @@ $('rosterForm').addEventListener('submit', e => {
   e.preventDefault();
   const text = e.target.list.value, bad = [], list = [], seen = new Set();
   text.split('\n').map(l => l.trim()).filter(Boolean).forEach((line, i) => {
-    const m = line.match(/^(.+?)\s+(\S+)$/), part = m && ROSTER_PARTS.find(p => p === m[2]);
+    const m = line.match(/^(.+?)\s+(\S+)$/), part = m && partOf(m[2]);
     const name = m && m[1].trim();
     if (!part || name.length > 20) return bad.push(`${i + 1}번째 줄 "${line}"`);
     if (seen.has(name)) return bad.push(`같은 이름 "${name}"`);
@@ -3440,7 +3469,7 @@ $('rosterForm').addEventListener('submit', e => {
     list.push({ name, part });
   });
   if (bad.length) {
-    $('rosterErr').textContent = `확인해 주세요: ${bad.join(', ')} — 한 줄에 "이름 파트" (파트: ${ROSTER_PARTS.join('·')})`;
+    $('rosterErr').textContent = `확인해 주세요: ${bad.join(', ')} — 한 줄에 "이름 파트" (예: 홍길동 테너, 김영희 S)`;
     $('rosterErr').hidden = false;
     return;
   }
