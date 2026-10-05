@@ -382,6 +382,7 @@
   .note.clamp { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 4; line-clamp: 4; overflow: hidden; }
   .notewrap { margin-top: 10px; } .notewrap .note { margin-top: 0; } .morebtn { margin: 4px 0 0 13px; }
   .notices:empty { display: none; }
+  .notices > [role="listitem"] { display: grid; } /* 목록 칸 안에서도 공지 버튼이 가로로 꽉 차게 */
   .muted { margin: 8px 0 0; color: var(--muted); font-size: 15px; }
   .empty { background: #fff; border: 1px dashed var(--line); border-radius: 14px; padding: 18px; text-align: center; color: var(--muted); margin: 0; }
   .emptyadd { display: block; width: 100%; font-size: 15px; cursor: pointer; }
@@ -751,7 +752,7 @@
   <!-- 쪽 제목 — 화면에는 로고가 대신하고, 화면 읽기 프로그램에는 이 글이 읽힘 -->
   <h1 class="sronly">찬양대 알리미 — 인천영종교회</h1>
   <section class="hero heroskel" id="heroSkel" hidden aria-hidden="true"><div class="wrap"><i></i><i></i><i></i><i></i></div></section>
-  <section class="hero" id="hero" hidden>
+  <section class="hero" id="hero" aria-label="이번 주 찬양" hidden>
     <div class="wrap">
       <p class="herotbd" id="heroTbd" hidden></p>
       <div class="herohead"> <!-- 한 줄: '9월 27일 [일요일] 주일 찬양 · 내일' (좁으면 구분만 아랫줄로) -->
@@ -797,7 +798,7 @@
 
   <!-- 공개 화면 -->
   <div id="publicView">
-    <div class="notices" id="notices"></div>
+    <div class="notices" id="notices" role="list" aria-label="공지사항"></div>
 
     <div id="schedule" hidden>
       <div class="searchrow">
@@ -1619,7 +1620,7 @@ function renderNotices() {
   const slots = notices.map((n, idx) => ({ text: String(n || '').trim(), idx })).filter(x => x.text);
   $('notices').replaceChildren(...slots.map(({ text: full, idx }, i) => {
     const flat = full.replace(/\s+/g, ' ');
-    return el('button', {
+    return el('div', { role: 'listitem' }, el('button', { // 화면 읽기 프로그램에 공지를 하나씩 따로 읽히게 (목록 항목)
       type: 'button', class: 'noticebar',
       onclick: () => {
         openNotice = idx;
@@ -1630,7 +1631,7 @@ function renderNotices() {
       },
     }, el('span', { class: 'tag' }, '공지'),
       el('span', { class: 'txt' }, flat), // 두 줄까지 보이고 넘치면 … (CSS)
-      el('span', { class: 'more', 'aria-hidden': 'true' }, '›')); // 눌러서 전체를 볼 수 있다는 표시
+      el('span', { class: 'more', 'aria-hidden': 'true' }, '›'))); // 눌러서 전체를 볼 수 있다는 표시
   }));
   // 두 줄 안에 다 보이고 링크도 없는 공지는 눌러도 새로 볼 게 없으므로 그냥 글로 둠
   $('notices').querySelectorAll('button.noticebar').forEach(b => {
