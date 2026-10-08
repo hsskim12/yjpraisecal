@@ -1121,6 +1121,19 @@
   </form>
 </dialog>
 
+<!-- 새 일정을 넣을 날에 같은 구분 일정이 있을 때 (관리자) -->
+<dialog id="shiftDlg" aria-labelledby="shiftTitle">
+  <form method="dialog">
+    <h2 id="shiftTitle">같은 날 같은 구분 일정이 있습니다</h2>
+    <p id="shiftMsg" style="white-space: pre-line"></p>
+    <div class="actions" style="flex-wrap: wrap">
+      <button type="submit" value="cancel" class="btn">취소</button>
+      <button type="submit" value="same" class="btn">같은 날 함께 저장</button>
+      <button type="submit" value="shift" class="btn primary">한 칸씩 밀기</button>
+    </div>
+  </form>
+</dialog>
+
 <dialog id="printDlg" aria-labelledby="printDlgTitle">
   <form method="dialog">
     <div class="dlghead"><h2 id="printDlgTitle">인쇄 방향</h2><button type="button" class="btn" id="printCancel">닫기</button></div>
@@ -2758,9 +2771,15 @@ form.addEventListener('submit', async e => {
   // 'ㅇ'처럼 아주 짧은 제목은 임시로 넣은 것일 수 있어 한 번 물어봄
   if (!$('tbdChk').checked && ev.title.length < 2 && !confirm(`제목이 "${ev.title}"로 아주 짧습니다. 그대로 저장할까요?\n곡이 아직 없으면 [곡 미정]에 체크해 주세요.`)) return;
 
-  // 같은 날, 같은 구분으로 이미 등록된 일정이 있으면 한 번 물어봄
+  // 같은 날, 같은 구분으로 이미 등록된 일정이 있으면: 새로 추가·복제는 [한 칸씩 밀기]/[같은 날 함께 저장]/[취소], 수정은 한 번 물어봄
   const dup = events.find(e => e.id !== editingId && e.date === ev.date && typeOf(e) === ev.type);
-  if (dup && !confirm(`${fmtDate(ev.date)}에 이미 "${dup.title}"(${typeLabel(ev.type)}) 일정이 있습니다.\n그래도 저장할까요?`)) return;
+  let shifted = [];
+  if (dup && !editingId) {
+    const moved = shiftChain(ev.date, ev.type);
+    const pick = await askShift(ev, dup, moved);
+    if (pick === 'cancel') return;
+    if (pick === 'shift') shifted = moved;
+  } else if (dup && !confirm(`${fmtDate(ev.date)}에 이미 "${dup.title}"(${typeLabel(ev.type)}) 일정이 있습니다.\n그래도 저장할까요?`)) return;
 
   // 새 일정도 사이트에서 고유 번호를 만들어 보냄 → 응답을 못 받아 다시 보내도 중복되지 않음
   const prev = editingId && events.find(e => e.id === editingId);
@@ -2768,6 +2787,15 @@ form.addEventListener('submit', async e => {
   if (!editingId) editingId = newId();
   const saved = { ...ev, id: editingId };
   closeDlg($('dlg'));
+  if (shifted.length) { // 새 곡 + 밀린 곡들을 한 번에 (서버는 중간에 실패하면 모두 되돌림)
+    const saves = [...shifted.map(e => ({ id: e.id, event: eventBody(e) })), { id: editingId, event: ev }];
+    const ids = new Set(saves.map(x => x.id));
+    mutate({ action: 'batch', token, saves, deletes: [], ...(notify && { notify: { ...notify, count: saves.length } }) },
+      () => { events = sorted([...events.filter(e => !ids.has(e.id)), ...shifted, saved]); },
+      `「${ev.title}」을(를) 저장하고 ${shifted.length}곡을 한 칸씩 밀었습니다.`, null, () => openForm(saved));
+    markSaved(saved.id);
+    return;
+  }
   mutate({ action: 'save', token, id: editingId, event: ev, ...(notify && { notify }) },
     () => { events = sorted([...events.filter(e => e.id !== saved.id), saved]); },
     `「${ev.title}」을(를) 저장했습니다.`, null, () => openForm(saved));
@@ -2785,6 +2813,25 @@ function changeDesc(prev, ev) {
   const val = (e, k) => JSON.stringify(e[k] ?? '');
   const ch = Object.keys(CHANGE_NAMES).filter(k => val(old, k) !== val(ev, k)).map(k => CHANGE_NAMES[k]);
   return `${md(ev.date)} ${ch.length ? ch.slice(0, 3).join('·') : `「${ev.title}」`}`;
+}
+
+// 그 날부터 같은 구분 일정을 빈 자리가 나올 때까지 한 칸씩 뒤로 — 집회 특송은 다음 날, 그 밖(주일 찬양 등)은 7일 뒤
+function shiftChain(date, type) {
+  const step = (ASSEMBLY_TYPES.includes(type) ? 1 : 7) * 864e5, moved = [];
+  for (let d = date; ; d = dayKey(utc(d) + step)) {
+    const here = events.filter(e => e.date === d && typeOf(e) === type);
+    if (!here.length) return moved;
+    here.forEach(e => moved.push({ ...e, date: dayKey(utc(d) + step) }));
+  }
+}
+const eventBody = e => ({ date: e.date, type: typeOf(e), ...Object.fromEntries(CONTENT_KEYS.map(k => [k, e[k] ?? (k === 'parts' ? {} : ['scores', 'refs'].includes(k) ? [] : '')])) });
+function askShift(ev, dup, moved) {
+  const list = moved.slice(0, 5).map(m => `· 「${m.title}」 ${md(events.find(e => e.id === m.id).date)} → ${md(m.date)}`);
+  $('shiftMsg').textContent = `${fmtDate(ev.date)}에 이미 「${dup.title}」(${typeLabel(ev.type)})이(가) 있습니다.\n[한 칸씩 밀기]를 누르면:\n${list.join('\n')}${moved.length > 5 ? `\n· 외 ${moved.length - 5}곡` : ''}`;
+  const d = $('shiftDlg');
+  d.returnValue = '';
+  d.showModal();
+  return new Promise(res => d.addEventListener('close', () => res(d.returnValue || 'cancel'), { once: true }));
 }
 
 // 접힌 링크 칸 요약: "영상 4/6 · 악보 1 · 참고 0 · 실황 있음"
