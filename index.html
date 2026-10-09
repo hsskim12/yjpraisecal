@@ -65,7 +65,9 @@
   /* 작게(0.75배)에서도 보조 글씨는 실제 13.5px, 누르는 칸은 실제 44px 아래로 내려가지 않게 (2026-10-04 시안 A) — 제목·이번 주 곡 제목은 작은 그대로 */
   body.small :is(.summary, .date .dow, .date .kind, .chip small, .monthsep, .people, .heroppl, .label, .done, .badge, .eyebrow, footer, .themebtn, .linkbtn, .herolinks a, .heroparts a small, .heroshare, .tplabel, .ver, .brand small, .topnav .btn, .herodate em, .noticebar .tag, .heroparts a i, .rsvp, .rsvp .pick) { font-size: 18px; }
   body.small #fontBtn { font-size: 18px; } /* #fontBtn 자체 규칙이 더 강해서 따로 */
-  body.small :is(.chip, .themebtn, .linkbtn, .arrow, .topnav .btn, .heroshare, .heroparts a, .herolinks a, .btn, .rsvp .pick) { min-height: 58px; }
+  body.small :is(.chip, .themebtn, .linkbtn, .arrow, .topnav .btn, .heroshare, .heroparts a, .herolinks a, .btn, .rsvp .pick, .pushpick) { min-height: 58px; }
+  body.small .herosong.compact .herolinks a { min-height: 58px; font-size: 18px; } /* 같은 날 두 곡의 작은 카드도 바닥 보정 (compact 규칙이 더 세서 따로) */
+  body.small .pushpick { font-size: 18px; }
   body.mid :is(.player, .modebar) { zoom: calc(1 / .9); }
   /* 글자 크기 기준 (2026-09-28): 본문 16px, 보조 글자 15px 이상, 지휘·반주·월 구분 16px. 14px은 칸이 좁아 더 키우면 잘리는 곳(파트 이름 등)에만 */
   body.big .player { zoom: calc(1 / 1.1); } /* 재생창은 확대하지 않음 (영상이 화면 밖으로 넘치지 않게) */
@@ -131,7 +133,8 @@
   .rsvpadmin table { width: 100%; border-collapse: collapse; }
   .rsvpadmin th, .rsvpadmin td { padding: 6px 4px; border-top: 1px solid var(--line); text-align: left; vertical-align: top; }
   .rsvpadmin td small { display: block; color: var(--muted); overflow-wrap: anywhere; }
-  .pushpick { display: flex; align-items: center; gap: 6px; font-size: 15px; font-weight: 600; }
+  .pushpick { display: flex; align-items: center; gap: 8px; min-height: 44px; font-size: 15px; font-weight: 600; }
+  .pushpick input { width: 24px; height: 24px; margin: 0; flex-shrink: 0; }
   .staleMsg { margin: 0 0 14px; font-size: 15px; color: var(--muted); }
 
   /* 공지사항 */
@@ -1305,6 +1308,7 @@ async function send(body, query, ms, stop, keepalive = false) {
     const data = await res.json(); // 구글이 오류 화면(HTML)을 주면 여기서 실패 → 다른 요청의 답을 기다림
     // 서버가 바빠 기다리다 끝난 사본 — 먼저 보낸 사본이 아직 저장 중일 수 있으니 실패로 끝내지 않고 다른 사본의 답을 기다림
     if (data.error === 'busy') throw new Error(data.message || 'busy');
+    if (data.error === 'conflict') throw Object.assign(new Error(data.message), { server: true, conflict: true });
     if (!data.ok) {
       const auth = data.error === 'auth';
       throw Object.assign(new Error(auth ? '로그인이 만료되었습니다. 다시 로그인해 주세요.' : data.error || '요청에 실패했습니다.'), { auth, server: true });
@@ -1936,7 +1940,7 @@ function renderPublic() {
     tbdFirst.forEach(e => { const k = typeLabel(typeOf(e)), d = `${md(e.date)}(${DOW[dowOf(e.date)]})`; byType.set(k, [...new Set([...(byType.get(k) || []), d])]); });
     $('heroTbd').textContent = [...byType].map(([k, ds]) => `${ds.join('·')} ${k}`).join(', ') + (tbdFirst.length ? ' (곡 미정)' : '');
     $('heroDate').replaceChildren(`${+nextDate.slice(5, 7)}월 ${+nextDate.slice(8, 10)}일`, el('em', {}, `${DOW[dowOf(nextDate)]}요일`));
-    $('heroCards').replaceChildren(...heroEvents.map((e, i) => heroSong(e, heroEvents.length > 1, i > 0))); // 두 번째 곡부터는 작게
+    $('heroCards').replaceChildren(...heroEvents.map(e => heroSong(e, heroEvents.length > 1, heroEvents.length > 1))); // 같은 날 여러 곡이면 모두 작은 카드로 (위계가 거꾸로 보이지 않게)
     $('shareBtn').onclick = () => shareEvents(heroEvents);
     $('shareBtn').hidden = !heroEvents.some(hasLinks); // 보낼 링크가 없으면 숨김
     $('shareMsg').hidden = true;
@@ -2086,7 +2090,7 @@ function flash(msg, isErr, undo) {
 // 로그인 만료면 로그인 화면으로, 그 밖의 오류는 편집 화면에 안내
 // reopen: 입력하던 창을 그대로 다시 여는 버튼 (저장에 실패해도 쓴 내용을 다시 치지 않게)
 function handleErr(err, reopen) {
-  if (err.unknown && !ops.length) load(); // 저장·삭제 결과를 모르면 최신 목록으로 확인
+  if ((err.unknown || err.conflict) && !ops.length) load(); // 저장·삭제 결과를 모르거나 다른 사람이 먼저 고쳤으면 최신 목록으로
   const btn = reopen && { label: '입력한 내용 다시 열기', run: reopen };
   if (err.auth) {
     setToken(null);
@@ -2103,6 +2107,7 @@ let ops = [];                  // 서버에 보내는 중인 변경 (applyNow �
 let confirmed = null;          // 서버가 마지막으로 확인해 준 내용
 let queue = Promise.resolve(); // 저장 요청을 한 줄로 세움
 function settle(op, res) {
+  dataGen++; // 저장이 끝날 때도 올림 — 저장 중에 [다시 불러오기]로 시작한 load()가 옛 목록을 적용하지 않게
   ops = ops.filter(o => o !== op);
   if (res) confirmed = res;
   applyData(confirmed);
@@ -2360,6 +2365,14 @@ function saveBoard() {
   const byId = Object.fromEntries(events.map(e => [e.id, e]));
   const gone = moved.map(s => contents[slots.indexOf(s)]).find(c => c && !byId[c.srcId]);
   const taken = moved.find(s => !s.id && events.some(e => e.date === s.date && typeOf(e) === s.type));
+  // 자리 주인 일정이 그사이 지워졌거나 날짜·구분이 바뀐 경우도 취소 (옛 날짜로 되돌리거나 되살리지 않게)
+  const changed = moved.find(s => s.id && (!byId[s.id] || byId[s.id].date !== s.date || typeOf(byId[s.id]) !== s.type));
+  if (changed) {
+    board = null;
+    sel.clear();
+    renderEditor();
+    return flash(`그사이 ${md(changed.date)} 일정이 바뀌어 옮긴 순서를 취소했습니다. 다시 옮겨 주세요.`, true);
+  }
   if (gone || taken) {
     board = null;
     sel.clear();
@@ -2372,7 +2385,7 @@ function saveBoard() {
     if (!c) { deletes.push(s.id); return; } // 곡이 빠져나간 자리는 지움
     const id = s.id || newId();
     const event = { date: s.date, type: s.type, ...Object.fromEntries(CONTENT_KEYS.map(k => [k, c[k] ?? (k === 'parts' ? {} : ['scores', 'refs'].includes(k) ? [] : '')])) };
-    saves.push({ id, event });
+    saves.push({ id, event, base: s.id ? byId[s.id].updated : undefined });
     saved.push({ ...event, id });
   });
   const touched = new Set([...deletes, ...saved.map(x => x.id)]);
@@ -2780,10 +2793,9 @@ form.addEventListener('submit', async e => {
   const dup = events.find(e => e.id !== editingId && e.date === ev.date && typeOf(e) === ev.type);
   let shifted = [];
   if (dup && !editingId) {
-    const moved = shiftChain(ev.date, ev.type);
-    const pick = await askShift(ev, dup, moved);
+    const pick = await askShift(ev, dup, shiftChain(ev.date, ev.type));
     if (pick === 'cancel') return;
-    if (pick === 'shift') shifted = moved;
+    if (pick === 'shift') shifted = shiftChain(ev.date, ev.type); // 창을 보는 사이 목록이 새로 왔을 수 있어 선택 뒤 다시 계산
   } else if (dup && !confirm(`${fmtDate(ev.date)}에 이미 "${dup.title}"(${typeLabel(ev.type)}) 일정이 있습니다.\n그래도 저장할까요?`)) return;
 
   // 새 일정도 사이트에서 고유 번호를 만들어 보냄 → 응답을 못 받아 다시 보내도 중복되지 않음
@@ -2793,7 +2805,7 @@ form.addEventListener('submit', async e => {
   const saved = { ...ev, id: editingId };
   closeDlg($('dlg'));
   if (shifted.length) { // 새 곡 + 밀린 곡들을 한 번에 (서버는 중간에 실패하면 모두 되돌림)
-    const saves = [...shifted.map(e => ({ id: e.id, event: eventBody(e) })), { id: editingId, event: ev }];
+    const saves = [...shifted.map(e => ({ id: e.id, event: eventBody(e), base: e.updated })), { id: editingId, event: ev }];
     const ids = new Set(saves.map(x => x.id));
     mutate({ action: 'batch', token, saves, deletes: [], ...(notify && { notify: { ...notify, count: saves.length } }) },
       () => { events = sorted([...events.filter(e => !ids.has(e.id)), ...shifted, saved]); },
@@ -2801,7 +2813,7 @@ form.addEventListener('submit', async e => {
     markSaved(saved.id);
     return;
   }
-  mutate({ action: 'save', token, id: editingId, event: ev, ...(notify && { notify }) },
+  mutate({ action: 'save', token, id: editingId, event: ev, base: prev?.updated, ...(notify && { notify }) }, // base: 열 때의 수정시각 — 그사이 남이 고쳤으면 서버가 거절
     () => { events = sorted([...events.filter(e => e.id !== saved.id), saved]); },
     `「${ev.title}」을(를) 저장했습니다.`, null, () => openForm(saved));
   markSaved(saved.id);
@@ -2951,18 +2963,20 @@ $('bulkForm').addEventListener('submit', async e => {
   const dup = events.find(e => saved.some(x => x.date === e.date && typeOf(e) === type));
   let shifted = [];
   if (dup) {
-    let work = events.map(e => ({ ...e }));
-    saved.forEach(x => {
-      const moved = shiftChain(x.date, type, work), at = Object.fromEntries(moved.map(m => [m.id, m.date]));
-      work = [...work.map(e => at[e.id] ? { ...e, date: at[e.id] } : e), x];
-    });
-    const orig = Object.fromEntries(events.map(e => [e.id, e.date]));
-    const moved = work.filter(e => orig[e.id] && orig[e.id] !== e.date);
-    const pick = await askShift({ date: dup.date, type }, dup, moved);
+    const plan = () => { // 지금 목록 기준으로 밀릴 곡들
+      let work = events.map(e => ({ ...e }));
+      saved.forEach(x => {
+        const moved = shiftChain(x.date, type, work), at = Object.fromEntries(moved.map(m => [m.id, m.date]));
+        work = [...work.map(e => at[e.id] ? { ...e, date: at[e.id] } : e), x];
+      });
+      const orig = Object.fromEntries(events.map(e => [e.id, e.date]));
+      return work.filter(e => orig[e.id] && orig[e.id] !== e.date);
+    };
+    const pick = await askShift({ date: dup.date, type }, dup, plan());
     if (pick === 'cancel') return;
-    if (pick === 'shift') shifted = moved;
+    if (pick === 'shift') shifted = plan(); // 창을 보는 사이 목록이 새로 왔을 수 있어 선택 뒤 다시 계산
   }
-  const all = [...shifted.map(e => ({ id: e.id, event: eventBody(e) })), ...saves], ids = new Set(all.map(x => x.id));
+  const all = [...shifted.map(e => ({ id: e.id, event: eventBody(e), base: e.updated })), ...saves], ids = new Set(all.map(x => x.id));
   const notify = $('bulkPushChk').checked ? { count: all.length, desc: `${md(saved[0].date)}~${md(saved[saved.length - 1].date)} ${typeLabel(type)}` } : null;
   closeDlg($('bulkDlg'));
   mutate({ action: 'batch', token, saves: all, deletes: [], ...(notify && { notify }) },
@@ -3478,7 +3492,8 @@ async function sendRsvp(date, name, answer) {
   rsvpMsg = '보내는 중…';
   renderRsvp();
   try {
-    await api({ action: 'rsvp', date, name, answer, ts: Date.now() }); // 누른 시각 — 늦게 도착한 이전 응답이 덮지 않게
+    const r = await api({ action: 'rsvp', date, name, answer, ts: Date.now() }); // 누른 시각 — 늦게 도착한 이전 응답이 덮지 않게
+    answer = r.answer || answer; // 서버에 남은 실제 응답 (더 나중 응답이 이미 있으면 그것)
     lsSet(RSVP_KEY, JSON.stringify({ date, name, answer }));
     rsvpMsg = `${answer}으로 알렸습니다`;
   } catch (e) {
