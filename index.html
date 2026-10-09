@@ -1171,6 +1171,9 @@ const typeLabel = type => ({ '주일 찬양': '주일', '대집회 특송': '집
 const TYPE_CUSTOM = '__custom__'; // 목록에 없는 구분을 직접 적을 때
 const UPCOMING_WEEKS = 8; // 첫 화면에 보여 줄 기간
 const URL_LINE = /^(.*?)\s*(https?:\/\/\S+)$/;
+// 이 기기 저장(localStorage)은 사생활 보호 모드 등에서 막힐 수 있어 늘 실패를 삼킴. lsSet(k, null)은 지움
+const lsGet = k => { try { return localStorage.getItem(k); } catch { return null; } };
+const lsSet = (k, v) => { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch {} };
 const TOKEN_KEY = 'choir-token', CACHE_KEY = 'choir-cache', BIG_KEY = 'choir-big', PART_KEY = 'choir-part', SORT_KEY = 'choir-sort', THEME_KEY = 'choir-theme';
 
 /* ===== 공통 도구 ===== */
@@ -1266,11 +1269,11 @@ const videoDates = m => (m === 'live' ? events.filter(e => liveUrl(e)).map(e => 
 const latestVideo = m => videoDates(m)[0] || TODAY;
 const videoStart = () => dayKey(utc(videoEnd) - (UPCOMING_WEEKS * 7 - 1) * 864e5);
 const inVideoWeeks = date => date >= videoStart() && date <= videoEnd;
-try { newestFirst = { ...newestFirst, ...JSON.parse(localStorage.getItem(SORT_KEY)) }; } catch {}
+try { newestFirst = { ...newestFirst, ...JSON.parse(lsGet(SORT_KEY)) }; } catch {}
 let myPart = '';            // 내 파트 (이 기기에만 저장)
-try { myPart = MY_PARTS.includes(localStorage.getItem(PART_KEY)) ? localStorage.getItem(PART_KEY) : ''; } catch {}
+myPart = MY_PARTS.includes(lsGet(PART_KEY)) ? lsGet(PART_KEY) : '';
 let token = null;
-try { token = localStorage.getItem(TOKEN_KEY); } catch {} // 이 기기에서 30일 로그인 유지 (서버가 기한 관리)
+token = lsGet(TOKEN_KEY); // 이 기기에서 30일 로그인 유지 (서버가 기한 관리)
 
 // 이 기기 번호 (로그인 실패를 기기마다 따로 세려고 — 남이 틀려서 관리자가 잠기지 않게)
 function deviceId() {
@@ -1283,7 +1286,7 @@ function deviceId() {
 
 function setToken(t) {
   token = t;
-  try { t ? localStorage.setItem(TOKEN_KEY, t) : localStorage.removeItem(TOKEN_KEY); } catch {}
+  lsSet(TOKEN_KEY, t || null);
 }
 
 /* ===== 서버(Apps Script) ===== */
@@ -1362,12 +1365,12 @@ function applyData(d) {
 let cachedAt = 0; // 휴대폰에 기억한 내용의 시각
 function saveCache() {
   cachedAt = Date.now();
-  try { localStorage.setItem(CACHE_KEY, JSON.stringify({ events, notices, rehearsals, roster, at: cachedAt })); } catch {}
+  lsSet(CACHE_KEY, JSON.stringify({ events, notices, rehearsals, roster, at: cachedAt }));
 }
 
 function readCache() {
   try {
-    const c = JSON.parse(localStorage.getItem(CACHE_KEY));
+    const c = JSON.parse(lsGet(CACHE_KEY));
     if (c && Array.isArray(c.events)) { cachedAt = +c.at || 0; return c; }
   } catch {}
   return null;
@@ -1671,6 +1674,21 @@ function shareNote(msg) {
 }
 
 // 이번 주 찬양을 카카오톡 등으로 보냄 (공유 창이 없는 컴퓨터에서는 복사)
+// 공유 창 → 없거나 안 열리면 복사 → 그래도 안 되면 안내 (say: 안내를 보여 줄 함수, 실패는 say(msg, true))
+async function shareText(title, text, say, failMsg) {
+  try {
+    if (navigator.share) return await navigator.share({ title, text });
+    await navigator.clipboard.writeText(text);
+    say('복사했습니다. 카카오톡에 붙여 넣으세요.');
+  } catch (e) {
+    if (e.name === 'AbortError') return; // 공유 창을 닫은 경우는 조용히 넘어감
+    try { // 공유 창이 열리지 않으면 복사로 대신함
+      await navigator.clipboard.writeText(text);
+      say('공유 창을 열지 못해 대신 복사했습니다. 카카오톡에 붙여 넣으세요.');
+    } catch { say(failMsg, true); }
+  }
+}
+
 async function shareEvents(list) {
   const url = location.origin + '/';
   const text = list.map((e, i) => [
@@ -1683,27 +1701,13 @@ async function shareEvents(list) {
     ...[...linkList(e.scores, '악보'), ...linkList(e.refs, '참고연주')].map(x => `${x.label}: ${x.url}`),
     liveUrl(e) && `실황: ${liveUrl(e)}`,
   ].filter(Boolean).join('\n\n')).join('\n\n\n'); // 링크마다 빈 줄을 두어 누를 때 옆 링크가 눌리지 않게
-  try {
-    if (navigator.share) await navigator.share({ title: '찬양대 알리미', text });
-    else {
-      await navigator.clipboard.writeText(text);
-      shareNote('복사했습니다. 카카오톡에 붙여 넣으세요.');
-    }
-  } catch (e) {
-    if (e.name === 'AbortError') return; // 공유 창을 닫은 경우는 조용히 넘어감
-    try { // 공유 창이 열리지 않으면 복사로 대신함
-      await navigator.clipboard.writeText(text);
-      shareNote('공유 창을 열지 못해 대신 복사했습니다. 카카오톡에 붙여 넣으세요.');
-    } catch {
-      shareNote('공유하지 못했습니다. 주소창의 사이트 주소를 복사해 보내 주세요.');
-    }
-  }
+  await shareText('찬양대 알리미', text, shareNote, '공유하지 못했습니다. 주소창의 사이트 주소를 복사해 보내 주세요.');
 }
 
 // 내 파트를 바꾸고 이 기기에 기억함 (파트 버튼을 누를 때마다 호출)
 function setMyPart(p) {
   myPart = p;
-  try { myPart ? localStorage.setItem(PART_KEY, myPart) : localStorage.removeItem(PART_KEY); } catch {}
+  lsSet(PART_KEY, myPart || null);
   // 다시 그리지 않고 표시만 바꿈 — 누른 버튼에 초점이 그대로 남음 (이번 주 찬양은 하얗게, 목록은 남색)
   document.querySelectorAll('[data-part]').forEach(a => {
     const on = a.dataset.part === p;
@@ -1740,17 +1744,8 @@ function rehearsalRow(r) {
 }
 
 // 영상 한 개 공유 (실황·연습 영상 줄의 [공유]) — 공유 창이 없으면 복사
-async function shareVideo(name, when, label, url) {
-  const text = [`「${name}」`, when, `${label}: ${url}`, `사이트: ${location.origin}/`].join('\n\n');
-  try {
-    if (navigator.share) await navigator.share({ title: name, text });
-    else { await navigator.clipboard.writeText(text); flash('복사했습니다. 카카오톡에 붙여 넣으세요.'); }
-  } catch (e) {
-    if (e.name === 'AbortError') return;
-    try { await navigator.clipboard.writeText(text); flash('공유 창을 열지 못해 대신 복사했습니다. 카카오톡에 붙여 넣으세요.'); }
-    catch { flash('공유하지 못했습니다. 영상 주소를 길게 눌러 복사해 주세요.', true); }
-  }
-}
+const shareVideo = (name, when, label, url) => shareText(name, [`「${name}」`, when, `${label}: ${url}`, `사이트: ${location.origin}/`].join('\n\n'),
+  flash, '공유하지 못했습니다. 영상 주소를 길게 눌러 복사해 주세요.');
 const SHARE_ICON = '<svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 8l5-5 5 5M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg>';
 const shareBtn = (name, onclick) => { // 그림은 미리 만든 고정 SVG (사용자 입력 아님)
   const b = el('button', { type: 'button', class: 'btn rshare', 'aria-label': `${name} 공유`, onclick }, '공유');
@@ -3019,12 +3014,12 @@ const THEMES = [
   { id: '3', dots: ['#12545c', '#a7481f'], name: '청록과 붉은 갈색' },
 ];
 let themeId = '1';
-try { const t = localStorage.getItem(THEME_KEY); if (THEMES.some(x => x.id === t)) themeId = t; } catch {}
+if (THEMES.some(x => x.id === lsGet(THEME_KEY))) themeId = lsGet(THEME_KEY);
 
 function applyTheme(id) {
   themeId = id;
   document.documentElement.dataset.theme = id;
-  try { localStorage.setItem(THEME_KEY, id); } catch {}
+  lsSet(THEME_KEY, id);
   $('themePick').querySelectorAll('.themebtn').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.theme === id)));
   // 휴대폰 맨 위 상태 표시줄 색도 함께 맞춤
   document.querySelector('meta[name="theme-color"]')
@@ -3050,7 +3045,7 @@ function applySize(size) {
   size === 'small' ? b.removeAttribute('data-size') : b.dataset.size = size; // 처음 크기가 아닐 때 버튼을 칠해 바뀐 상태임을 보임
   b.title = `글자 크기: 지금 ${now} — 누르면 ${label.replace(' 보기', '')}`;
   b.setAttribute('aria-label', b.title);
-  try { localStorage.setItem(BIG_KEY, size === 'big' ? '1' : size === 'mid' ? 'm' : 's'); } catch {}
+  lsSet(BIG_KEY, size === 'big' ? '1' : size === 'mid' ? 'm' : 's');
 }
 
 /* ===== 입력 창을 닫기 전 확인 =====
@@ -3143,7 +3138,7 @@ $('bimonthSel').append(...Array.from({ length: 6 }, (_, i) => el('option', { val
 $('bimonthSel').onchange = e => { viewB = +e.target.value; renderPublic(); };
 $('sortBtn').onclick = () => {
   newestFirst[mode] = !newestFirst[mode];
-  try { localStorage.setItem(SORT_KEY, JSON.stringify(newestFirst)); } catch {}
+  lsSet(SORT_KEY, JSON.stringify(newestFirst));
   renderPublic();
 };
 function movePeriod(direction) {
@@ -3198,7 +3193,7 @@ $('modeYear').onclick = () => chooseMode(() => showYear(viewY));
 let printStyle = null;
 let printOrientation = null;
 const PRINT_ORIENTATION_KEY = 'choir-print-orientation';
-const preferredPrintOrientation = style => { try { return localStorage.getItem(PRINT_ORIENTATION_KEY) || (style === 'glance' ? 'landscape' : 'portrait'); } catch { return style === 'glance' ? 'landscape' : 'portrait'; } };
+const preferredPrintOrientation = style => lsGet(PRINT_ORIENTATION_KEY) || (style === 'glance' ? 'landscape' : 'portrait');
 function setPrintPageOrientation(orientation) {
   let s = $('printPageStyle');
   if (!s) { s = document.createElement('style'); s.id = 'printPageStyle'; document.head.append(s); }
@@ -3217,7 +3212,7 @@ const pcMq = matchMedia('(min-width: 1080px)');
 // 폭 880px↑·높이 500px↑이면 방향과 상관없이 PC 화면 (가로로 편 폴드, 좁은 PC 창 — 2026-09-29·30 요청). 크게 보기는 이 폭에 칸이 모자라 1080px 전까지 휴대폰 화면 유지. 가로로 돌린 휴대폰은 높이가 낮아 해당 없음
 const wideMq = matchMedia('(min-width: 880px) and (min-height: 500px)');
 const PC_LAYOUT_KEY = 'choir-pc-layout';
-let pcLayout = (() => { try { return localStorage.getItem(PC_LAYOUT_KEY) === 'H' ? 'H' : 'B'; } catch { return 'B'; } })();
+let pcLayout = lsGet(PC_LAYOUT_KEY) === 'H' ? 'H' : 'B';
 const placePc = () => {
   const pc = pcMq.matches || (wideMq.matches && curSize() !== 'big'), two = pcLayout === 'H';
   document.body.classList.toggle('pc', pc);
@@ -3229,7 +3224,7 @@ const placePc = () => {
 };
 $('layoutBtn').onclick = () => {
   pcLayout = pcLayout === 'H' ? 'B' : 'H';
-  try { localStorage.setItem(PC_LAYOUT_KEY, pcLayout); } catch {}
+  lsSet(PC_LAYOUT_KEY, pcLayout);
   placePc();
 };
 pcMq.addEventListener('change', placePc); wideMq.addEventListener('change', placePc); placePc();
@@ -3240,7 +3235,7 @@ $('printDlg').addEventListener('cancel', () => { printStyle = null; });
 $('printDlg').querySelector('form').onsubmit = e => {
   e.preventDefault();
   printOrientation = new FormData(e.currentTarget).get('print-orientation');
-  try { localStorage.setItem(PRINT_ORIENTATION_KEY, printOrientation); } catch {}
+  lsSet(PRINT_ORIENTATION_KEY, printOrientation);
   $('printDlg').close();
   buildPrintSheet();
   requestAnimationFrame(() => requestAnimationFrame(() => setTimeout(() => window.print(), 100)));
@@ -3411,7 +3406,7 @@ function route() {
 const INSTALL_KEY = 'choir-install-hide';
 let installEvent = null;
 function showInstall(msg, canInstall) {
-  try { if (localStorage.getItem(INSTALL_KEY) === '1') return; } catch {}
+  if (lsGet(INSTALL_KEY) === '1') return;
   if (matchMedia('(display-mode: standalone)').matches || navigator.standalone) return; // 이미 앱으로 열었으면 안내 안 함
   $('installMsg').textContent = msg;
   $('installBtn').hidden = !canInstall;
@@ -3419,7 +3414,7 @@ function showInstall(msg, canInstall) {
 }
 $('installClose').onclick = () => {
   $('installBar').hidden = true;
-  try { localStorage.setItem(INSTALL_KEY, '1'); } catch {}
+  lsSet(INSTALL_KEY, '1');
 };
 $('installBtn').onclick = async () => {
   $('installBar').hidden = true;
@@ -3442,8 +3437,7 @@ const KAKAO_KEY = 'choir-kakao-hide';
 if (/KAKAOTALK/i.test(navigator.userAgent)) {
   const android = /Android/i.test(navigator.userAgent);
   const external = 'kakaotalk://web/openExternal?url=' + encodeURIComponent(location.href);
-  let hide = false;
-  try { hide = localStorage.getItem(KAKAO_KEY) === '1'; } catch {}
+  const hide = lsGet(KAKAO_KEY) === '1';
   if (!hide) {
     $('kakaoMsg').replaceChildren(...(android
       ? ['카카오톡 안에서 열렸습니다. 이대로 보셔도 되고, ', el('a', { href: external }, '크롬으로 열기'), '를 누르면 홈 화면에 추가할 수 있어요.']
@@ -3452,7 +3446,7 @@ if (/KAKAOTALK/i.test(navigator.userAgent)) {
   }
   $('kakaoClose').onclick = () => {
     $('kakaoBar').hidden = true;
-    try { localStorage.setItem(KAKAO_KEY, '1'); } catch {}
+    lsSet(KAKAO_KEY, '1');
   };
 }
 
@@ -3465,8 +3459,6 @@ const PART_ALIAS = { s: '소프라노', sop: '소프라노', soprano: '소프라
   t: '테너', ten: '테너', tenor: '테너', 테: '테너', b: '베이스', bass: '베이스', 베: '베이스', 기: '기타' };
 const partOf = w => ROSTER_PARTS.includes(w) ? w : PART_ALIAS[w.toLowerCase()] || null;
 const ME_KEY = 'choir-me', RSVP_KEY = 'choir-rsvp';
-const lsGet = k => { try { return localStorage.getItem(k); } catch { return null; } };
-const lsSet = (k, v) => { try { localStorage.setItem(k, v); } catch {} };
 let rsvpBusy = false, rsvpMsg = '';
 function renderRsvp() {
   const box = $('rsvp');
@@ -3574,8 +3566,7 @@ function renderEdNotes() {
   $('tbdWarn').hidden = !tbd.length;
   $('tbdWarn').textContent = `곡 미정 (2주 안): ${tbd.map(e => `${md(e.date)}(${DOW[dowOf(e.date)]}) ${typeLabel(typeOf(e))}`).join(' · ')}`;
   // 손가락으로 쓰는 기기에서 순서 바꾸기 안내 (한 번 닫으면 다시 안 뜸)
-  let hide = false;
-  try { hide = localStorage.getItem(DRAGTIP_KEY) === '1'; } catch {}
+  const hide = lsGet(DRAGTIP_KEY) === '1';
   $('dragTip').hidden = hide || !matchMedia('(pointer: coarse)').matches;
   // 알림 받는 기기 수 (편집 화면을 열 때 10분에 한 번만 서버에 물음)
   if (Date.now() - pushCountAt > 600000) {
@@ -3586,7 +3577,7 @@ function renderEdNotes() {
     }, () => { pushCountAt = 0; });
   }
 }
-$('dragTipClose').onclick = () => { $('dragTip').hidden = true; try { localStorage.setItem(DRAGTIP_KEY, '1'); } catch {} };
+$('dragTipClose').onclick = () => { $('dragTip').hidden = true; lsSet(DRAGTIP_KEY, '1'); };
 
 /* ===== 캘린더 구독 (api/cal.js) ===== */
 const CAL_URL = 'https://yjpraisecal.vercel.app/api/cal';
@@ -3610,17 +3601,15 @@ async function pushRender() {
   const on = !!sub && Notification.permission === 'granted';
   $('pushBtn').textContent = on ? '🔔 알림 끄기' : '🔔 알림 받기';
   $('pushBtn').hidden = false;
-  let hide = false;
-  try { hide = localStorage.getItem(PUSH_KEY) === '1'; } catch {}
+  const hide = lsGet(PUSH_KEY) === '1';
   if (!on && !hide && Notification.permission === 'default') {
     $('pushMsg').textContent = '새 찬양 일정이 올라오면 알림으로 알려 드려요.';
     $('pushOn').hidden = false;
     $('pushBar').hidden = false;
   }
   // 기기의 신청 정보가 바뀌었을 수 있어 일주일에 한 번 다시 등록 (같은 기기면 서버에서 덮어씀)
-  let at = 0;
-  try { at = +localStorage.getItem(PUSH_AT) || 0; } catch {}
-  if (on && Date.now() - at > 7 * 864e5) api({ action: 'subscribe', sub: sub.toJSON() }).then(() => { try { localStorage.setItem(PUSH_AT, Date.now()); } catch {} }).catch(() => {});
+  const at = +lsGet(PUSH_AT) || 0;
+  if (on && Date.now() - at > 7 * 864e5) api({ action: 'subscribe', sub: sub.toJSON() }).then(() => lsSet(PUSH_AT, Date.now()), () => {});
 }
 async function pushStart() {
   try {
@@ -3628,7 +3617,7 @@ async function pushStart() {
     const r = await navigator.serviceWorker.ready;
     const sub = await r.pushManager.getSubscription() || await r.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64bytes(VAPID) });
     await api({ action: 'subscribe', sub: sub.toJSON() });
-    try { localStorage.setItem(PUSH_AT, Date.now()); } catch {}
+    lsSet(PUSH_AT, Date.now());
     await pushRender();
     pushSay('알림을 켰습니다. 새 찬양 일정이 올라오면 알려 드려요.');
   } catch {
@@ -3648,7 +3637,7 @@ $('pushOn').onclick = pushStart;
 $('pushBtn').onclick = () => $('pushBtn').textContent.includes('끄기') ? pushStop() : pushStart();
 $('pushClose').onclick = () => {
   $('pushBar').hidden = true;
-  try { localStorage.setItem(PUSH_KEY, '1'); } catch {}
+  lsSet(PUSH_KEY, '1');
 };
 if (pushOk) pushRender();
 
@@ -3665,7 +3654,7 @@ clearBadge();
 /* ===== 시작 ===== */
 applyTheme(themeId);
 // 처음 글자 크기: 휴대폰은 작게, PC 폭(1080px↑)은 보통 (2026-10-09 사용자 결정) — 한 번 고르면 그 크기로 기억
-try { const v = localStorage.getItem(BIG_KEY); applySize(v === '1' ? 'big' : v === 'm' ? 'mid' : v === 's' ? 'small' : innerWidth >= 1080 ? 'mid' : 'small'); } catch { applySize('small'); }
+{ const v = lsGet(BIG_KEY); applySize(v === '1' ? 'big' : v === 'm' ? 'mid' : v === 's' ? 'small' : innerWidth >= 1080 ? 'mid' : 'small'); }
 placePc(); // 저장된 글자 크기에 따라 PC 화면 여부가 달라짐 (가로로 편 폴드)
 load();
 
