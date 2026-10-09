@@ -1171,7 +1171,8 @@ const TOKEN_KEY = 'choir-token', CACHE_KEY = 'choir-cache', BIG_KEY = 'choir-big
 /* ===== 공통 도구 ===== */
 const $ = id => document.getElementById(id);
 const pad = n => String(n).padStart(2, '0');
-const sorted = arr => [...arr].sort((a, b) => a.date.localeCompare(b.date));
+// 날짜순, 같은 날은 '주일 찬양'을 맨 위로 (나머지 구분은 원래 순서 그대로) — 편집·공개 목록·이번 주·인쇄 공통
+const sorted = arr => [...arr].sort((a, b) => a.date.localeCompare(b.date) || (typeOf(b) === '주일 찬양') - (typeOf(a) === '주일 찬양'));
 
 const todayKey = (d = new Date()) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; // 기기 시간 기준
 let TODAY = todayKey(); // 앱을 켜 둔 채 날짜가 바뀌면 load()에서 다시 계산
