@@ -124,6 +124,8 @@
   .rsvp .who button { border: 0; background: none; min-height: 44px; padding: 6px 4px; margin: -10px 0; color: #fff; font: inherit; font-weight: 600; text-decoration: underline; }
   .mepart { margin: 12px 0 4px; font-size: 15px; font-weight: 700; color: var(--muted); }
   .menames { display: flex; flex-wrap: wrap; gap: 8px; }
+  .edwarn { margin: 0 0 10px; padding: 10px 14px; border-radius: 12px; background: var(--warn-bg); border: 1px solid var(--warn-line); font-size: 15px; font-weight: 600; }
+  .edtip { margin: 0 0 10px; }
   .rsvpadmin { margin: 0 0 14px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; background: #fff; font-size: 15px; }
   .rsvpadmin h2 { margin: 0 0 8px; font-size: 16px; }
   .rsvpadmin table { width: 100%; border-collapse: collapse; }
@@ -886,6 +888,9 @@
         <button type="button" class="btn" id="rosterBtn">대원 명단</button>
         <button type="button" class="btn" id="pastBtn" hidden></button>
       </div>
+      <p class="edwarn" id="tbdWarn" hidden></p>
+      <p class="hint edtip" id="dragTip" hidden>곡 순서를 바꾸려면 곡 카드의 <b>⠿</b>를 손가락으로 잡고 다른 날짜로 끌어 놓으세요. <button type="button" class="linkbtn" id="dragTipClose">알겠습니다</button></p>
+      <p class="hint" id="pushCount" hidden></p>
       <section class="rsvpadmin" id="rsvpAdmin" hidden></section>
       <!-- 곡을 옮기거나 골랐을 때만 나타나는 막대 -->
       <div class="reactions" id="reBar" hidden>
@@ -1392,10 +1397,11 @@ async function load() {
   }
   route();
   try {
-    applyData(await api());
+    const gen = dataGen, d = await api();
+    // 받는 사이에 저장이 있었으면 이 목록은 그 저장보다 옛 것 — 덮지 않음 (저장 응답이 이미 최신 내용을 줌)
+    if (gen === dataGen && !saving || loadState !== 'ok') { applyData(d); saveCache(); }
     loadState = 'ok';
     lastLoadAt = Date.now();
-    saveCache();
   } catch (e) {
     if (loadState === 'ok') {
       const d = cachedAt && new Date(cachedAt);
@@ -2110,7 +2116,9 @@ function settle(op, res) {
   saving = ops.length > 0;
   route();
 }
+let dataGen = 0; // 저장할 때마다 올림 — load()가 받는 사이에 저장이 있었는지 확인
 function mutate(body, applyNow, okMsg, undo, reopen) {
+  dataGen++;
   body = { ...body, rid: newId() }; // 같은 요청을 여러 번 보내도 서버는 한 번만 처리 (늦게 온 사본이 뒤의 저장을 덮지 않게)
   if (!ops.length) confirmed = { events, notices, rehearsals, roster };
   const op = { applyNow };
@@ -2253,6 +2261,7 @@ function renderEditor() {
   $('addBtn').disabled = $('bulkBtn').disabled = locked;
   renderRsvpAdmin();
   loadRsvpAdmin();
+  renderEdNotes();
   $('edSearchClear').hidden = !edQuery;
 
   const changed = reChanged().length;
@@ -2817,10 +2826,10 @@ function changeDesc(prev, ev) {
 }
 
 // 그 날부터 같은 구분 일정을 빈 자리가 나올 때까지 한 칸씩 뒤로 — 집회 특송은 다음 날, 그 밖(주일 찬양 등)은 7일 뒤
-function shiftChain(date, type) {
+function shiftChain(date, type, list = events) {
   const step = (ASSEMBLY_TYPES.includes(type) ? 1 : 7) * 864e5, moved = [];
   for (let d = date; ; d = dayKey(utc(d) + step)) {
-    const here = events.filter(e => e.date === d && typeOf(e) === type);
+    const here = list.filter(e => e.date === d && typeOf(e) === type);
     if (!here.length) return moved;
     here.forEach(e => moved.push({ ...e, date: dayKey(utc(d) + step) }));
   }
@@ -2914,7 +2923,7 @@ function openBulk() {
   $('bulkStart').focus(); // 첫 초점은 [취소]가 아니라 첫날 날짜
 }
 
-$('bulkForm').addEventListener('submit', e => {
+$('bulkForm').addEventListener('submit', async e => {
   e.preventDefault();
   $('bulkErr').hidden = true; // 앞서 뜬 안내는 지우고 다시 확인
   const type = $('bulkType').value;
@@ -2942,13 +2951,28 @@ $('bulkForm').addEventListener('submit', e => {
     $('bulkErr').hidden = false;
     return;
   }
+  // 같은 날·같은 구분 일정이 있으면 한 곡씩 추가할 때처럼 [한 칸씩 밀기]/[같은 날 함께 저장]/[취소]
+  // 밀기: 새 날짜를 차례로 넣으며 그 자리의 기존 일정을 빈 자리까지 하루씩 뒤로 (결과적으로 기존 일정이 새 기간 뒤로)
   const dup = events.find(e => saved.some(x => x.date === e.date && typeOf(e) === type));
-  if (dup && !confirm(`${fmtDate(dup.date)}에 이미 "${dup.title}"(${typeLabel(type)}) 일정이 있습니다.\n그래도 저장할까요?`)) return;
-  const notify = $('bulkPushChk').checked ? { count: saves.length, desc: `${md(saved[0].date)}~${md(saved[saved.length - 1].date)} ${typeLabel(type)}` } : null;
+  let shifted = [];
+  if (dup) {
+    let work = events.map(e => ({ ...e }));
+    saved.forEach(x => {
+      const moved = shiftChain(x.date, type, work), at = Object.fromEntries(moved.map(m => [m.id, m.date]));
+      work = [...work.map(e => at[e.id] ? { ...e, date: at[e.id] } : e), x];
+    });
+    const orig = Object.fromEntries(events.map(e => [e.id, e.date]));
+    const moved = work.filter(e => orig[e.id] && orig[e.id] !== e.date);
+    const pick = await askShift({ date: dup.date, type }, dup, moved);
+    if (pick === 'cancel') return;
+    if (pick === 'shift') shifted = moved;
+  }
+  const all = [...shifted.map(e => ({ id: e.id, event: eventBody(e) })), ...saves], ids = new Set(all.map(x => x.id));
+  const notify = $('bulkPushChk').checked ? { count: all.length, desc: `${md(saved[0].date)}~${md(saved[saved.length - 1].date)} ${typeLabel(type)}` } : null;
   closeDlg($('bulkDlg'));
-  mutate({ action: 'batch', token, saves, deletes: [], ...(notify && { notify }) },
-    () => { events = sorted([...events, ...saved]); },
-    `${saves.length}곡을 저장했습니다.`, null, () => openDlg($('bulkDlg'))); // 창을 닫기만 했으므로 칸에 쓴 내용이 그대로 있음
+  mutate({ action: 'batch', token, saves: all, deletes: [], ...(notify && { notify }) },
+    () => { events = sorted([...events.filter(e => !ids.has(e.id)), ...shifted, ...saved]); },
+    `${saves.length}곡을 저장했습니다.${shifted.length ? ` 기존 ${shifted.length}곡은 뒤로 밀었습니다.` : ''}`, null, () => openDlg($('bulkDlg'))); // 창을 닫기만 했으므로 칸에 쓴 내용이 그대로 있음
   markSaved(saves[0].id);
 });
 $('bulkCancel').onclick = $('bulkCancel2').onclick = () => askClose($('bulkDlg'));
@@ -3026,7 +3050,7 @@ function applySize(size) {
   size === 'small' ? b.removeAttribute('data-size') : b.dataset.size = size; // 처음 크기가 아닐 때 버튼을 칠해 바뀐 상태임을 보임
   b.title = `글자 크기: 지금 ${now} — 누르면 ${label.replace(' 보기', '')}`;
   b.setAttribute('aria-label', b.title);
-  try { size === 'small' ? localStorage.removeItem(BIG_KEY) : localStorage.setItem(BIG_KEY, size === 'big' ? '1' : 'm'); } catch {}
+  try { localStorage.setItem(BIG_KEY, size === 'big' ? '1' : size === 'mid' ? 'm' : 's'); } catch {}
 }
 
 /* ===== 입력 창을 닫기 전 확인 =====
@@ -3462,7 +3486,7 @@ async function sendRsvp(date, name, answer) {
   rsvpMsg = '보내는 중…';
   renderRsvp();
   try {
-    await api({ action: 'rsvp', date, name, answer });
+    await api({ action: 'rsvp', date, name, answer, ts: Date.now() }); // 누른 시각 — 늦게 도착한 이전 응답이 덮지 않게
     lsSet(RSVP_KEY, JSON.stringify({ date, name, answer }));
     rsvpMsg = `${answer}으로 알렸습니다`;
   } catch (e) {
@@ -3540,6 +3564,30 @@ $('rosterForm').addEventListener('submit', e => {
     `대원 명단을 저장했습니다 (${list.length}명).`, null, () => { openDlg($('rosterDlg')); $('rosterForm').list.value = text; });
 });
 
+/* ===== 편집 화면 위 안내: 곡 미정 경고 · 손가락 끌기 안내 · 알림 받는 기기 수 ===== */
+const DRAGTIP_KEY = 'choir-dragtip-hide';
+let pushCountAt = 0;
+function renderEdNotes() {
+  // 2주 안에 곡이 정해지지 않은 일정
+  const until = dayKey(utc(TODAY) + 14 * 864e5);
+  const tbd = events.filter(e => e.date >= TODAY && e.date <= until && isTbd(e));
+  $('tbdWarn').hidden = !tbd.length;
+  $('tbdWarn').textContent = `곡 미정 (2주 안): ${tbd.map(e => `${md(e.date)}(${DOW[dowOf(e.date)]}) ${typeLabel(typeOf(e))}`).join(' · ')}`;
+  // 손가락으로 쓰는 기기에서 순서 바꾸기 안내 (한 번 닫으면 다시 안 뜸)
+  let hide = false;
+  try { hide = localStorage.getItem(DRAGTIP_KEY) === '1'; } catch {}
+  $('dragTip').hidden = hide || !matchMedia('(pointer: coarse)').matches;
+  // 알림 받는 기기 수 (편집 화면을 열 때 10분에 한 번만 서버에 물음)
+  if (Date.now() - pushCountAt > 600000) {
+    pushCountAt = Date.now();
+    api(null, { action: 'pushstat' }).then(r => {
+      $('pushCount').textContent = `알림 받는 기기 ${r.subs}대${r.queued ? ` · 아침 8시에 보낼 알림 ${r.queued}건` : ''}`;
+      $('pushCount').hidden = false;
+    }, () => { pushCountAt = 0; });
+  }
+}
+$('dragTipClose').onclick = () => { $('dragTip').hidden = true; try { localStorage.setItem(DRAGTIP_KEY, '1'); } catch {} };
+
 /* ===== 캘린더 구독 (api/cal.js) ===== */
 const CAL_URL = 'https://yjpraisecal.vercel.app/api/cal';
 $('calBtn').onclick = () => $('calDlg').showModal();
@@ -3616,7 +3664,8 @@ clearBadge();
 
 /* ===== 시작 ===== */
 applyTheme(themeId);
-try { const v = localStorage.getItem(BIG_KEY); applySize(v === '1' ? 'big' : v === 'm' ? 'mid' : 'small'); } catch { applySize('small'); }
+// 처음 글자 크기: 휴대폰은 작게, PC 폭(1080px↑)은 보통 (2026-10-09 사용자 결정) — 한 번 고르면 그 크기로 기억
+try { const v = localStorage.getItem(BIG_KEY); applySize(v === '1' ? 'big' : v === 'm' ? 'mid' : v === 's' ? 'small' : innerWidth >= 1080 ? 'mid' : 'small'); } catch { applySize('small'); }
 placePc(); // 저장된 글자 크기에 따라 PC 화면 여부가 달라짐 (가로로 편 폴드)
 load();
 
