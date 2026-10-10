@@ -63,7 +63,7 @@
   /* vh는 zoom을 한 번 더 먹어 작게(.75)에서 화면의 75%가 됨 → 높이를 vh로 잡을 때는 / var(--z, 1)로 실제 화면 높이에 맞춤 */
   body.small :is(.player, .modebar) { zoom: calc(1 / .75); } /* 재생창·아래 메뉴는 원래 크기 그대로 (누르기 쉽게) */
   /* 작게(0.75배)에서도 보조 글씨는 실제 13.5px, 누르는 칸은 실제 44px 아래로 내려가지 않게 (2026-10-04 시안 A) — 제목·이번 주 곡 제목은 작은 그대로 */
-  body.small :is(.summary, .date .dow, .date .kind, .chip small, .monthsep, .people, .heroppl, .label, .done, .badge, .eyebrow, footer, .themebtn, .linkbtn, .herolinks a, .heroparts a small, .heroshare, .tplabel, .ver, .brand small, .topnav .btn, .herodate em, .noticebar .tag, .heroparts a i, .rsvp, .rsvp .pick) { font-size: 18px; }
+  body.small :is(.summary, .date .dow, .date .kind, .chip small, .monthsep, .people, .heroppl, .label, .done, .badge, .eyebrow, footer, .themebtn, .linkbtn, .herolinks a, .heroparts a small, .heroshare, .tplabel, .ver, .brand small, .topnav .btn, .herodate em, .noticebar .tag, .heroparts a i, .rsvp, .rsvp .pick, .edwarn, #pushCount, .rsvpadmin, .noticefull, .titlehist, .hint) { font-size: 18px; }
   body.small #fontBtn { font-size: 18px; } /* #fontBtn 자체 규칙이 더 강해서 따로 */
   body.small :is(.chip, .themebtn, .linkbtn, .arrow, .topnav .btn, .heroshare, .heroparts a, .herolinks a, .btn, .rsvp .pick, .pushpick) { min-height: 58px; }
   body.small .herosong.compact .herolinks a { min-height: 58px; font-size: 18px; } /* 같은 날 두 곡의 작은 카드도 바닥 보정 (compact 규칙이 더 세서 따로) */
@@ -122,17 +122,19 @@
   .rsvp .q b { color: #ffe08a; } /* 날짜를 이번 주 찬양 날짜와 같은 노랑으로 — 위에 집회가 보여도 주일 응답임을 분명히 */
   .rsvp .pick { flex: 1 1 0; min-height: 40px; padding: 4px 16px; border: 1px solid rgb(255 255 255 / .6); border-radius: 999px; background: none; color: #fff; font-size: 16px; font-weight: 700; }
   .rsvp .pick[aria-pressed="true"] { background: #fff; color: var(--navy); border-color: #fff; }
-  .rsvp .who { flex-basis: 100%; color: rgb(255 255 255 / .8); }
-  .rsvp .who button { border: 0; background: none; min-height: 44px; padding: 6px 4px; margin: -10px 0; color: #fff; font: inherit; font-weight: 600; text-decoration: underline; }
+  .rsvp .who { flex-basis: 100%; color: #fff; }
+  .rsvp .sum { flex: 1 1 auto; font-weight: 700; }
+  .rsvp .chg { flex: 0 0 auto; }
+  .rsvp .who button { border: 0; background: none; min-height: calc(44px / var(--z, 1)); min-width: calc(44px / var(--z, 1)); padding: 6px 4px; margin: -10px 0; color: #fff; font: inherit; font-weight: 600; text-decoration: underline; }
   .mepart { margin: 12px 0 4px; font-size: 15px; font-weight: 700; color: var(--muted); }
   .menames { display: flex; flex-wrap: wrap; gap: 8px; }
   .edwarn { margin: 0 0 10px; padding: 10px 14px; border-radius: 12px; background: var(--warn-bg); border: 1px solid var(--warn-line); font-size: 15px; font-weight: 600; }
   .edtip { margin: 0 0 10px; }
   .rsvpadmin { margin: 0 0 14px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; background: #fff; font-size: 15px; }
-  .rsvpadmin h2 { margin: 0 0 8px; font-size: 16px; }
+  .rsvpadmin summary { min-height: 44px; display: flex; align-items: center; font-size: 16px; font-weight: 700; cursor: pointer; }
   .rsvpadmin table { width: 100%; border-collapse: collapse; }
   .rsvpadmin th, .rsvpadmin td { padding: 6px 4px; border-top: 1px solid var(--line); text-align: left; vertical-align: top; }
-  .rsvpadmin td small { display: block; color: var(--muted); overflow-wrap: anywhere; }
+  .rsvpadmin td small { display: block; color: var(--muted); font-size: inherit; word-break: keep-all; } /* 이름은 글자 단위가 아니라 이름 단위로 줄바꿈 */
   .pushpick { display: flex; align-items: center; gap: 8px; min-height: 44px; font-size: 15px; font-weight: 600; }
   .pushpick input { width: 24px; height: 24px; margin: 0; flex-shrink: 0; }
   .staleMsg { margin: 0 0 14px; font-size: 15px; color: var(--muted); }
@@ -467,7 +469,8 @@
   .reslot.past .edpeople .missing { color: #8a4550; }  /* 회색 바탕(지난 일정)에서도 4.5:1 */
   .checkrow { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; margin: -4px 0 12px; font-size: 15px; font-weight: 600; }
   .checkrow b { white-space: nowrap; font-weight: 600; }
-  .checkrow .hint { flex-basis: 100%; padding-left: 32px; }
+  .checkrow .hint, .checkrow .pushwhen { flex-basis: 100%; padding-left: 32px; }
+  .pushwhen { color: var(--accent-dark); font-weight: 700; }
   .checkrow input { width: 24px; height: 24px; margin: 0; }
   input[readonly] { background: var(--surface-sunken); }
   /* 편집 목록: 항목별 입력 여부 (칠해짐 = 입력됨, 점선 = 비어 있음) */
@@ -516,7 +519,8 @@
   .formhead h2 { margin: 0; align-self: center; }
   .formhead .actions { flex-shrink: 0; }
   .formhead .btn { padding: 7px 14px; }
-  .iconbtn { border: 1px solid var(--line); background: #fff; border-radius: 9px; width: 40px; height: 40px; font-size: 16px; line-height: 1; flex-shrink: 0; }
+  .iconbtn { border: 1px solid var(--line); background: #fff; border-radius: 9px; width: 40px; height: 40px; font-size: 16px; line-height: 1; flex-shrink: 0; min-width: calc(44px / var(--z, 1)); min-height: calc(44px / var(--z, 1)); } /* 확대·축소(zoom)를 곱해도 실제 44px 이상 */
+  .player .iconbtn { min-width: 0; min-height: 0; } /* 재생창은 이미 원래 크기로 되돌려 둠 */
   .iconbtn:hover { background: var(--navy-soft); }
   .noticefull { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 16px; line-height: 1.7; }
   .inlink { color: var(--navy); font-weight: 600; }
@@ -1121,6 +1125,7 @@
     <h2 id="rosterTitle">대원 명단</h2>
     <p class="hint">한 줄에 한 명씩 <b>이름 파트</b>로 적어 주세요. 파트: 소프라노 · 알토 · 테너 · 베이스 · 기타 (S·A·T·B, 소프·알·테·베도 됩니다)<br>예: 홍길동 테너 / 김영희 S</p>
     <label class="field">명단<textarea name="list" rows="12" placeholder="홍길동 테너&#10;김영희 소프라노"></textarea></label>
+    <p class="hint" id="rosterSum" role="status"></p>
     <p class="err" id="rosterErr" role="alert" hidden></p>
     <div class="actions">
       <button type="button" class="btn" id="rosterCancel">취소</button>
@@ -1136,8 +1141,8 @@
     <p id="shiftMsg" style="white-space: pre-line"></p>
     <div class="actions" style="flex-wrap: wrap">
       <button type="submit" value="cancel" class="btn">취소</button>
-      <button type="submit" value="same" class="btn">같은 날 함께 저장</button>
-      <button type="submit" value="shift" class="btn primary">한 칸씩 밀기</button>
+      <button type="submit" value="same" class="btn primary">같은 날 함께 저장</button>
+      <button type="submit" value="shift" class="btn">한 칸씩 밀기</button>
     </div>
   </form>
 </dialog>
@@ -1227,7 +1232,9 @@ function tidyUrl(s) {
   if (!clean) return '';
   try {
     const u = new URL(clean);
-    TRACKING.forEach(k => u.searchParams.delete(k));
+    // si·pp·feature는 유튜브 전용 꼬리표 — 다른 사이트에서는 의미 있는 값일 수 있어 유튜브에서만 뗌
+    const yt = /(^|\.)(youtube\.com|youtu\.be)$/.test(u.hostname);
+    TRACKING.forEach(k => { if (yt || !['si', 'pp', 'feature'].includes(k)) u.searchParams.delete(k); });
     // 드롭박스 악보는 앱 설치 화면 대신 바로 열리도록
     if (/(^|\.)dropbox\.com$/.test(u.hostname) && u.searchParams.get('dl') === '0') u.searchParams.set('raw', '1');
     return u.toString();
@@ -1349,7 +1356,7 @@ function api(body, query = {}) {
       fn(v);
     };
     // 저장 요청의 첫 번째는 keepalive — 저장 중에 창을 닫아도 끝까지 전달됨 (64KB 한도라 큰 요청은 제외)
-    const keep = !!body && JSON.stringify(body).length < 60000;
+    const keep = !!body && new TextEncoder().encode(JSON.stringify(body)).length < 60000; // 한글은 글자당 3바이트라 글자 수가 아닌 바이트로 셈
     const timers = [0, 1, 2, 3].map(i => setTimeout(() => send(body, query, 40000, stop.signal, keep && i === 0).then(
       data => end(resolve, data),
       e => {
@@ -1661,11 +1668,11 @@ function renderNotices() {
       el('span', { class: 'txt' }, flat), // 두 줄까지 보이고 넘치면 … (CSS)
       el('span', { class: 'more', 'aria-hidden': 'true' }, '›'))); // 눌러서 전체를 볼 수 있다는 표시
   }));
-  // 두 줄 안에 다 보이고 링크도 없는 공지는 눌러도 새로 볼 게 없으므로 그냥 글로 둠
+  // 두 줄 안에 다 보이고 링크도 없는 공지는 눌러도 새로 볼 게 없으므로 › 표시만 숨김 (버튼은 그대로 — 모든 공지가 같은 방식으로 전체 보기를 엶)
   $('notices').querySelectorAll('button.noticebar').forEach(b => {
     const t = b.querySelector('.txt');
-    if (!t.clientHeight || t.scrollHeight > t.clientHeight + 1 || /https?:\/\//.test(t.textContent)) return; // 잘렸거나 링크가 있으면 그대로 버튼
-    b.replaceWith(el('div', { class: 'noticebar' }, ...[...b.childNodes].filter(n => !n.classList?.contains('more'))));
+    if (!t.clientHeight || t.scrollHeight > t.clientHeight + 1 || /https?:\/\//.test(t.textContent)) return; // 잘렸거나 링크가 있으면 › 유지
+    b.querySelector('.more').hidden = true;
   });
 }
 
@@ -1741,7 +1748,9 @@ function rehearsalRow(r) {
         onclick: yt && (e => { e.preventDefault(); play(yt, r.url, rehearsalName(r)); }),
       }, rehearsalName(r)),
       el('small', {}, `${yearLabel(r.date.slice(0, 4))} ${fmtDate(r.date)}`)),
-    shareBtn(rehearsalName(r), () => shareVideo(rehearsalName(r), fmtDate(r.date), '연습 영상', r.url)),
+    el('div', { class: 'ractions' }, // 실황 화면처럼 눈에 보이는 [▶ 재생] (썸네일을 눌러도 되는 줄 모르는 사람을 위해) — 같은 재생 동작
+      el('button', { type: 'button', class: 'btn primary rplay', 'aria-label': `${rehearsalName(r)} 재생`, onclick: () => yt ? play(yt, r.url, rehearsalName(r)) : window.open(r.url, '_blank', 'noopener') }, '▶ 재생'),
+      shareBtn(rehearsalName(r), () => shareVideo(rehearsalName(r), fmtDate(r.date), '연습 영상', r.url))),
     token && el('div', { class: 'edbtns' },
       el('button', { type: 'button', class: 'btn', onclick: () => openRehearsal(r) }, '수정'),
       el('button', { type: 'button', class: 'btn danger', onclick: () => removeRehearsal(r) }, '삭제')));
@@ -2393,7 +2402,7 @@ function saveBoard() {
   sel.clear();
   // 알림 건수 = 새로 저장되는 일정 줄 수 (빠지기만 한 자리는 세지 않음)
   const notify = $('rePushChk').checked && saves.length ? { count: saves.length, desc: `${md(saves[0].event.date)} 순서 변경` } : null;
-  $('rePushChk').checked = false;
+  $('rePushChk').checked = false; pushHints();
   mutate({ action: 'batch', token, saves, deletes, ...(notify && { notify }) },
     () => { events = sorted([...events.filter(e => !touched.has(e.id)), ...saved]); },
     '바꾼 순서를 저장했습니다.');
@@ -2643,7 +2652,7 @@ function openForm(ev, asCopy, slot = null) {
   $('typeCustomRow').hidden = !!slot || form.type.value !== TYPE_CUSTOM;
   form.title.value = v.title;
   $('tbdChk').checked = !!v.title && isTbd(v);
-  $('pushChk').checked = false; // 알림은 저장할 때마다 새로 고름 (오타 수정에 알림이 가지 않게)
+  $('pushChk').checked = false; pushHints(); // 알림은 저장할 때마다 새로 고름 (오타 수정에 알림이 가지 않게)
   if ($('tbdChk').checked && !/^미정/.test(v.title.trim())) form.title.value = '미정'; // 'ㅇ' 같은 임시 제목은 열 때 '미정'으로 (저장하면 바뀜)
   form.title.readOnly = $('tbdChk').checked;
   showTitleHist();
@@ -2834,7 +2843,7 @@ function changeDesc(prev, ev) {
 
 // 그 날부터 같은 구분 일정을 빈 자리가 나올 때까지 한 칸씩 뒤로 — 집회 특송은 다음 날, 그 밖(주일 찬양 등)은 7일 뒤
 function shiftChain(date, type, list = events) {
-  const step = (ASSEMBLY_TYPES.includes(type) ? 1 : 7) * 864e5, moved = [];
+  const step = (isAssembly({ type, date }) ? 1 : 7) * 864e5, moved = [];
   for (let d = date; ; d = dayKey(utc(d) + step)) {
     const here = list.filter(e => e.date === d && typeOf(e) === type);
     if (!here.length) return moved;
@@ -2904,6 +2913,7 @@ function renderBulkDays() {
     const row = bulkRow(dayKey(utc(start) + i * 864e5));
     const old = keep[i];
     if (old) {
+      row.id = old.id; // 앞선 저장이 "결과 불명"이었을 때 다시 저장해도 같은 곡이 두 번 들어가지 않게 id를 이어받음
       row.title.value = old.title.value;
       row.conductor.value = old.conductor.value;
       row.pianist.value = old.pianist.value;
@@ -2922,7 +2932,7 @@ function openBulk() {
   $('bulkStart').value = nextMonday();
   $('bulkDaysSel').value = '6';
   $('bulkErr').hidden = true;
-  $('bulkPushChk').checked = false;
+  $('bulkPushChk').checked = false; pushHints();
   renderBulkDays();
   fillNameLists(); // 지휘·반주 이름 고르기 목록은 본문 창과 같이 씀
   openDlg($('bulkDlg'));
@@ -3001,7 +3011,7 @@ function openNoticeEdit(focusIndex = 0, values = notices) {
   f.n1.value = values[0] || '';
   f.n2.value = values[1] || '';
   $('noticeErr').hidden = true;
-  $('noticePushChk').checked = false;
+  $('noticePushChk').checked = false; pushHints();
   openDlg($('noticeEditDlg'));
   const box = focusIndex === 1 ? f.n2 : f.n1;
   box.focus();
@@ -3108,7 +3118,7 @@ $('logoutBtn').onclick = () => {
 };
 $('addBtn').onclick = () => openForm(null);
 $('bulkBtn').onclick = openBulk;
-$('reCancel').onclick = () => { board = null; sel.clear(); $('rePushChk').checked = false; renderEditor(); };
+$('reCancel').onclick = () => { board = null; sel.clear(); $('rePushChk').checked = false; pushHints(); renderEditor(); };
 $('reSave').onclick = saveBoard;
 // 고른 곡(여러 곡이면 한 덩어리)을 한 칸 위·아래로
 const moveSel = d => {
@@ -3188,7 +3198,14 @@ const scrollToScheduleSearch = () => requestAnimationFrame(() => {
   const row = $('searchInput').closest('.searchrow');
   row?.scrollIntoView({ block: 'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
 });
-const chooseMode = change => { change(); scrollToScheduleSearch(); };
+// 연간·집회 화면은 지난 곡부터 길게 이어지므로 들어갈 때 오늘 이후 첫 곡으로 이동 (없으면 검색창)
+const scrollToUpcoming = () => requestAnimationFrame(() => {
+  const dateOf = Object.fromEntries(events.map(e => [e.id, e.date]));
+  const first = [...document.querySelectorAll('article.card[data-id]')].find(c => dateOf[c.dataset.id] >= TODAY);
+  if (!first) return scrollToScheduleSearch();
+  first.scrollIntoView({ block: 'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+});
+const chooseMode = change => { change(); (mode === 'year' || mode === 'assembly' ? scrollToUpcoming : scrollToScheduleSearch)(); };
 $('modeMonth').onclick = () => chooseMode(() => showMonth(viewY, viewM));
 // 버튼을 다시 누르면 오늘이 속한 기간으로 돌아옴 (앞서 옮겨 둔 기간은 잊음)
 const showPeriod = m => {
@@ -3473,7 +3490,7 @@ const PART_ALIAS = { s: '소프라노', sop: '소프라노', soprano: '소프라
   t: '테너', ten: '테너', tenor: '테너', 테: '테너', b: '베이스', bass: '베이스', 베: '베이스', 기: '기타' };
 const partOf = w => ROSTER_PARTS.includes(w) ? w : PART_ALIAS[w.toLowerCase()] || null;
 const ME_KEY = 'choir-me', RSVP_KEY = 'choir-rsvp';
-let rsvpBusy = false, rsvpMsg = '';
+let rsvpBusy = false, rsvpMsg = '', rsvpOpen = false; // rsvpOpen: 응답한 뒤에도 [바꾸기]로 펼쳐 둠 (이 화면에서만 기억)
 function renderRsvp() {
   const box = $('rsvp');
   box.hidden = !roster.length || $('hero').hidden;
@@ -3483,6 +3500,9 @@ function renderRsvp() {
   if (!member) return box.replaceChildren(el('span', { class: 'q' }, label, ' 참석 응답'), el('button', { type: 'button', class: 'pick', onclick: openMe }, '내 이름 고르기'));
   let mine = null;
   try { const r = JSON.parse(lsGet(RSVP_KEY)); if (r && r.date === date && r.name === me) mine = r.answer; } catch {}
+  // 이 날짜에 이미 응답했으면 한 줄로 접음 ([바꾸기]를 누르거나 보내기에 실패하면 다시 펼침)
+  if (mine && !rsvpOpen && !rsvpBusy) return box.replaceChildren(el('span', { class: 'sum', role: 'status' }, label, ` · ${mine} ✓`),
+    el('button', { type: 'button', class: 'pick chg', onclick: () => { rsvpOpen = true; renderRsvp(); } }, '바꾸기'));
   const pick = a => el('button', { type: 'button', class: 'pick', 'aria-pressed': String(mine === a), disabled: rsvpBusy, onclick: () => sendRsvp(date, me, a) }, a);
   box.replaceChildren(el('span', { class: 'q' }, label, '에 참석하시나요?'), pick('참석'), pick('불참'),
     el('span', { class: 'who', role: 'status' }, `${member.name} (${member.part}) `, el('button', { type: 'button', onclick: openMe }, '이름 바꾸기'), rsvpMsg && ` · ${rsvpMsg}`));
@@ -3496,7 +3516,9 @@ async function sendRsvp(date, name, answer) {
     answer = r.answer || answer; // 서버에 남은 실제 응답 (더 나중 응답이 이미 있으면 그것)
     lsSet(RSVP_KEY, JSON.stringify({ date, name, answer }));
     rsvpMsg = `${answer}으로 알렸습니다`;
+    rsvpOpen = false;
   } catch (e) {
+    rsvpOpen = true; // 실패 문구가 보이도록 펼쳐 둠
     rsvpMsg = e.server ? e.message : '보내지 못했습니다. 잠시 후 다시 눌러 주세요.';
   }
   rsvpBusy = false;
@@ -3537,22 +3559,26 @@ function renderRsvpAdmin() {
   const cell = names => el('td', {}, `${names.length}명`, names.length > 0 && el('small', {}, names.join(', ')));
   const row = (label, ms) => el('tr', {}, el('th', { scope: 'row' }, label), cell(pick(ms, '참석')), cell(pick(ms, '불참')), cell(pick(ms, '')));
   const parts = ROSTER_PARTS.filter(p => roster.some(m => m.part === p));
-  box.replaceChildren(el('h2', {}, `${md(date)}(일) 찬양 참석 응답`),
+  // 편집 목록을 밀어내지 않게 접어 두고 요약 한 줄만 보임 (다시 그려도 열어 둔 상태는 유지)
+  const wasOpen = !!box.querySelector('details[open]');
+  const sum = list ? ` — 참석 ${pick(roster, '참석').length} · 불참 ${pick(roster, '불참').length} · 미응답 ${pick(roster, '').length}` : '';
+  box.replaceChildren(el('details', { open: wasOpen }, el('summary', {}, `${md(date)}(일) 참석 응답${sum}`),
     list ? el('table', {}, el('thead', {}, el('tr', {}, ...['파트', '참석', '불참', '미응답'].map(t => el('th', { scope: 'col' }, t)))),
       el('tbody', {}, ...parts.map(p => row(p, roster.filter(m => m.part === p))), row('합계', roster)))
       : el('p', { class: 'hint' }, '응답을 불러오는 중…'),
-    el('button', { type: 'button', class: 'linkbtn', onclick: () => loadRsvpAdmin(true) }, '새로 불러오기'));
+    el('button', { type: 'button', class: 'linkbtn', onclick: () => loadRsvpAdmin(true) }, '새로 불러오기')));
 }
 
 $('rosterBtn').onclick = () => {
   $('rosterForm').list.value = roster.map(m => `${m.name} ${m.part}`).join('\n');
   $('rosterErr').hidden = true;
+  rosterSum();
   openDlg($('rosterDlg'));
 };
 $('rosterCancel').onclick = () => askClose($('rosterDlg'));
-$('rosterForm').addEventListener('submit', e => {
-  e.preventDefault();
-  const text = e.target.list.value, bad = [], list = [], seen = new Set();
+// 명단 글을 읽어 { list: 인식한 대원, bad: 확인할 줄 } — 저장할 때와 입력 중 요약이 같은 규칙을 씀
+function parseRoster(text) {
+  const bad = [], list = [], seen = new Set();
   text.split('\n').map(l => l.trim()).filter(Boolean).forEach((line, i) => {
     const m = line.match(/^(.+?)\s+(\S+)$/), part = m && partOf(m[2]);
     const name = m && m[1].trim();
@@ -3561,6 +3587,16 @@ $('rosterForm').addEventListener('submit', e => {
     seen.add(name);
     list.push({ name, part });
   });
+  return { list, bad };
+}
+const rosterSum = () => {
+  const { list, bad } = parseRoster($('rosterForm').list.value);
+  $('rosterSum').textContent = `${list.length}명 인식${bad.length ? ` · 확인할 줄 ${bad.length}개` : ''}`;
+};
+$('rosterForm').list.addEventListener('input', rosterSum);
+$('rosterForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const text = e.target.list.value, { list, bad } = parseRoster(text);
   if (bad.length) {
     $('rosterErr').textContent = `확인해 주세요: ${bad.join(', ')} — 한 줄에 "이름 파트" (예: 홍길동 테너, 김영희 S)`;
     $('rosterErr').hidden = false;
@@ -3586,7 +3622,7 @@ function renderEdNotes() {
   // 알림 받는 기기 수 (편집 화면을 열 때 10분에 한 번만 서버에 물음)
   if (Date.now() - pushCountAt > 600000) {
     pushCountAt = Date.now();
-    api(null, { action: 'pushstat' }).then(r => {
+    api(null, { action: 'pushstat', token }).then(r => {
       $('pushCount').textContent = `알림 받는 기기 ${r.subs}대${r.queued ? ` · 아침 8시에 보낼 알림 ${r.queued}건` : ''}`;
       $('pushCount').hidden = false;
     }, () => { pushCountAt = 0; });
@@ -3666,10 +3702,26 @@ function clearBadge() {
 document.addEventListener('visibilitychange', clearBadge);
 clearBadge();
 
+/* ===== 알림 체크 옆 안내: 저장하면 언제 나가는지 (한국 시각 8~21시는 바로, 그 밖은 아침 8시) ===== */
+const PUSH_CHKS = ['pushChk', 'bulkPushChk', 'noticePushChk', 'rePushChk'];
+function pushHints() {
+  const h = new Date(Date.now() + 9 * 36e5).getUTCHours(); // 기기 시간대와 상관없이 한국 시각 (UTC+9, 서머타임 없음)
+  PUSH_CHKS.forEach(id => {
+    const chk = $(id), tip = chk.closest('label').querySelector('.pushwhen');
+    tip.hidden = !chk.checked;
+    tip.textContent = h >= 8 && h < 22 ? '지금 보냄' : '아침 8시에 보냄';
+  });
+}
+PUSH_CHKS.forEach(id => {
+  const chk = $(id);
+  chk.closest('label').append(el('b', { class: 'pushwhen', hidden: true, role: 'status' }));
+  chk.addEventListener('change', pushHints);
+});
+
 /* ===== 시작 ===== */
 applyTheme(themeId);
-// 처음 글자 크기: 휴대폰은 작게, PC 폭(1080px↑)은 보통 (2026-10-09 사용자 결정) — 한 번 고르면 그 크기로 기억
-{ const v = lsGet(BIG_KEY); applySize(v === '1' ? 'big' : v === 'm' ? 'mid' : v === 's' ? 'small' : innerWidth >= 1080 ? 'mid' : 'small'); }
+// 처음 글자 크기: 휴대폰은 작게, 폭 600px↑(펼친 폴드·태블릿·PC)는 보통 — 펼친 폴드(약 673px)에서도 작게(0.75)는 너무 작음 (2026-10-10) — 한 번 고르면 그 크기로 기억
+{ const v = lsGet(BIG_KEY); applySize(v === '1' ? 'big' : v === 'm' ? 'mid' : v === 's' ? 'small' : innerWidth >= 600 ? 'mid' : 'small'); }
 placePc(); // 저장된 글자 크기에 따라 PC 화면 여부가 달라짐 (가로로 편 폴드)
 load();
 
@@ -3683,6 +3735,8 @@ if ('serviceWorker' in navigator) {
     location.reload();
   };
   navigator.serviceWorker.addEventListener('controllerchange', () => { if (hadController) reloadWhenIdle(); });
+  // 알림을 눌러 열린 창을 앞으로 가져올 때 서비스 워커가 보내는 신호 — 새 일정을 바로 불러옴
+  navigator.serviceWorker.addEventListener('message', e => { if (e.data && e.data.type === 'refresh') load(); });
   addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
 }
 </script>

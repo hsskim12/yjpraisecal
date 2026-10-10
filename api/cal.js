@@ -29,7 +29,7 @@ function ics(events) {
     const who = [e.conductor && `지휘 ${e.conductor}`, e.pianist && `반주 ${e.pianist}`].filter(Boolean).join(' · ');
     lines.push('BEGIN:VEVENT', `UID:${e.id}@yjpraisecal`, `DTSTAMP:${stamp}`,
       `DTSTART;VALUE=DATE:${day(e.date)}`, `DTEND;VALUE=DATE:${nextDay(e.date)}`,
-      `SUMMARY:${esc(`${e.type || '주일 찬양'}: ${e.title}`)}`,
+      `SUMMARY:${esc(`${e.type || (new Date(e.date + 'T00:00:00Z').getUTCDay() === 0 ? '주일 찬양' : '평일 일정')}: ${/^미정\d*$/.test(String(e.title).trim()) || String(e.title).trim().length < 2 ? '곡 미정' : e.title}`)}`,
       `DESCRIPTION:${esc([who, e.note, SITE].filter(Boolean).join('\n'))}`,
       `URL:${SITE}`, 'TRANSP:TRANSPARENT', 'END:VEVENT');
   });
