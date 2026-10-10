@@ -1,5 +1,6 @@
 // Vercel 서버 함수: 찬양 일정을 휴대폰 캘린더 구독용(.ics)으로 내줌 — 사이트 맨 아래 [📅 캘린더 구독]
 // 공개 화면과 같은 내용(구글 Apps Script의 공개 조회)만 씀. 캘린더 앱이 몇 시간마다 다시 받아 감
+// index.html의 API_URL과 같은 주소 — 바꾸면 둘 다 (시험/test_code.js가 둘이 같은지 확인)
 const API = 'https://script.google.com/macros/s/AKfycbzt6FAXMBSwMNe-jXw1wnsjOd5_Hhg7c6ezvgLT-gJnoIP3H6zRqbMPcWQ6ByzFYtKOvw/exec';
 const SITE = 'https://yjpraisecal.vercel.app';
 
