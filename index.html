@@ -150,7 +150,7 @@
 
   /* 이번 주 찬양 (개선안 2) — 머리글과 이어진 남색 면, 아래 모서리만 둥글게.
      흐린 글씨는 흰색 투명도로 두어 어느 테마에서나 읽히게 */
-  .hero { background: linear-gradient(180deg, var(--navy), color-mix(in oklab, var(--navy), #fff 12%)); color: #fff; border-radius: 0 0 28px 28px; }
+  .hero { background: var(--navy); background: linear-gradient(180deg, var(--navy), color-mix(in oklab, var(--navy), #fff 12%)); color: #fff; border-radius: 0 0 28px 28px; }
   .hero > .wrap { padding-block: 8px 10px; }
   /* 이번 주 찬양이 보일 때는 머리글도 같은 남색으로 이어 붙임 (편집 화면은 흰 머리글 그대로) */
   body:has(#topZone:not([hidden]) :is(#hero, #heroSkel):not([hidden])) .top { background: linear-gradient(180deg, color-mix(in oklab, var(--navy), #000 16%), var(--navy)); border-bottom: 0; color: #fff; }
@@ -398,7 +398,7 @@
   .emptySundays { margin: 12px 0 0; color: var(--muted); font-size: 15px; padding: 10px 14px; background: #fff; border: 1px dashed var(--line); border-radius: 10px; }
 
   /* 화면 아래 고정 유튜브 재생창 */
-  .player { position: fixed; left: 0; right: 0; bottom: 0; z-index: 10; background: color-mix(in oklab, var(--navy), #000 45%); color: #fff; padding: 8px 12px calc(10px + env(safe-area-inset-bottom)); box-shadow: 0 -4px 16px rgb(0 0 0 / .25); }
+  .player { position: fixed; left: 0; right: 0; bottom: 0; z-index: 10; background: var(--navy); background: color-mix(in oklab, var(--navy), #000 45%); color: #fff; padding: 8px 12px calc(10px + env(safe-area-inset-bottom)); box-shadow: 0 -4px 16px rgb(0 0 0 / .25); }
   .playerhead { max-width: 760px; margin: 0 auto 8px; display: flex; align-items: center; gap: 10px; }
   .playerhead b { flex: 1; min-width: 0; font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .playerhead a { color: #cdd8ec; font-size: 15px; flex-shrink: 0; display: inline-flex; align-items: center; min-height: 44px; padding: 0 6px; }
@@ -1475,6 +1475,8 @@ const embed = (id, start, title) => el('iframe', {
 // 유튜브 영상 주소일 때만 그 주소를 돌려줌 (실황 버튼은 유튜브 영상일 때만 보이게)
 const liveUrl = ev => { const u = safeUrl(ev.live); return youtube(u) ? u : ''; };
 // 듣기·파트·악보·참고·실황 중 링크가 하나라도 있는지
+// 연도 오타 막기 — 올해에서 2년 넘게 떨어진 날짜는 저장하지 않음 (먼 미래 일정 하나로 편집 화면에 빈 주일이 수천 줄 생기지 않게)
+const farYear = d => Math.abs(+d.slice(0, 4) - +TODAY.slice(0, 4)) > 2;
 const hasLinks = ev => PARTS.some(p => safeUrl(ev.parts?.[p])) || linkList(ev.scores, '').length > 0 || linkList(ev.refs, '').length > 0 || !!liveUrl(ev);
 
 // ev·part: 곡의 파트 영상을 틀 때 — 재생창 위에 그 곡의 다른 파트 버튼을 보여 줌 (위로 올라가지 않고 바꿔 듣기)
@@ -1740,18 +1742,18 @@ function rehearsalRow(r) {
   const yt = youtube(safeUrl(r.url));
   return el('div', { class: 'rrow' + (justSaved(r.id) ? ' justsaved' : ''), 'data-id': r.id },
     el('a', {
-      class: 'rthumb', href: r.url, target: '_blank', rel: 'noopener',
+      class: 'rthumb', href: safeUrl(r.url) || '#', target: '_blank', rel: 'noopener',
       'aria-label': `${rehearsalName(r)} 재생`, // 그림만 있는 링크라 이름을 따로 붙임
       onclick: yt && (e => { e.preventDefault(); play(yt, r.url, rehearsalName(r)); }),
     }, yt ? el('img', { src: `https://i.ytimg.com/vi/${yt.id}/mqdefault.jpg`, alt: '', loading: 'lazy' }) : el('span', {}, '▶')),
     el('div', { class: 'rinfo' },
       el('a', {
-        class: 'rname', href: r.url, target: '_blank', rel: 'noopener',
+        class: 'rname', href: safeUrl(r.url) || '#', target: '_blank', rel: 'noopener',
         onclick: yt && (e => { e.preventDefault(); play(yt, r.url, rehearsalName(r)); }),
       }, rehearsalName(r)),
       el('small', {}, `${yearLabel(r.date.slice(0, 4))} ${fmtDate(r.date)}`)),
     el('div', { class: 'ractions' }, // 실황 화면처럼 눈에 보이는 [▶ 재생] (썸네일을 눌러도 되는 줄 모르는 사람을 위해) — 같은 재생 동작
-      el('button', { type: 'button', class: 'btn primary rplay', 'aria-label': `${rehearsalName(r)} 재생`, onclick: () => yt ? play(yt, r.url, rehearsalName(r)) : window.open(r.url, '_blank', 'noopener') }, '▶ 재생'),
+      el('button', { type: 'button', class: 'btn primary rplay', 'aria-label': `${rehearsalName(r)} 재생`, onclick: () => yt ? play(yt, r.url, rehearsalName(r)) : window.open(safeUrl(r.url) || 'about:blank', '_blank', 'noopener') }, '▶ 재생'),
       shareBtn(rehearsalName(r), () => shareVideo(rehearsalName(r), fmtDate(r.date), '연습 영상', r.url))),
     token && el('div', { class: 'edbtns' },
       el('button', { type: 'button', class: 'btn', onclick: () => openRehearsal(r) }, '수정'),
@@ -1837,7 +1839,7 @@ $('rForm').addEventListener('submit', e => {
   e.preventDefault();
   const f = e.target;
   const item = { date: f.date.value, title: f.title.value.trim(), url: tidyUrl(f.url.value.trim()) };
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(item.date) || !item.url || !youtube(item.url)) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(item.date) || farYear(item.date) || !item.url || !youtube(item.url)) {
     $('rErr').textContent = '연습한 날짜와 유튜브 영상 주소를 확인해 주세요.';
     $('rErr').hidden = false;
     return;
@@ -2439,7 +2441,7 @@ function removeEvent(e) {
 
 /* ===== 일정 추가·수정 창 ===== */
 const form = $('form');
-let editingId = null;
+let editingId = null, editingBase; // editingBase: 수정 창을 연 때의 수정시각 (창이 열린 채 목록이 새로고침돼도 그대로 — 그사이 남이 고친 것을 서버가 알아보게)
 
 // 일정 고유 번호 (crypto를 쓸 수 없는 환경도 대비)
 const newId = () => (crypto.randomUUID ? crypto.randomUUID()
@@ -2637,6 +2639,7 @@ form.type.onchange = () => {
 // slot: 목록의 빈 자리에서 추가할 때 — 날짜·구분은 그 자리로 고정
 function openForm(ev, asCopy, slot = null) {
   editingId = ev && !asCopy ? ev.id : null;
+  editingBase = ev && !asCopy ? ev.updated : undefined;
   const v = ev || { date: slot ? slot.date : freeSunday(), type: slot ? slot.type : TYPES[0], title: '', conductor: '', pianist: '', parts: {}, scores: [], refs: [], note: '', live: '' };
   $('formTitle').textContent = slot ? `찬양 일정 추가 · ${fmtDate(slot.date)}` : asCopy ? '찬양 일정 복제' : ev ? '찬양 일정 수정' : '찬양 일정 추가';
   form.date.closest('label').hidden = form.type.closest('label').hidden = !!slot;
@@ -2776,6 +2779,7 @@ form.addEventListener('submit', async e => {
   };
   ev.live = cleanLive(fd.get('live'), '', bad);
   if (!/^\d{4}-\d{2}-\d{2}$/.test(ev.date)) bad.push('날짜');
+  else if (farYear(ev.date)) bad.push('날짜(연도)');
   if (!ev.type) bad.push('구분');
   if (!ev.title) bad.push('찬양 제목');
   ev.parts = collectParts(p => fd.get('part-' + p), '', bad);
@@ -2823,7 +2827,7 @@ form.addEventListener('submit', async e => {
     markSaved(saved.id);
     return;
   }
-  mutate({ action: 'save', token, id: editingId, event: ev, base: prev?.updated, ...(notify && { notify }) }, // base: 열 때의 수정시각 — 그사이 남이 고쳤으면 서버가 거절
+  mutate({ action: 'save', token, id: editingId, event: ev, base: editingBase, ...(notify && { notify }) }, // base: 열 때의 수정시각 — 그사이 남이 고쳤으면 서버가 거절
     () => { events = sorted([...events.filter(e => e.id !== saved.id), saved]); },
     `「${ev.title}」을(를) 저장했습니다.`, null, () => openForm(saved));
   markSaved(saved.id);
@@ -2959,6 +2963,7 @@ $('bulkForm').addEventListener('submit', async e => {
     saves.push({ id, event });
     saved.push({ ...event, id });
   });
+  if (bulkRows.some(r => farYear(r.date))) bad.push('날짜(연도)');
   if (bad.length) {
     $('bulkErr').textContent = badMsg(bad);
     $('bulkErr').hidden = false;
@@ -3137,7 +3142,8 @@ $('pastBtn').onclick = () => {
   renderEditor();
   if (showPast) $('pastHead')?.scrollIntoView({ block: 'start' }); // 펼친 지난 일정으로 바로 이동
 };
-$('edSearch').oninput = e => { edQuery = e.target.value.trim(); renderEditor(); };
+let inputT; // 검색은 입력이 150ms 멈춘 뒤 그림 (한글 자모마다 화면 전체를 다시 그리지 않게)
+$('edSearch').oninput = e => { edQuery = e.target.value.trim(); clearTimeout(inputT); inputT = setTimeout(renderEditor, 150); };
 $('edSearch').onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); e.target.blur(); } };
 $('edSearchClear').onclick = () => { $('edSearch').value = ''; edQuery = ''; renderEditor(); $('edSearch').focus(); };
 $('noticeBtn').onclick = () => openNoticeEdit(0);
@@ -3153,7 +3159,7 @@ $('playerClose').onclick = closePlayer;
 $('brandBtn').onclick = () => location.reload(); // 이름·음표를 누르면 새로고침
 $('fontBtn').onclick = () => { applySize(SIZES[curSize()][2]); placePc(); };
 
-$('searchInput').oninput = e => { query = e.target.value.trim(); renderPublic(); };
+$('searchInput').oninput = e => { query = e.target.value.trim(); clearTimeout(inputT); inputT = setTimeout(renderPublic, 150); };
 // 키보드에서 확인(엔터)을 누르면 키보드를 닫아 목록이 바로 보이게 함
 $('searchInput').onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); e.target.blur(); } };
 $('searchClear').onclick = () => { clearSearch(); renderPublic(); };
@@ -3547,7 +3553,7 @@ async function loadRsvpAdmin(force) {
   const date = nextSunday();
   if (!token || !roster.length || (!force && rsvpAns.date === date && Date.now() - rsvpAns.at < 60000)) return;
   rsvpAns = { date, at: Date.now(), list: rsvpAns.date === date ? rsvpAns.list : null };
-  try { rsvpAns.list = (await api({ action: 'rsvplist', token, date })).answers || []; } catch { rsvpAns.at = 0; }
+  try { rsvpAns.list = (await api({ action: 'rsvplist', token, date })).answers || []; } catch { rsvpAns.at = Date.now() - 50000; } // 실패하면 10초 뒤 다시 (화면을 그릴 때마다 바로 다시 보내지 않게)
   renderRsvpAdmin();
 }
 function renderRsvpAdmin() {
@@ -3626,7 +3632,7 @@ function renderEdNotes() {
     api(null, { action: 'pushstat', token }).then(r => {
       $('pushCount').textContent = `알림 받는 기기 ${r.subs}대${r.queued ? ` · 아침 8시에 보낼 알림 ${r.queued}건` : ''}`;
       $('pushCount').hidden = false;
-    }, () => { pushCountAt = 0; });
+    }, () => { pushCountAt = Date.now() - 570000; }); // 실패하면 30초 뒤 다시
   }
 }
 $('dragTipClose').onclick = () => { $('dragTip').hidden = true; lsSet(DRAGTIP_KEY, '1'); };
@@ -3635,7 +3641,7 @@ $('dragTipClose').onclick = () => { $('dragTip').hidden = true; lsSet(DRAGTIP_KE
 const CAL_URL = 'https://yjpraisecal.vercel.app/api/cal';
 $('calBtn').onclick = () => $('calDlg').showModal();
 $('calClose').onclick = () => $('calDlg').close();
-$('calCopy').onclick = () => navigator.clipboard.writeText(CAL_URL).then(
+$('calCopy').onclick = () => (navigator.clipboard?.writeText(CAL_URL) || Promise.reject()).then(
   () => { $('calMsg').textContent = '주소를 복사했습니다. 캘린더 앱의 [구독 추가]·[URL로 추가]에 붙여 넣으세요.'; },
   () => { $('calMsg').textContent = `주소: ${CAL_URL}`; });
 

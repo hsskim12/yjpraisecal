@@ -1,7 +1,7 @@
 /* 홈 화면 설치와 오프라인 대비용 파일.
    화면 파일은 항상 인터넷에서 먼저 받아오고(새로 올린 내용이 바로 보이도록),
    인터넷이 안 될 때만 저장해 둔 것을 보여 줍니다. 일정 데이터(구글)는 건드리지 않습니다. */
-const CACHE = 'choir-notice-v144';
+const CACHE = 'choir-notice-v145';
 const BADGE = 'choir-badge'; // 앱 아이콘 숫자(안 본 알림 건수) — 버전이 바뀌어도 지우지 않음
 const SHELL = ['./', 'index.html', 'manifest.json', 'icon-32.png', 'icon-180.png', 'icon-192.png', 'icon-512.png', 'logo.png'];
 
@@ -64,5 +64,6 @@ self.addEventListener('push', e => {
 self.addEventListener('notificationclick', e => {
   e.notification.close();
   e.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true })
-    .then(list => list.length ? list[0].focus().then(c => (c || list[0]).postMessage({ type: 'refresh' })) : self.clients.openWindow('./'))); // 열려 있던 창은 새 일정을 바로 다시 불러오게 알림
+    .then(list => list.length ? list[0].focus().then(c => (c || list[0]).postMessage({ type: 'refresh' })) : self.clients.openWindow('./'))
+    .catch(() => self.clients.openWindow('./'))) // 창으로 못 옮기면 새로 엶; // 열려 있던 창은 새 일정을 바로 다시 불러오게 알림
 });

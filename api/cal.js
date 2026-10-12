@@ -4,7 +4,7 @@
 const API = 'https://script.google.com/macros/s/AKfycbzt6FAXMBSwMNe-jXw1wnsjOd5_Hhg7c6ezvgLT-gJnoIP3H6zRqbMPcWQ6ByzFYtKOvw/exec';
 const SITE = 'https://yjpraisecal.vercel.app';
 
-const esc = s => String(s || '').replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n');
+const esc = s => String(s || '').replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r\n|\r|\n/g, '\\n');
 // 한 줄 75바이트 규칙: 한글(3바이트)이 잘리지 않게 글자 단위로 접음
 function fold(line) {
   const out = [];
@@ -18,6 +18,8 @@ function fold(line) {
   out.push(cur);
   return out.join('\r\n');
 }
+// 실제 있는 날짜만 (13월·2월 31일 하나로 캘린더 전체가 멈추거나 이웃 날로 밀리지 않게)
+const realDay = d => /^\d{4}-\d{2}-\d{2}$/.test(d) && !isNaN(Date.parse(d + 'T00:00:00Z')) && new Date(d + 'T00:00:00Z').toISOString().slice(0, 10) === d;
 const day = d => d.replace(/-/g, '');
 const nextDay = d => new Date(Date.parse(d + 'T00:00:00Z') + 864e5).toISOString().slice(0, 10).replace(/-/g, '');
 
@@ -26,11 +28,12 @@ function ics(events) {
   const from = new Date(Date.now() - 90 * 864e5).toISOString().slice(0, 10); // 석 달 전부터
   const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//yjpraisecal//choir//KO', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH',
     'X-WR-CALNAME:찬양대 알리미', 'X-WR-TIMEZONE:Asia/Seoul', 'REFRESH-INTERVAL;VALUE=DURATION:PT6H', 'X-PUBLISHED-TTL:PT6H'];
-  events.filter(e => e.id && /^\d{4}-\d{2}-\d{2}$/.test(e.date) && e.date >= from).forEach(e => {
+  events.filter(e => e.id && realDay(e.date) && e.date >= from).forEach(e => {
+    const t = String(e.title ?? '').trim(); // 제목이 없으면 'undefined' 대신 '곡 미정'
     const who = [e.conductor && `지휘 ${e.conductor}`, e.pianist && `반주 ${e.pianist}`].filter(Boolean).join(' · ');
-    lines.push('BEGIN:VEVENT', `UID:${e.id}@yjpraisecal`, `DTSTAMP:${stamp}`,
+    lines.push('BEGIN:VEVENT', `UID:${String(e.id).replace(/[^\w.-]/g, '')}@yjpraisecal`, `DTSTAMP:${stamp}`,
       `DTSTART;VALUE=DATE:${day(e.date)}`, `DTEND;VALUE=DATE:${nextDay(e.date)}`,
-      `SUMMARY:${esc(`${e.type || (new Date(e.date + 'T00:00:00Z').getUTCDay() === 0 ? '주일 찬양' : '평일 일정')}: ${/^미정\d*$/.test(String(e.title).trim()) || String(e.title).trim().length < 2 ? '곡 미정' : e.title}`)}`,
+      `SUMMARY:${esc(`${e.type || (new Date(e.date + 'T00:00:00Z').getUTCDay() === 0 ? '주일 찬양' : '평일 일정')}: ${/^미정\d*$/.test(t) || t.length < 2 ? '곡 미정' : t}`)}`,
       `DESCRIPTION:${esc([who, e.note, SITE].filter(Boolean).join('\n'))}`,
       `URL:${SITE}`, 'TRANSP:TRANSPARENT', 'END:VEVENT');
   });
