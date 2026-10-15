@@ -301,6 +301,10 @@
   .body { padding: 2px 0; min-width: 0; }
   .titlerow { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; }
   .titlerow h4 { margin: 0; font-size: 22px; word-break: keep-all; overflow-wrap: anywhere; }
+  .titlebtn { border: 0; background: none; padding: 0; margin: 0; font: inherit; color: inherit; text-align: left; cursor: pointer; border-radius: 6px; transition: color .15s; }
+  .titlebtn:hover, .titlebtn[aria-expanded="true"] { color: var(--navy); }
+  .titlebtn .histmark { color: var(--muted); font-size: .7em; }
+  .cardhist { margin: 6px 0 0; }
   .headchips .chip { max-width: 100%; overflow-wrap: anywhere; }
   .headchips { display: flex; flex-wrap: wrap; gap: 6px; margin-left: auto; max-width: 100%; }
   .titlerow .people { order: 1; flex-basis: 100%; margin: 0; }
@@ -409,8 +413,12 @@
   .player.withparts .playerhead b { flex: 1 1 calc(100% - 60px); -webkit-line-clamp: 1; line-clamp: 1; }
   .player.withparts .playerparts { order: 2; flex-basis: 100%; }
   .player.withparts #playerOpen { display: none; }
-  .playerparts button { flex: 1; min-width: 0; padding: 0; min-height: 40px; border: 0; border-radius: 9px; background: rgb(255 255 255 / .14); color: #fff; font-size: 16px; font-weight: 700; }
-  .playerparts button[aria-pressed="true"] { background: #fff; color: var(--navy); }
+  .playerloop { max-width: 760px; margin: 8px auto 0; display: flex; gap: 6px; }
+  .playerparts button, .playerloop button { flex: 1; min-width: 0; padding: 0; min-height: 40px; border: 0; border-radius: 9px; background: rgb(255 255 255 / .14); color: #fff; font-size: 16px; font-weight: 700; }
+  .playerparts button[aria-pressed="true"], .playerloop button[aria-pressed="true"] { background: #fff; color: var(--navy); }
+  .playerloop button { transition: background .15s, color .15s; }
+  .playerloop button:not(:disabled):hover { background: rgb(255 255 255 / .24); }
+  .playerloop button:disabled { opacity: .45; }
   .playerhead .iconbtn { background: rgb(255 255 255 / .12); border-color: rgb(255 255 255 / .3); color: #fff; }
   /* 영상은 유튜브가 허용하는 가장 작은 16:9 크기 356×200 (최소 200×200을 지키면서 목록을 덜 가리게).
      좁은 휴대폰(360px)에서는 재생창 좌우 여백(12px)을 빌려 써서 356px을 확보 */
@@ -604,7 +612,7 @@
     .card, .card.next { grid-template-columns: 64px minmax(0, 1fr); gap: 0 8px; padding: 5px 0; border: 0; border-bottom: 1px solid #ccc; border-radius: 0; break-inside: avoid; }
     .card .date, .card .date.special { min-width: 0; background: none; padding: 0; }
     .card .body { padding: 0; }
-    .card .headchips, .card .group, .card .note, .card .muted, .card .badge, .card .done { display: none !important; }
+    .card .headchips, .card .group, .card .note, .card .muted, .card .badge, .card .done, .card .histmark { display: none !important; }
     .date strong { font-size: 13px; }
     .date .dow, .date .kind, .card .label { font-size: 11px; margin: 0; }
     .titlerow h4 { font-size: 14px; }
@@ -784,6 +792,11 @@
       <button type="button" class="iconbtn" id="playerClose" aria-label="재생 닫기" title="재생 닫기">✕</button>
     </div>
     <div class="playerframe" id="playerFrame"></div>
+    <div class="playerloop" role="group" aria-label="반복 구간">
+      <button type="button" id="loopA" aria-pressed="false" disabled>A 지점</button>
+      <button type="button" id="loopB" aria-pressed="false" disabled>B 지점</button>
+      <button type="button" id="loopOff" disabled>반복 끄기</button>
+    </div>
   </div>
 </div>
 
@@ -1467,7 +1480,7 @@ function youtube(url) {
 
 // 유튜브 재생 화면 — 창이 열려도 바로 재생하지 않음 (▶를 눌러야 재생, 2026-09-26 요청)
 const embed = (id, start, title) => el('iframe', {
-  src: `https://www.youtube-nocookie.com/embed/${id}?playsinline=1&rel=0${start ? '&start=' + start : ''}`,
+  src: `https://www.youtube-nocookie.com/embed/${id}?playsinline=1&rel=0&enablejsapi=1&origin=${encodeURIComponent(location.origin)}${start ? '&start=' + start : ''}`, // enablejsapi: 반복 구간용
   title, allow: 'encrypted-media; picture-in-picture; fullscreen; clipboard-write; web-share', // 복사·공유 버튼용
   allowfullscreen: '', referrerpolicy: 'strict-origin-when-cross-origin',
 });
@@ -1481,7 +1494,9 @@ const hasLinks = ev => PARTS.some(p => safeUrl(ev.parts?.[p])) || linkList(ev.sc
 
 // ev·part: 곡의 파트 영상을 틀 때 — 재생창 위에 그 곡의 다른 파트 버튼을 보여 줌 (위로 올라가지 않고 바꿔 듣기)
 function play(yt, url, caption, ev, part) {
-  $('playerFrame').replaceChildren(embed(yt.id, yt.start, caption));
+  const frame = embed(yt.id, yt.start, caption);
+  $('playerFrame').replaceChildren(frame);
+  hookLoop(frame);
   $('playerTitle').textContent = caption;
   $('playerTitle').title = caption; // 잘려 보일 때 전체 제목
   $('playerOpen').href = url; // 재생이 막힌 영상은 유튜브에서 열도록
@@ -1514,9 +1529,50 @@ function placePlayer() {
 
 function closePlayer() {
   $('playerFrame').replaceChildren(); // 창을 없애야 소리도 멈춤
+  ytPlayer = null; resetLoop();
   $('player').hidden = true;
   placePlayer();
 }
+/* 반복 구간 (A–B): 유튜브 재생 제어 스크립트(iframe_api, 재생창을 처음 열 때만 불러옴)로 지금 위치를 읽어 B에 닿으면 A로 되돌림
+   [A 지점]·[B 지점]은 듣다가 누른 그 위치. A 없이 B만 누르면 처음부터. 다른 영상을 틀거나 창을 닫으면 풀림 */
+let ytApi = null, ytPlayer = null, loop = { a: null, b: null, t: 0 };
+const loadYtApi = () => ytApi || (ytApi = new Promise((res, rej) => {
+  window.onYouTubeIframeAPIReady = res;
+  const sc = el('script', { src: 'https://www.youtube.com/iframe_api' });
+  sc.onerror = () => { ytApi = null; rej(); }; // 막히면 다음에 다시 시도 (반복 버튼만 꺼진 채, 재생은 그대로)
+  document.head.append(sc);
+}));
+const mmss = t => `${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, '0')}`;
+function renderLoop() {
+  $('loopA').textContent = loop.a == null ? 'A 지점' : `A ${mmss(loop.a)}`;
+  $('loopB').textContent = loop.b == null ? 'B 지점' : `B ${mmss(loop.b)}`;
+  $('loopA').setAttribute('aria-pressed', String(loop.a != null));
+  $('loopB').setAttribute('aria-pressed', String(loop.b != null));
+  $('loopA').disabled = $('loopB').disabled = !ytPlayer;
+  $('loopOff').disabled = loop.a == null && loop.b == null;
+}
+function resetLoop() { clearInterval(loop.t); loop = { a: null, b: null, t: 0 }; renderLoop(); }
+function startLoop() {
+  clearInterval(loop.t);
+  if (loop.a != null && loop.b != null) loop.t = setInterval(() => { if (ytPlayer && ytPlayer.getCurrentTime() >= loop.b) ytPlayer.seekTo(loop.a, true); }, 200);
+  renderLoop();
+}
+function hookLoop(frame) {
+  ytPlayer = null; resetLoop();
+  loadYtApi().then(() => {
+    if (!frame.isConnected) return; // 그사이 다른 영상으로 바뀜
+    const p = new YT.Player(frame, { events: { onReady: () => { if (frame.isConnected) { ytPlayer = p; renderLoop(); } } } });
+  }).catch(() => {});
+}
+$('loopA').onclick = () => { loop.a = ytPlayer.getCurrentTime(); if (loop.b != null && loop.b <= loop.a + .5) loop.b = null; startLoop(); };
+$('loopB').onclick = () => {
+  const t = ytPlayer.getCurrentTime();
+  if (loop.a == null) loop.a = 0;
+  if (t <= loop.a + .5) return; // A보다 앞이면 무시 (A를 다시 찍으면 됨)
+  loop.b = t; ytPlayer.seekTo(loop.a, true); startLoop();
+};
+$('loopOff').onclick = resetLoop;
+
 // Esc로 재생창 닫기 (열린 창이 없을 때)
 addEventListener('keydown', e => { if (e.key === 'Escape' && !$('player').hidden && !document.querySelector('dialog[open]')) closePlayer(); });
 
@@ -1596,8 +1652,57 @@ function heroSong(ev, many, compact) {
 }
 
 // 목록의 일정 한 개 (미리보기·월별·연도별·집회 특송 공통). 날짜 상자는 예전 한 줄 목록 모양 그대로
+// 곡 미정이 이어지면 한 장으로 — 같은 구분·같은 달·같은 쪽(지난/앞으로)이고 링크·메모·지휘·반주가 없는 것만. keep(이번 주 표시)은 따로
+// (집회 특송도 묶음 — 인쇄의 집회 특송 순서표만 1일차·2일차 그대로)
+// 돌려주는 값: [{ e, i }] — e는 일정 또는 묶음({ ...첫 일정, _group: [일정들] }), i는 원래 목록에서 첫 일정의 자리
+const plainTbd = e => isTbd(e) && !hasLinks(e) && !String(e.note || '').trim() && !String(e.conductor || '').trim() && !String(e.pianist || '').trim();
+function groupTbd(list, keep = () => false) {
+  const out = [];
+  list.forEach((e, i) => {
+    const last = out[out.length - 1], prev = last && (last.e._group ? last.e._group.at(-1) : last.e);
+    if (prev && plainTbd(e) && plainTbd(prev) && !keep(e) && !keep(prev) && typeOf(e) === typeOf(prev)
+      && e.date.slice(0, 7) === prev.date.slice(0, 7) && (e.date < TODAY) === (prev.date < TODAY)) {
+      if (!last.e._group) last.e = { ...last.e, id: 'grp-' + last.e.id, _group: [last.e] };
+      last.e._group.push(e);
+    } else out.push({ e, i });
+  });
+  return out;
+}
+// 묶인 곡 미정 카드: 날짜 상자에 처음~끝, 아래 줄에 날짜를 모두
+function tbdCard(g) {
+  const ds = g._group.map(e => e.date).sort();
+  return el('article', { class: 'card tbdgroup' + (ds.at(-1) < TODAY ? ' past' : '') },
+    el('div', { class: 'date' + (typeOf(g) !== '주일 찬양' ? ' special' : '') },
+      el('strong', {}, md(ds[0])), el('span', { class: 'dow' }, `~ ${md(ds.at(-1))}`), el('span', { class: 'kind' }, typeLabel(typeOf(g)))),
+    el('div', { class: 'body' },
+      el('div', { class: 'titlerow' }, el('h4', { class: 'tbd' }, '곡 미정'),
+        mode === 'upcoming' && el('div', { class: 'headchips' }, shareBtn('곡 미정', () => shareEvents(g._group)))), // 미리 보기 카드는 모두 공유 (묶음은 그 날짜들을 함께)
+      el('p', { class: 'label people' }, `${ds.map(d => `${md(d)}(${DOW[dowOf(d)]})`).join(' · ')} · ${ds.length}번`)));
+}
+
+// 같은 곡을 부른 다른 날 (최근 것부터) — 목록을 그릴 때마다 한 번만 묶음
+let histFor = null, histMap = new Map();
+function histOf(ev) {
+  if (histFor !== events) {
+    histFor = events; histMap = new Map();
+    events.forEach(e => { if (!isTbd(e)) { const k = normTitle(e.title); histMap.set(k, [...(histMap.get(k) || []), e]); } });
+  }
+  return isTbd(ev) ? [] : (histMap.get(normTitle(ev.title)) || []).filter(e => e.id !== ev.id).sort((a, b) => b.date.localeCompare(a.date));
+}
+// 곡 제목을 누르면 그 아래 '부른 날' 한 줄을 펼침 (전에 부른 적이 있는 곡만 누를 수 있음)
+function cardTitle(ev) {
+  const hist = histOf(ev);
+  if (!hist.length) return titleEl('h4', ev);
+  const line = el('p', { class: 'muted cardhist', hidden: '' }, `부른 날: ${hist.slice(0, 5).map(e => `${yearLabel(e.date.slice(0, 4))} ${fmtDate(e.date)}${e.date >= TODAY ? ' (예정)' : ''}`).join(' · ')}${hist.length > 5 ? ` 외 ${hist.length - 5}번` : ''}`);
+  const btn = el('button', { type: 'button', class: 'titlebtn', 'aria-expanded': 'false', onclick: () => {
+    line.hidden = !line.hidden; btn.setAttribute('aria-expanded', String(!line.hidden));
+  } }, ev.title, el('span', { class: 'histmark', 'aria-hidden': 'true' }, ' ▾'));
+  return [el('h4', {}, btn), line];
+}
+
 function card(ev, badge) {
   const past = ev.date < TODAY;
+  const [title, histLine] = [].concat(cardTitle(ev));
   const people = peopleEls(ev);
   // 제목 오른쪽: 듣기·반주·실황·악보·참고연주
   // 듣기만 칠한 버튼, 반주·실황·악보·참고는 테두리 버튼 (한 카드에서 눈이 갈 곳을 하나로)
@@ -1617,7 +1722,7 @@ function card(ev, badge) {
       el('span', { class: 'dow' }, `(${DOW[dowOf(ev.date)]})`),
       el('span', { class: 'kind' }, typeLabel(typeOf(ev)))),
     el('div', { class: 'body' },
-      el('div', { class: 'titlerow' }, titleEl('h4', ev),
+      el('div', { class: 'titlerow' }, title,
         badge && el('span', { class: 'badge' }, badge),
         past && el('span', { class: 'done' }, '지난 찬양'),
         (headChips.length > 0 || token || mode === 'upcoming') && el('div', { class: 'headchips' },
@@ -1625,6 +1730,7 @@ function card(ev, badge) {
           mode === 'upcoming' && shareBtn(showTitle(ev), () => shareEvents([ev])), // 미리 보기 카드마다 공유 (링크가 없으면 날짜·제목·사이트 주소만)
           token && editBtn(ev)), // 관리자로 로그인했을 때만 보이는 수정 버튼
         people.length > 0 && el('p', { class: 'label people' }, people)), // 지휘·반주는 곡 제목 아랫줄
+      histLine,
       ev.note && noteEl(ev), // 안내 메모는 버튼보다 먼저 읽히게
       partChips.length > 0 && el('div', { class: 'group' + (people.length ? ' tight' : '') },
         !people.length && el('p', { class: 'label' }, '파트 연습'),
@@ -1978,15 +2084,15 @@ function renderPublic() {
   if (rehearsalMode) renderRehearsals(shownRehearsals);
   else if (liveMode) renderLive(shownLive);
   else $('list').replaceChildren(...(view.list.length
-    ? view.list.flatMap((e, i) => {
+    ? groupTbd(view.list, e => e.date === nextDate).flatMap(({ e, i }, j, items) => {
       const month = e.date.slice(0, 7);
       const yearList = mode === 'year' && !query;
       const pastStart = i === view.pastFrom;
-      const separator = i === 0 || pastStart || month !== view.list[i - 1].date.slice(0, 7) // 첫 달도 빠뜨리지 않고
+      const separator = j === 0 || pastStart || month !== items[j - 1].e.date.slice(0, 7) // 첫 달도 빠뜨리지 않고
         // 월별은 제목에 이미 '26년 9월'이 있어 화면에서는 숨기고 화면 읽기용 제목으로만 둠
         ? [el('h3', { class: 'monthsep' + (mode === 'month' && !query ? ' sronly' : '') }, yearList ? `${+month.slice(5)}월` : `${yearLabel(month.slice(0, 4))} ${+month.slice(5)}월`)] : [];
       const b = e.date === nextDate ? badge : null;
-      return [...(pastStart ? [el('p', { class: 'pastsep' }, '지난 찬양')] : []), ...separator, card(e, b)];
+      return [...(pastStart ? [el('p', { class: 'pastsep' }, '지난 찬양')] : []), ...separator, e._group ? tbdCard(e) : card(e, b)];
     })
     : [el('p', { class: 'empty' }, view.empty, ...(!query && events.length ? [el('br'),
       el('button', { type: 'button', class: 'linkbtn', onclick: () => { // 오늘에서 가장 가까운 일정으로 (미리보기는 그 주부터, 나머지는 그 달로)
@@ -3289,6 +3395,9 @@ let printView = null; // { kind, title, range, list } — renderPublic에서 채
 // 사이트 주소 QR (주소가 바뀌지 않으므로 미리 만들어 넣어 둠 — 인터넷 없이도 인쇄됨)
 const SITE_QR = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="-2 -2 33 33" shape-rendering="crispEdges"><rect x="-2" y="-2" width="33" height="33" fill="#fff"/><path d="M0 0h7v1h-7zM9 0h4v1h-4zM14 0h1v1h-1zM19 0h1v1h-1zM22 0h7v1h-7zM0 1h1v1h-1zM6 1h1v1h-1zM9 1h1v1h-1zM11 1h1v1h-1zM16 1h1v1h-1zM20 1h1v1h-1zM22 1h1v1h-1zM28 1h1v1h-1zM0 2h1v1h-1zM2 2h3v1h-3zM6 2h1v1h-1zM9 2h4v1h-4zM14 2h2v1h-2zM17 2h2v1h-2zM20 2h1v1h-1zM22 2h1v1h-1zM24 2h3v1h-3zM28 2h1v1h-1zM0 3h1v1h-1zM2 3h3v1h-3zM6 3h1v1h-1zM13 3h1v1h-1zM16 3h1v1h-1zM18 3h2v1h-2zM22 3h1v1h-1zM24 3h3v1h-3zM28 3h1v1h-1zM0 4h1v1h-1zM2 4h3v1h-3zM6 4h1v1h-1zM9 4h3v1h-3zM18 4h1v1h-1zM22 4h1v1h-1zM24 4h3v1h-3zM28 4h1v1h-1zM0 5h1v1h-1zM6 5h1v1h-1zM8 5h1v1h-1zM15 5h3v1h-3zM19 5h2v1h-2zM22 5h1v1h-1zM28 5h1v1h-1zM0 6h7v1h-7zM8 6h1v1h-1zM10 6h1v1h-1zM12 6h1v1h-1zM14 6h1v1h-1zM16 6h1v1h-1zM18 6h1v1h-1zM20 6h1v1h-1zM22 6h7v1h-7zM9 7h5v1h-5zM15 7h6v1h-6zM0 8h1v1h-1zM3 8h1v1h-1zM5 8h2v1h-2zM8 8h1v1h-1zM10 8h2v1h-2zM14 8h1v1h-1zM16 8h1v1h-1zM20 8h2v1h-2zM23 8h1v1h-1zM2 9h4v1h-4zM8 9h1v1h-1zM11 9h1v1h-1zM13 9h1v1h-1zM15 9h3v1h-3zM20 9h3v1h-3zM25 9h1v1h-1zM28 9h1v1h-1zM5 10h3v1h-3zM10 10h2v1h-2zM13 10h3v1h-3zM19 10h2v1h-2zM25 10h3v1h-3zM1 11h1v1h-1zM3 11h3v1h-3zM7 11h1v1h-1zM9 11h5v1h-5zM16 11h1v1h-1zM18 11h1v1h-1zM26 11h2v1h-2zM1 12h3v1h-3zM5 12h2v1h-2zM9 12h2v1h-2zM12 12h1v1h-1zM14 12h2v1h-2zM17 12h1v1h-1zM19 12h5v1h-5zM25 12h1v1h-1zM27 12h2v1h-2zM5 13h1v1h-1zM8 13h1v1h-1zM10 13h7v1h-7zM19 13h1v1h-1zM21 13h1v1h-1zM1 14h2v1h-2zM4 14h3v1h-3zM10 14h5v1h-5zM17 14h1v1h-1zM23 14h6v1h-6zM0 15h1v1h-1zM3 15h1v1h-1zM8 15h1v1h-1zM11 15h2v1h-2zM15 15h1v1h-1zM17 15h1v1h-1zM19 15h2v1h-2zM23 15h1v1h-1zM25 15h1v1h-1zM27 15h1v1h-1zM0 16h2v1h-2zM4 16h5v1h-5zM10 16h1v1h-1zM13 16h1v1h-1zM17 16h2v1h-2zM20 16h2v1h-2zM23 16h1v1h-1zM27 16h1v1h-1zM1 17h1v1h-1zM4 17h1v1h-1zM8 17h1v1h-1zM10 17h1v1h-1zM13 17h5v1h-5zM22 17h2v1h-2zM25 17h1v1h-1zM28 17h1v1h-1zM0 18h1v1h-1zM2 18h1v1h-1zM5 18h4v1h-4zM10 18h1v1h-1zM14 18h4v1h-4zM22 18h1v1h-1zM27 18h2v1h-2zM2 19h1v1h-1zM5 19h1v1h-1zM7 19h1v1h-1zM9 19h2v1h-2zM12 19h1v1h-1zM14 19h1v1h-1zM17 19h1v1h-1zM23 19h2v1h-2zM27 19h2v1h-2zM0 20h1v1h-1zM2 20h1v1h-1zM4 20h3v1h-3zM8 20h1v1h-1zM11 20h1v1h-1zM15 20h2v1h-2zM20 20h5v1h-5zM26 20h1v1h-1zM8 21h1v1h-1zM12 21h1v1h-1zM14 21h2v1h-2zM17 21h1v1h-1zM19 21h2v1h-2zM24 21h1v1h-1zM26 21h3v1h-3zM0 22h7v1h-7zM10 22h1v1h-1zM12 22h1v1h-1zM16 22h1v1h-1zM18 22h1v1h-1zM20 22h1v1h-1zM22 22h1v1h-1zM24 22h1v1h-1zM27 22h1v1h-1zM0 23h1v1h-1zM6 23h1v1h-1zM8 23h1v1h-1zM10 23h1v1h-1zM12 23h1v1h-1zM14 23h1v1h-1zM16 23h1v1h-1zM18 23h1v1h-1zM20 23h1v1h-1zM24 23h3v1h-3zM28 23h1v1h-1zM0 24h1v1h-1zM2 24h3v1h-3zM6 24h1v1h-1zM9 24h1v1h-1zM12 24h1v1h-1zM15 24h3v1h-3zM20 24h5v1h-5zM27 24h1v1h-1zM0 25h1v1h-1zM2 25h3v1h-3zM6 25h1v1h-1zM8 25h4v1h-4zM13 25h1v1h-1zM16 25h5v1h-5zM22 25h5v1h-5zM28 25h1v1h-1zM0 26h1v1h-1zM2 26h3v1h-3zM6 26h1v1h-1zM14 26h1v1h-1zM16 26h3v1h-3zM24 26h3v1h-3zM28 26h1v1h-1zM0 27h1v1h-1zM6 27h1v1h-1zM9 27h1v1h-1zM15 27h1v1h-1zM17 27h1v1h-1zM19 27h2v1h-2zM27 27h1v1h-1zM0 28h7v1h-7zM8 28h2v1h-2zM12 28h1v1h-1zM14 28h1v1h-1zM16 28h2v1h-2zM20 28h2v1h-2zM27 28h1v1h-1z" fill="#000"/></svg>';
 const peopleText = e => [known(e.conductor) && `지휘 ${e.conductor}`, known(e.pianist) && `반주 ${e.pianist}`].filter(Boolean).join(' · ');
+// 인쇄: 묶인 곡 미정은 제목 칸에 날짜를 모두 적음, 달마다 곡 수는 묶음 안의 날짜까지 셈
+const psTitle = e => e._group ? `곡 미정 (${e._group.map(x => md(x.date)).join('·')})` : showTitle(e);
+const psCount = rows => rows.reduce((n, e) => n + (e._group?.length || 1), 0);
 const byMonth = list => { const m = new Map(); list.forEach(e => { const k = e.date.slice(0, 7); m.has(k) || m.set(k, []); m.get(k).push(e); }); return m; };
 const kindTag = e => typeOf(e) !== '주일 찬양' && el('span', { class: 'pskind' }, typeLabel(typeOf(e)));
 
@@ -3302,7 +3411,7 @@ function psTable(list, next) {
       ...rows.map(e => el('tr', { class: e.date === next ? 'next' : null },
         el('td', { class: 'd' }, el('b', {}, md(e.date)), ` (${DOW[dowOf(e.date)]})`),
         el('td', {}, typeLabel(typeOf(e))),
-        el('td', { class: 't' + (isTbd(e) ? ' tbd' : '') }, showTitle(e)),
+        el('td', { class: 't' + (isTbd(e) ? ' tbd' : '') }, psTitle(e)),
         el('td', {}, known(e.conductor) ? e.conductor : ''),
         el('td', {}, known(e.pianist) ? e.pianist : ''),
         el('td', { class: 'm' }, [PARTS.some(p => safeUrl(e.parts?.[p])) && '영상', linkList(e.scores, '').length && '악보'].filter(Boolean).join(' ') || '—')))]))),
@@ -3314,18 +3423,18 @@ function psMonth(list, next) {
   return [el('div', { class: 'psbig' }, ...list.map(e => el('div', { class: 'psb' + (e.date === next ? ' next' : '') },
       el('div', { class: 'd' }, el('b', {}, +e.date.slice(8, 10)), el('span', {}, DOW[dowOf(e.date)])),
       el('div', {}, el('div', { class: 'k' }, typeLabel(typeOf(e))),
-        el('div', { class: 't' + (isTbd(e) ? ' tbd' : '') }, showTitle(e)),
+        el('div', { class: 't' + (isTbd(e) ? ' tbd' : '') }, psTitle(e)),
         el('div', { class: 'p' }, peopleText(e)))))),
     ns.length > 0 && el('div', { class: 'psnote' }, el('div', { class: 'h' }, '공지'), ...ns.map(n => el('p', {}, n)))].filter(Boolean);
 }
 // 연도별 ① 2단 목록 (한 달치를 한 덩어리로)
 function psYearList(list, next) {
   return [el('div', { class: 'pscols' }, [...byMonth(list)].map(([k, rows]) => el('div', { class: 'psmonth' },
-      el('div', { class: 'psmon' }, `${+k.slice(5)}월`, el('small', {}, `${rows.length}곡`)),
+      el('div', { class: 'psmon' }, `${+k.slice(5)}월`, el('small', {}, `${psCount(rows)}곡`)),
       ...rows.map(e => el('div', { class: 'psrow' + (e.date === next ? ' next' : '') },
         el('div', { class: 'psd' }, md(e.date), el('small', {}, `${DOW[dowOf(e.date)]}요일`)),
         el('div', {},
-          el('div', { class: 'pst' + (isTbd(e) ? ' tbd' : '') }, showTitle(e), kindTag(e)),
+          el('div', { class: 'pst' + (isTbd(e) ? ' tbd' : '') }, psTitle(e), kindTag(e)),
           el('div', { class: 'psp' }, peopleText(e) || '\u00a0'))))))),
     el('div', { class: 'pslegend' }, el('b'), '이번 주 찬양 · 테두리 표시 = 주일이 아닌 일정')];
 }
@@ -3335,9 +3444,9 @@ function psGlance(list, next) {
   return [el('div', { class: 'psyear' }, ...Array.from({ length: 12 }, (_, i) => {
     const rows = m.get(`${y}-${pad(i + 1)}`) || [];
     return el('div', { class: 'psmb' + (rows.length ? '' : ' empty') },
-      el('div', { class: 'psmon' }, `${i + 1}월`, el('small', {}, rows.length ? `${rows.length}곡` : '')),
+      el('div', { class: 'psmon' }, `${i + 1}월`, el('small', {}, rows.length ? `${psCount(rows)}곡` : '')),
       ...(rows.length ? rows.map(e => el('div', { class: 'psi' + (e.date === next ? ' next' : '') },
-        el('b', {}, +e.date.slice(8, 10)), el('span', { class: isTbd(e) ? 'tbd' : null }, showTitle(e)),
+        el('b', {}, +e.date.slice(8, 10)), el('span', { class: isTbd(e) ? 'tbd' : null }, psTitle(e)),
         typeOf(e) !== '주일 찬양' ? el('em', {}, typeLabel(typeOf(e))) : el('i'))) : [el('div', { class: 'none' }, '—')]));
   }))];
 }
@@ -3372,8 +3481,9 @@ function buildPrintSheet() {
   const glance = kind === 'year' && printStyle === 'glance';
   const orientation = printOrientation || preferredPrintOrientation(printStyle);
   setPrintPageOrientation(orientation);
-  const body = kind === 'month' ? psMonth(list, next) : kind === 'assembly' ? psAssembly(list)
-    : kind === 'year' ? (glance ? psGlance(list, next) : psYearList(list, next)) : psTable(list, next);
+  const rows = kind === 'assembly' ? list : groupTbd(list).map(x => x.e); // 곡 미정이 이어지면 한 줄로 (집회 특송은 1일차·2일차 그대로)
+  const body = kind === 'month' ? psMonth(rows, next) : kind === 'assembly' ? psAssembly(list)
+    : kind === 'year' ? (glance ? psGlance(rows, next) : psYearList(rows, next)) : psTable(rows, next);
   const qr = kind === 'month' && el('div', { class: 'psqr', 'aria-hidden': 'true' });
   if (qr) qr.innerHTML = SITE_QR; // 미리 만들어 둔 그림 (사용자 입력 아님)
   $('printSheet').className = orientation === 'landscape' ? 'land' : '';
