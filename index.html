@@ -74,9 +74,9 @@
   /* 글자 크기 기준 (2026-09-28): 본문 16px, 보조 글자 15px 이상, 지휘·반주·월 구분 16px. 14px은 칸이 좁아 더 키우면 잘리는 곳(파트 이름 등)에만 */
   body.big .player { zoom: calc(1 / 1.1); } /* 재생창은 확대하지 않음 (영상이 화면 밖으로 넘치지 않게) */
   /* 유튜브 창은 배율 1로: 확대·축소된 곳에 두면 일부 안드로이드 브라우저(폴드)가 영상을 한 번 더 줄여 그려 오른쪽·아래에 흰 여백이 생김 (2026-09-30) */
-  body.small :is(.partpreview, .ytpreview), body.pc.small #topZone .playerframe { zoom: calc(1 / .75); }
-  body.mid :is(.partpreview, .ytpreview), body.pc.mid #topZone .playerframe { zoom: calc(1 / .9); }
-  body.big :is(.partpreview, .ytpreview), body.pc.big #topZone .playerframe { zoom: calc(1 / 1.1); }
+  body.small :is(.partpreview, .ytpreview) { zoom: calc(1 / .75); }
+  body.mid :is(.partpreview, .ytpreview) { zoom: calc(1 / .9); }
+  body.big :is(.partpreview, .ytpreview) { zoom: calc(1 / 1.1); }
   body.big .herosong h3 { font-size: 34.5px; }        /* ×1.1 = 38px — 이번 주 찬양은 더 커지지 않게 */
   body.big .herosong.compact h3 { font-size: 24px; }
   body.big .herodate { font-size: 23px; }             /* ×1.1 ≈ 25px */
@@ -245,7 +245,6 @@
   .modebar .btn[aria-pressed="true"] { background: var(--navy); color: #fff; box-shadow: 0 3px 10px rgb(31 58 99 / .24); }
   body.big .modebar { zoom: calc(1 / 1.1); } /* 전체 확대가 고정 메뉴 폭까지 늘리지 않게 */
   body:has(#schedule:not([hidden]) #modeBar:not([hidden])) { padding-bottom: calc(82px + env(safe-area-inset-bottom)); }
-  body:has(#player:not([hidden])) .modebar { display: none; }
 
   /* 기간 이동 */
   .periodbar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
@@ -321,64 +320,6 @@
   .pastsep ~ .card .done { display: none; } /* 검색 결과: '지난 찬양' 제목 아래 카드에는 따로 붙이지 않음 */
   @media (min-width: 481px) { .group .chips .chip { flex: 1 1 0; max-width: 150px; } }
   @media (min-width: 1024px) { .hero { border-radius: 0; } } /* 큰 화면에서는 화면 폭 전체 띠 — 둥근 모서리가 화면 끝에 걸리지 않게 */ /* 넓은 화면에서도 파트 칸이 한쪽에 작게 모이지 않게 */
-  /* PC 화면 (가로 1080px 이상이면 저절로) — 머리글 [두 칸 보기]/[세 칸 보기]로 두 가지 배치를 바꿈 (2026-09-29 사용자 선택: 시안 B·H 둘 다)
-     세 칸(기본, B): 왼쪽 세로 보기 메뉴 · 가운데 목록 · 오른쪽 이번 주 찬양·공지 (메뉴·이번 주는 스크롤해도 제자리)
-     두 칸(H): 왼쪽 기둥 = 이번 주 찬양 + 보기 메뉴(2칸×3줄) + 공지, 오른쪽 = 목록 카드 두 줄
-     편집 화면(topZone 숨김)은 그대로 한 칸 */
-  .side, #layoutBtn { display: none; }
-  @media screen { /* 켜고 끄기는 JS(placePc)가 body.pc로 */
-    body.pc:has(#topZone:not([hidden])) { display: grid; grid-template-columns: minmax(0, 1fr) max-content minmax(0, 760px) minmax(390px, 468px) minmax(0, 1fr); column-gap: 24px; align-items: start; }
-    body.pc:has(#topZone:not([hidden])) > :is(.top, footer) { grid-column: 1 / -1; }
-    body.pc:has(#topZone:not([hidden])) :is(.top > .wrap, footer.wrap) { width: 100%; max-width: 1452px; padding-inline: 32px; }
-    body.pc:has(#topZone:not([hidden])) #layoutBtn { display: inline-block; }
-    body.pc:has(#topZone:not([hidden])) > .side { display: block; grid-column: 2; grid-row: 2; position: sticky; top: 16px; margin-top: 24px; }
-    body.pc:has(#topZone:not([hidden])) > main.wrap { grid-column: 3; grid-row: 2; max-width: none; margin: 0; padding-inline: 0; }
-    body.pc:has(#topZone:not([hidden])) > #topZone { grid-column: 4; grid-row: 2; position: sticky; top: 16px; margin-top: 24px; max-height: calc((100vh - 32px) / var(--z, 1)); overflow-y: auto; overscroll-behavior: contain; border-radius: 22px; }
-    body.pc #topZone .hero { border-radius: 22px; }
-    body.pc #topZone .hero > .wrap { padding: 10px 18px 8px; }
-    /* PC 이번 주 칸은 세로를 줄임 (2026-10-04 사용자 요청) — 마우스로 누르므로 버튼은 실제 36~44px, ✎는 제목 옆으로. 높이는 / var(--z)로 글자 배율과 상관없이 같게 */
-    body.pc #topZone .herosong { position: relative; }
-    body.pc #topZone .herosong h3 { margin: 4px 0 0; font-size: 30px; }
-    body.pc #topZone .herotype { margin-bottom: 0; } /* 제목 위 여백을 4px로 줄였으므로 '주일' 구분 글자가 제목에 겹쳐 붙지 않게 */
-    body.pc #topZone .herosong:has(.heroedit) h3 { padding-right: 52px; }
-    body.pc #topZone .heroedit { position: absolute; top: 0; right: 0; margin: 0; }
-    body.pc #topZone .herolinks { margin-top: 8px; gap: 6px; }
-    body.pc #topZone :is(.herolinks a, .herolinks button) { min-height: calc(38px / var(--z, 1)); padding-block: 2px; }
-    body.pc #topZone .heroparts { margin-top: 6px; gap: 6px; }
-    body.pc #topZone .heroparts a { min-height: calc(44px / var(--z, 1)); padding-block: 2px; }
-    body.pc #topZone .heroshare { margin-top: 2px; min-height: calc(36px / var(--z, 1)); }
-    body.pc #topZone .notices { margin: 12px 0 0; }
-    /* 보기 메뉴: 화면 아래에 떠 있지 않고 제자리 메뉴로 (영상 창이 열려도 가리지 않음) */
-    body.pc:has(#topZone:not([hidden])) .modebar { position: static; transform: none; width: auto; margin: 0; padding: 8px; gap: 4px; border-radius: 18px; box-shadow: 0 4px 14px rgb(16 24 40 / .10); }
-    body.pc:has(#topZone:not([hidden])) .modebar .btn span { display: inline; }
-    body.pc:is(.big, .mid, .small):has(#topZone:not([hidden])) .modebar { zoom: 1; }
-    body.pc:has(#topZone:not([hidden])):has(#player:not([hidden])) .modebar { display: grid; }
-    body.pc:has(#topZone:not([hidden])):has(#schedule[hidden]) :is(.side, #modeBar) { visibility: hidden; } /* 목록이 뜨기 전에는 메뉴도 숨김 */
-    body.pc .side .modebar { grid-template-columns: 1fr; }
-    body.pc .side .modebar .btn { text-align: left; padding: 12px 14px; min-height: 50px; } /* 메뉴 칸은 글자 폭에 맞춤 (2026-09-29: 글자 옆 여백이 너무 크다는 요청) */
-    body.pc .rrow { flex-wrap: wrap; } /* 연습 영상도 실황처럼 사진 크게 (224px, 자리가 모자라면 제목은 사진 아래로) */
-    body.pc .rrow .rthumb { width: 224px; }
-    body.pc .rrow .rinfo { flex: 1 1 180px; }
-    /* 재생창: 화면 아래 띠가 아니라 이번 주 찬양·공지 아래 칸에 */
-    body.pc #topZone .player { position: static; margin-top: 12px; border-radius: 22px; padding: 10px 12px 12px; box-shadow: 0 4px 14px rgb(16 24 40 / .14); zoom: 1; }
-    body.pc #topZone .playerhead { max-width: none; }
-    body.pc #topZone .playerframe { width: 100%; margin-inline: 0; }
-    /* 두 칸(H) */
-    body.pc.pcH:has(#topZone:not([hidden])) { grid-template-columns: minmax(0, 1fr) minmax(390px, 442px) minmax(0, 860px) minmax(0, 1fr); } /* 왼쪽 기둥 30% 넓힘 (2026-09-29 요청) */
-    /* 크게 보기는 이번 주 칸을 70% 폭으로 — 목록 칸이 넓어지게 (2026-09-30 요청) */
-    body.pc.big:has(#topZone:not([hidden])) { grid-template-columns: minmax(0, 1fr) max-content minmax(0, 760px) minmax(273px, 328px) minmax(0, 1fr); }
-    body.pc.pcH.big:has(#topZone:not([hidden])) { grid-template-columns: minmax(0, 1fr) minmax(273px, 309px) minmax(0, 860px) minmax(0, 1fr); }
-    body.pc.big #topZone .herolinks { grid-template-columns: repeat(auto-fit, minmax(72px, 1fr)); } /* 좁아진 칸에서도 듣기·반주·악보 한 줄 */
-    body.pc.pcH:has(#topZone:not([hidden])) :is(.top > .wrap, footer.wrap) { max-width: 1390px; }
-    body.pc.pcH:has(#topZone:not([hidden])) > .side { display: none; }
-    body.pc.pcH:has(#topZone:not([hidden])) > #topZone { grid-column: 2; }
-    body.pc #topZone .modebar { margin-top: 14px; grid-template-columns: 1fr 1fr; padding: 6px; }
-    body.pc #topZone .modebar .btn { font-size: 17px; min-height: 46px; }
-    body.pc.pcH #list { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; align-items: start; }
-    body.pc.pcH #list > * + * { margin-top: 0; }
-    body.pc.pcH #list > :not(.card, .rrow) { grid-column: 1 / -1; }
-    body.pc.pcH #list > .monthsep { margin-top: 10px; }
-  }
 
   .card.past { background: var(--surface-sunken); border-color: transparent; } /* 지난 일정 */
   .pastsep { margin: 26px 0 0; font-size: 16px; font-weight: 800; color: var(--ink); } /* 검색 결과의 '지난 찬양' */
@@ -843,8 +784,15 @@
   .mcal button { cursor: pointer; transition: filter .15s; } .mcal button:hover { filter: brightness(.95); }
 
   /* 영상 */
-  #publicView .rrow { border: 0; border-radius: 14px; padding: 10px; }
-  #publicView .rthumb { width: 128px; }
+  /* 사진·제목이 한 줄, [재생][공유]·관리자 [수정][삭제]는 아래 줄 전체 폭 (제목이 좁은 칸에서 한 글자씩 꺾이지 않게) */
+  #publicView .rrow { display: grid; grid-template-columns: 128px minmax(0, 1fr); gap: 10px 12px; align-items: start; border: 0; border-radius: 14px; padding: 10px; }
+  #publicView .rrow .rthumb { width: 128px; }
+  #publicView .rrow .rinfo { min-width: 0; }
+  #publicView .rrow .rname { display: block; font-size: 15.5px; font-weight: 700; line-height: 1.3; word-break: keep-all; overflow-wrap: anywhere; }
+  #publicView .rrow .rinfo small { display: block; font-size: 13px; }
+  #publicView .rrow .ractions { grid-column: 1 / -1; display: flex; gap: 6px; }
+  #publicView .rrow .ractions > * { flex: 1; justify-content: center; min-height: 42px; }
+  #publicView .rrow .edbtns { grid-column: 1 / -1; display: flex; justify-content: flex-end; gap: 6px; margin: 0; }
 
   /* 공지 탭 */
   .noticepanel { padding-top: 4px; }
@@ -875,6 +823,32 @@
   .tabbar button[aria-current="true"] { color: #fff; font-weight: 800; }
   /* 재생창은 아래 메뉴 바로 위 */
   body:has(#publicView:not([hidden])) .player { bottom: calc(64px + env(safe-area-inset-bottom)); border-radius: 18px 18px 0 0; }
+
+  /* ===== 새 디자인 2단계: PC 세 칸 (body.pc — placePc, 시안 ⑤) ===== */
+  .pcright { display: contents; } /* 휴대폰: 칸 없이 재생창만 (화면 아래 고정) */
+  .pccal[hidden], .pccal { display: none; }
+  body.pc.pub { display: grid; align-items: start; padding-bottom: 0;
+    grid-template-columns: minmax(16px, 1fr) minmax(calc(320px / .75), calc(400px / .75)) minmax(0, calc(640px / .75)) minmax(calc(260px / .75), calc(320px / .75)) minmax(16px, 1fr);
+    column-gap: calc(24px / .75); }
+  body.pc.pub > * { grid-column: 1 / -1; }
+  body.pc.pub > #topZone { grid-column: 2; grid-row: 2; position: sticky; top: 0; max-width: none; padding: 0 0 16px; max-height: calc(100vh * .75 / var(--z)); overflow-y: auto; scrollbar-width: thin; }
+  body.pc.pub > main.wrap { grid-column: 3; grid-row: 2; max-width: none; margin: 0; padding: 0 0 40px; }
+  body.pc.pub > .pcright { display: block; grid-column: 4; grid-row: 2; position: sticky; top: 0; zoom: calc(1 / .75); padding-bottom: 16px; }
+  body.pc.pub .pccal:not([hidden]) { display: block; }
+  body.pc.pub .pccal .lh { margin-top: 12px; }
+  body.pc.pub .pcright .player { zoom: 1; position: static; max-width: none; margin: 14px 0 0; border-radius: 14px; padding: 10px 12px 12px; box-shadow: 0 4px 14px rgb(16 24 40 / .14); }
+  body.pc.pub .pcright .playerhead { max-width: none; }
+  body.pc.pub .pcright .playerframe { width: 100%; margin-inline: 0; }
+  body.pc.pub .pcright .playerloop { max-width: none; }
+  body.pc.pub #publicView .viewhead { margin-top: 12px; }
+  /* 머리글: 어두운 막대에 이름 + 메뉴 4칸 + 일정 편집 */
+  body.pc.pub .top { background: var(--dark); border-bottom: 0; color: #fff; }
+  body.pc.pub .top .wrap { max-width: none; padding-inline: calc(28px / .75); }
+  body.pc.pub .brand small { color: #aab3c2; }
+  body.pc.pub .top .tabbar { position: static; display: flex; gap: 4px; background: none; padding: 0; max-width: none; margin: 0 8px 0 auto; border-radius: 0; }
+  body.pc.pub .top .tabbar button { min-height: 40px; padding: 0 16px; border-radius: 9px; font-size: 14.5px; }
+  body.pc.pub .top .tabbar button[aria-current="true"] { background: rgb(255 255 255 / .12); color: #fff; }
+  body.pc.pub .top .tabbar button:hover { color: #fff; }
   @media print { #topZone, #publicView, .tabbar { zoom: 1; } .tabbar { display: none; } }
 </style>
 <!-- 고른 화면 색을 그리기 전에 먼저 입혀, 열 때 색이 한 번 바뀌어 보이지 않게 함 -->
@@ -890,7 +864,6 @@
     </button>
     <nav class="topnav">
       <button type="button" class="btn" id="fontBtn" hidden title="글자 크기: 지금 보통 — 누르면 크게" aria-label="글자 크기: 지금 보통 — 누르면 크게">크게 보기</button>
-      <button type="button" class="btn" id="layoutBtn" title="PC 화면 배치 바꾸기" hidden></button>
       <button type="button" class="btn" id="toPublic" hidden>일정 보기</button>
       <a class="btn" href="#edit" id="toEdit">일정 편집</a>
     </nav>
@@ -916,6 +889,9 @@
   </section>
 </div>
   <!-- 영상 재생창 (유튜브 버튼을 누르면 열림) -->
+<!-- PC 오른쪽 칸: 이번 달 달력 + 재생창 (휴대폰에서는 칸 없이 재생창만 화면 아래) -->
+<aside class="pcright" id="pcRight">
+  <div class="pccal" id="pcCal" hidden></div>
   <div class="player" id="player" hidden>
     <div class="playerhead">
       <b id="playerTitle" aria-live="polite"></b>
@@ -931,7 +907,7 @@
     </div>
   </div>
 
-<nav class="side" id="side" aria-label="보기 메뉴"></nav>
+</aside>
 
 <main class="wrap">
   <div class="kakaobar installbar" id="kakaoBar" hidden>
@@ -1653,9 +1629,10 @@ function play(yt, url, caption, ev, part) {
 }
 // 재생창 자리: 공개 화면에서는 항상 topZone 안에 둠 — PC 화면은 CSS로 그 칸에 붙이고(2026-09-29 요청), 그 밖에는 화면 아래 고정(position: fixed).
 // 화면 방향을 돌려 PC↔모바일이 바뀌어도 옮기지 않음 (옮기면 재생 중인 영상이 처음부터 다시 불러와짐). 편집 화면(topZone 숨김)에서만 아래로 옮김
+const isPc = () => document.body.classList.contains('pc');
 function placePlayer() {
-  const p = $('player'), inZone = !$('publicView').hidden, docked = false; // 2단계(PC 세 칸)에서 docked 다시
-  if (inZone && p.nextElementSibling !== $('side')) $('side').before(p);
+  const p = $('player'), inZone = !$('publicView').hidden, docked = inZone && isPc(); // docked: PC 오른쪽 칸에 붙음
+  if (inZone && p.parentElement !== $('pcRight')) $('pcRight').append(p);
   if (!inZone && p.previousElementSibling !== $('edStatus')) $('edStatus').after(p);
   const h = docked || p.hidden ? 0 : p.offsetHeight;
   document.body.style.paddingBottom = h ? h + 'px' : ''; // 재생창이 목록 끝을 가리지 않게
@@ -2230,7 +2207,10 @@ function renderPublic() {
 
   // 아래 메뉴 탭: 내 파트는 늘 다음 주일부터 8주, 공지 탭은 목록 대신 공지·설정
   if (tab === 'home') { mode = 'upcoming'; upcomingStart = nextSunday(); query = ''; }
-  $('topZone').hidden = tab !== 'home';
+  $('topZone').hidden = tab !== 'home' && !isPc(); // PC는 왼쪽 칸에 늘
+  $('pcCal').hidden = !(isPc() && tab === 'home' && nextDate);
+  if (!$('pcCal').hidden) $('pcCal').replaceChildren(el('h3', { class: 'lh' }, `${+nextDate.slice(5, 7)}월`),
+    monthCal(+nextDate.slice(0, 4), +nextDate.slice(5, 7), events.filter(e => e.date.startsWith(nextDate.slice(0, 7))), nextDate));
   $('schedule').hidden = tab === 'notice';
   $('noticePanel').hidden = tab !== 'notice';
   $('tabBar').querySelectorAll('button').forEach(b => b.setAttribute('aria-current', String(b.dataset.tab === tab)));
@@ -3568,24 +3548,17 @@ function startPrint(style) {
   d.querySelector(`input[value="${v}"]`).checked = true;
   d.showModal();
 }
-// PC 화면(가로 1080px 이상): 공지는 이번 주 찬양 아래로, 보기 메뉴는 세 칸이면 왼쪽 세로 메뉴, 두 칸이면 이번 주 찬양 아래로.
-// 좁아지면 원래 자리(목록 위·화면 아래 떠 있는 메뉴)로. 옮기면 키보드 순서도 보이는 순서와 같아짐
-const pcMq = matchMedia('(min-width: 1080px)');
-// 폭 880px↑·높이 500px↑이면 방향과 상관없이 PC 화면 (가로로 편 폴드, 좁은 PC 창 — 2026-09-29·30 요청). 크게 보기는 이 폭에 칸이 모자라 1080px 전까지 휴대폰 화면 유지. 가로로 돌린 휴대폰은 높이가 낮아 해당 없음
-const wideMq = matchMedia('(min-width: 880px) and (min-height: 500px)');
-const PC_LAYOUT_KEY = 'choir-pc-layout';
-let pcLayout = lsGet(PC_LAYOUT_KEY) === 'H' ? 'H' : 'B';
-// ponytail: 새 디자인 1단계(2026-10) — PC도 휴대폰과 같은 한 줄 화면. PC 세 칸(일력·목록·달력+재생창)은 2단계에서 body.pc로 다시
+// PC 세 칸 (2026-10 새 디자인 2단계): 시안 크기로 폭 1000px 이상이면(글자 크기가 클수록 더 넓어야 함)
+// [공지+일력 | 목록 | 이번 달 달력+재생창], 아래 메뉴 4칸은 머리글로 올림. 좁아지면 휴대폰 화면
+const SIZE_SCALE = { small: 1, mid: .9 / .75, big: 1.1 / .75 };
 const placePc = () => {
-  document.body.classList.remove('pc', 'pcH');
+  const pc = innerWidth / SIZE_SCALE[curSize()] >= 1000, was = isPc();
+  document.body.classList.toggle('pc', pc);
+  pc ? $('toPublic').before($('tabBar')) : $('edStatus').before($('tabBar'));
   placePlayer();
+  if (pc !== was && loadState === 'ok' && !$('publicView').hidden) renderPublic(); // 일력·달력 칸이 탭에 따라 달라짐
 };
-$('layoutBtn').onclick = () => {
-  pcLayout = pcLayout === 'H' ? 'B' : 'H';
-  lsSet(PC_LAYOUT_KEY, pcLayout);
-  placePc();
-};
-pcMq.addEventListener('change', placePc); wideMq.addEventListener('change', placePc); placePc();
+addEventListener('resize', placePc); placePc();
 $('printBtn').onclick = () => startPrint('list');
 $('printBtn2').onclick = () => startPrint('glance');
 $('printCancel').onclick = () => { printStyle = null; $('printDlg').close(); };
@@ -3738,6 +3711,7 @@ function route() {
   $('publicView').hidden = edit;
   $('topZone').hidden = edit; // 일력 카드는 공개 화면에서만 (탭은 renderPublic이 다시 정함)
   $('tabBar').hidden = edit;
+  document.body.classList.toggle('pub', !edit);
   if (!$('player').hidden) placePlayer(); // PC에서 칸에 붙어 있던 재생창은 편집 화면에서는 아래로
   $('loginView').hidden = !showLogin;
   $('editorView').hidden = !edit || showLogin;
@@ -4053,7 +4027,7 @@ PUSH_CHKS.forEach(id => {
 /* ===== 시작 ===== */
 applyTheme(themeId);
 // 처음 글자 크기: 휴대폰은 작게, 폭 600px↑(펼친 폴드·태블릿·PC)는 보통 — 펼친 폴드(약 673px)에서도 작게(0.75)는 너무 작음 (2026-10-10) — 한 번 고르면 그 크기로 기억
-{ const v = lsGet(BIG_KEY); applySize(v === '1' ? 'big' : v === 'm' ? 'mid' : v === 's' ? 'small' : innerWidth >= 600 ? 'mid' : 'small'); }
+{ const v = lsGet(BIG_KEY); applySize(v === '1' ? 'big' : v === 'm' ? 'mid' : 'small'); }
 sizeLabel();
 placePc(); // 저장된 글자 크기에 따라 PC 화면 여부가 달라짐 (가로로 편 폴드)
 load();
