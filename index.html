@@ -821,23 +821,25 @@
   .footbrand span:not(.ver) { display: flex; flex-direction: column; line-height: 1.2; } .footbrand b { color: var(--ink); font-size: 15px; }
 
   /* 아래 메뉴 4칸 */
-  .tabbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 9; display: grid; grid-template-columns: repeat(4, 1fr); background: var(--dark); padding: 6px 0 calc(6px + env(safe-area-inset-bottom)); }
+  .tabbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 9; display: grid; grid-template-columns: repeat(4, 1fr); background: var(--dark); padding: 6px 8px calc(6px + env(safe-area-inset-bottom)); gap: 4px; }
   .tabbar[hidden] { display: none; }
   @media (min-width: 600px) { .tabbar, body:has(#publicView:not([hidden])) .player { max-width: 570px; margin-inline: auto; } .tabbar { border-radius: 16px 16px 0 0; } } /* PC 세 칸(2단계) 전까지는 가운데 한 줄에 맞춤 */
-  .tabbar button { min-height: 52px; border: 0; border-top: 3px solid transparent; background: none; color: #aab3c2; font: inherit; font-size: 15px; font-weight: 600; cursor: pointer; transition: color .15s; }
+  .tabbar button { min-height: 52px; border: 0; border-radius: 10px; background: none; color: #aab3c2; font: inherit; font-size: 15px; font-weight: 600; cursor: pointer; transition: color .15s, background .15s; }
   .tabbar button:hover { color: #fff; }
-  .tabbar button[aria-current="true"] { color: #fff; font-weight: 800; border-top-color: #fff; } /* 지금 탭: 위 막대 */
+  .tabbar button[aria-current="true"] { color: #fff; font-weight: 800; background: rgb(255 255 255 / .12); } /* 지금 탭: 옅은 바탕 칸 (PC 머리글 메뉴와 같은 모양) */
   /* 재생창은 아래 메뉴 바로 위 */
   /* 아래 메뉴는 글자 크기를 따라 --z/.75배, 재생창은 늘 1배 → 위치·폭을 메뉴 배율로 맞춤 (보통·크게에서 겹치던 것) */
-  body:has(#publicView:not([hidden])) .player { bottom: calc((64px + env(safe-area-inset-bottom)) * var(--z, 1) / .75); border-radius: 18px 18px 0 0; }
+  body:has(#publicView:not([hidden])) .player { bottom: calc((64px + env(safe-area-inset-bottom)) * var(--z, 1) / .75); border-radius: 18px 18px 0 0; background: var(--dark); padding-bottom: 10px; }
+  /* 재생 중엔 재생창+아래 메뉴가 한 덩어리: 같은 색, 메뉴 모서리는 펴고 사이에 얇은 선 */
+  body:has(#publicView:not([hidden])):has(.player:not([hidden])) .tabbar { border-radius: 0; box-shadow: inset 0 1px 0 rgb(255 255 255 / .12); }
   @media (min-width: 600px) { body:has(#publicView:not([hidden])) .player { max-width: calc(570px * var(--z, 1) / .75); } }
 
   /* ===== 새 디자인 2단계: PC 세 칸 (body.pc — placePc, 시안 ⑤) ===== */
   .pcright { display: contents; } /* 휴대폰: 칸 없이 재생창만 (화면 아래 고정) */
   .pccal[hidden], .pccal { display: none; }
   body.pc.pub { display: grid; align-items: start; padding-bottom: 0;
-    grid-template-columns: minmax(16px, 1fr) minmax(calc(320px / .75), calc(400px / .75)) minmax(0, calc(640px / .75)) minmax(calc(260px / .75), calc(320px / .75)) minmax(16px, 1fr);
-    column-gap: calc(24px / .75); }
+    grid-template-columns: minmax(16px, 1fr) minmax(calc(280px / .75), calc(400px / .75)) minmax(calc(360px / .75), calc(640px / .75)) minmax(calc(240px / .75), calc(320px / .75)) minmax(16px, 1fr);
+    column-gap: calc(20px / .75); } /* 가운데 목록 칸 최소 360px — 1000px 폭에서 145px로 줄어 글자가 한 자씩 꺾이던 것 */
   body.pc.pub > * { grid-column: 1 / -1; }
   body.pc.pub > #notices { grid-column: 2 / 5; grid-row: 2; max-width: none; width: auto; margin: 12px 0 0; }
   body.pc.pub > #topZone { grid-column: 2; grid-row: 3; position: sticky; top: 0; max-width: none; padding: 0 0 16px; max-height: calc(100vh * .75 / var(--z)); overflow-y: auto; scrollbar-width: thin; }
@@ -867,8 +869,8 @@
   body.pc.pub .top { background: var(--dark); border-bottom: 0; color: #fff; }
   body.pc.pub .top .wrap { max-width: none; padding-inline: calc(28px / .75); }
   body.pc.pub .brand small { color: #aab3c2; }
-  body.pc.pub .top .tabbar { position: static; display: flex; gap: 4px; background: none; padding: 0; max-width: none; margin: 0 8px 0 auto; border-radius: 0; }
-  body.pc.pub .top .tabbar button { min-height: 40px; padding: 0 16px; border: 0; border-radius: 9px; font-size: 14.5px; }
+  body.pc.pub .top .tabbar { position: static; display: flex; gap: 4px; background: none; padding: 0; max-width: none; margin: 0 8px 0 auto; border-radius: 0; box-shadow: none; }
+  body.pc.pub .top .tabbar button { min-height: 40px; padding: 0 16px; border-radius: 9px; font-size: 14.5px; }
   body.pc.pub .top .tabbar button[aria-current="true"] { background: rgb(255 255 255 / .12); color: #fff; }
   body.pc.pub .top .tabbar button:hover { color: #fff; }
   @media print { #topZone, #publicView, .tabbar { zoom: 1; } .tabbar { display: none; } }
