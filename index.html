@@ -19,6 +19,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@900&text=0123456789&display=swap"> <!-- 일력 숫자만 (글자 10개) -->
 <link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
 <meta name="theme-color" content="#1f3a63">
+<meta name="color-scheme" content="only light"> <!-- 휴대폰이 어두운 모드여도 브라우저가 사이트를 억지로 어둡게 바꾸지 않게 (늘 밝은 화면, 2026-10-19 사용자) -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="알리미">
@@ -687,6 +688,7 @@
   /* ===== 새 디자인 1단계 (2026-10-19, 사용자 선택 '일력 + 내 파트' 6-가) =====
      공지 → 일력 카드 → 내 파트 목록, 아래 메뉴 4칸(내 파트·전체 일정·영상·공지). 색은 지금 테마의 남색 + 일정표 일요일 빨강(DESIGN.md)
      글자 크기 단계(작게 .75·보통 .9·크게 1.1)는 그대로 두고, 이 칸들은 '작게'에서 시안 크기 그대로 보이게 1/.75 (보통·크게는 그만큼 더 큼) */
+  :root { color-scheme: only light; } /* 위 meta와 같은 뜻 — 입력칸·스크롤 막대도 밝은 모양 */
   :root { --red: #c0392b; --red-soft: #fbeceb; --dark: #17202e; --serif: "Noto Serif KR", "AppleMyungjo", "Nanum Myeongjo", serif; }
   #topZone, #publicView, .tabbar, #notices { zoom: calc(1 / .75); }
   body:is(.small, .mid, .big) #publicView .modebar { zoom: 1; }
@@ -697,6 +699,7 @@
 
   /* 공지 두 줄 (일력 위) */
   #topZone { max-width: 570px; margin-inline: auto; padding: 0 12px; }
+  #noticeToggle { color: var(--ink); } /* PC 어두운 머리글에서도 글자가 보이게 (흰 글자를 물려받지 않게) */
   #noticeToggle[aria-expanded="true"] { background: var(--navy); color: #fff; border-color: var(--navy); }
   #notices.notices { box-sizing: content-box; max-width: 546px; margin: 12px auto 0; gap: 0; background: #fff; border-radius: 12px; padding: 2px 14px; }
   @media (max-width: 599px) { #notices.notices { margin-inline: 12px; } }
@@ -839,10 +842,10 @@
   body.pc.pub > .pcright { display: block; grid-column: 4; grid-row: 3; position: sticky; top: 0; zoom: calc(1 / .75); padding-bottom: 16px; }
   body.pc.pub .pccal:not([hidden]) { display: block; }
   body.pc.pub .pccal .lh { margin-top: 12px; }
-  body.pc.pub .pcright .player { zoom: 1; position: static; max-width: none; margin: 14px 0 0; border-radius: 14px; padding: 10px 12px 12px; box-shadow: 0 4px 14px rgb(16 24 40 / .14); }
-  body.pc.pub .pcright .playerhead { max-width: none; }
-  body.pc.pub .pcright .playerframe { width: 100%; margin-inline: 0; }
-  body.pc.pub .pcright .playerloop { max-width: none; }
+  body.pc.pub #topZone .player { zoom: 1; position: static; max-width: none; margin: 12px 0 0; border-radius: 14px; padding: 10px 12px 12px; box-shadow: 0 4px 14px rgb(16 24 40 / .14); }
+  body.pc.pub #topZone .playerhead { max-width: none; }
+  body.pc.pub #topZone .playerframe { width: 100%; margin-inline: 0; }
+  body.pc.pub #topZone .playerloop { max-width: none; }
   body.pc.pub #publicView .viewhead { margin-top: 12px; }
   /* 머리글: 어두운 막대에 이름 + 메뉴 4칸 + 일정 편집 */
   body.pc.pub .top { background: var(--dark); border-bottom: 0; color: #fff; }
@@ -894,7 +897,7 @@
   </section>
 </div>
   <!-- 영상 재생창 (유튜브 버튼을 누르면 열림) -->
-<!-- PC 오른쪽 칸: 이번 달 달력 + 재생창 (휴대폰에서는 칸 없이 재생창만 화면 아래) -->
+<!-- PC 오른쪽 칸: 이번 달 달력. 재생창은 휴대폰에서 여기(칸 없이 화면 아래 고정), PC에서는 왼쪽 일력 카드 아래 (placePlayer) -->
 <aside class="pcright" id="pcRight">
   <div class="pccal" id="pcCal" hidden></div>
   <div class="player" id="player" hidden>
@@ -1636,11 +1639,12 @@ function play(yt, url, caption, ev, part) {
 // 화면 방향을 돌려 PC↔모바일이 바뀌어도 옮기지 않음 (옮기면 재생 중인 영상이 처음부터 다시 불러와짐). 편집 화면(topZone 숨김)에서만 아래로 옮김
 const isPc = () => document.body.classList.contains('pc');
 function placePlayer() {
-  const p = $('player'), inZone = !$('publicView').hidden, docked = inZone && isPc(); // docked: PC 오른쪽 칸에 붙음
-  if (inZone && p.parentElement !== $('pcRight')) $('pcRight').append(p);
+  // docked: PC는 왼쪽 칸 일력 카드 바로 아래(2026-10-19 사용자), 휴대폰은 오른쪽 칸 자리(.pcright는 칸 없이 보임)에 두고 화면 아래 고정
+  const p = $('player'), inZone = !$('publicView').hidden, docked = inZone && isPc(), spot = docked ? $('topZone') : $('pcRight');
+  if (inZone && p.parentElement !== spot) spot.append(p); // ponytail: PC↔휴대폰 폭이 바뀌는 순간에만 옮김 — 그때는 영상이 처음부터 다시 불러와짐
   if (!inZone && p.previousElementSibling !== $('edStatus')) $('edStatus').after(p);
   const h = docked || p.hidden ? 0 : p.offsetHeight;
-  document.body.style.paddingBottom = h ? h + 'px' : ''; // 재생창이 목록 끝을 가리지 않게
+  document.body.style.paddingBottom = h ? `calc(${h}px + (72px + env(safe-area-inset-bottom)) / var(--z, 1))` : ''; // 재생창·아래 메뉴가 목록 끝을 가리지 않게
   document.documentElement.style.scrollPaddingBottom = h ? h + 'px' : ''; // 누른 버튼을 재생창 위로 올릴 때 쓰는 여백
   if (docked && !p.hidden) { // 영상이 화면 아래로 잘리면: 칸이 위에 붙을 만큼만(머리글 높이) 화면을 올리고, 나머지는 칸 안에서 내림
     const z = $('topZone'), over = p.getBoundingClientRect().bottom - innerHeight;
@@ -3563,7 +3567,7 @@ function startPrint(style) {
   d.showModal();
 }
 // PC 세 칸 (2026-10 새 디자인 2단계): 시안 크기로 폭 1000px 이상이면(글자 크기가 클수록 더 넓어야 함)
-// [공지+일력 | 목록 | 이번 달 달력+재생창], 아래 메뉴 4칸은 머리글로 올림. 좁아지면 휴대폰 화면
+// [일력+재생창 | 목록 | 이번 달 달력], 공지는 머리글 [공지]로 그 위에, 아래 메뉴 4칸은 머리글로 올림. 좁아지면 휴대폰 화면
 const SIZE_SCALE = { small: 1, mid: .9 / .75, big: 1.1 / .75 };
 const placePc = () => {
   const pc = innerWidth / SIZE_SCALE[curSize()] >= 1000, was = isPc();
