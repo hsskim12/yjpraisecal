@@ -15,6 +15,8 @@
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <!-- 휴대폰 홈 화면에 추가하면 앱처럼 열림 -->
 <link rel="manifest" href="manifest.json">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@900&text=0123456789&display=swap"> <!-- 일력 숫자만 (글자 10개) -->
 <link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
 <meta name="theme-color" content="#1f3a63">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -63,9 +65,9 @@
   /* vh는 zoom을 한 번 더 먹어 작게(.75)에서 화면의 75%가 됨 → 높이를 vh로 잡을 때는 / var(--z, 1)로 실제 화면 높이에 맞춤 */
   body.small :is(.player, .modebar) { zoom: calc(1 / .75); } /* 재생창·아래 메뉴는 원래 크기 그대로 (누르기 쉽게) */
   /* 작게(0.75배)에서도 보조 글씨는 실제 13.5px, 누르는 칸은 실제 44px 아래로 내려가지 않게 (2026-10-04 시안 A) — 제목·이번 주 곡 제목은 작은 그대로 */
-  body.small :is(.summary, .date .dow, .date .kind, .chip small, .monthsep, .people, .heroppl, .label, .done, .badge, .eyebrow, footer, .themebtn, .linkbtn, .herolinks a, .heroparts a small, .heroshare, .tplabel, .ver, .brand small, .topnav .btn, .herodate em, .noticebar .tag, .heroparts a i, .rsvp, .rsvp .pick, .edwarn, #pushCount, .rsvpadmin, .noticefull, .titlehist, .hint) { font-size: 18px; }
+  body.small :is(.summary, .date .dow, .date .kind, .chip small, .monthsep, .people, .heroppl, .label, .done, .badge, .eyebrow, footer, .themebtn, .linkbtn, .herolinks a, .heroparts a small, .heroshare, .tplabel, .ver, .brand small, .topnav .btn, .herodate em, .noticebar .tag, .heroparts a i, .rsvp, .rsvp .pick, .edwarn, #pushCount, .rsvpadmin, .noticefull, .titlehist, .hint):not(:is(#topZone, #publicView) *) { font-size: 18px; }
   body.small #fontBtn { font-size: 18px; } /* #fontBtn 자체 규칙이 더 강해서 따로 */
-  body.small :is(.chip, .themebtn, .linkbtn, .arrow, .topnav .btn, .heroshare, .heroparts a, .herolinks a, .btn, .rsvp .pick, .pushpick) { min-height: 58px; }
+  body.small :is(.chip, .themebtn, .linkbtn, .arrow, .topnav .btn, .heroshare, .heroparts a, .herolinks a, .btn, .rsvp .pick, .pushpick):not(:is(#topZone, #publicView) *) { min-height: 58px; }
   body.small .herosong.compact .herolinks a { min-height: 58px; font-size: 18px; } /* 같은 날 두 곡의 작은 카드도 바닥 보정 (compact 규칙이 더 세서 따로) */
   body.small .pushpick { font-size: 18px; }
   body.mid :is(.player, .modebar) { zoom: calc(1 / .9); }
@@ -84,7 +86,6 @@
   /* 두 겹(안쪽 흰 선 + 바깥 남색 선) — 남색 버튼 위에서도 보임. 남색 바탕에서는 반대로 */
   :focus-visible { outline: 3px solid var(--navy) !important; outline-offset: 2px; box-shadow: 0 0 0 2px #fff !important; } /* 요소 자체의 그림자 규칙보다 우선 */
   .hero :focus-visible, .player :focus-visible,
-  body:has(#topZone:not([hidden]) :is(#hero, #heroSkel):not([hidden])) .top :focus-visible { outline-color: #fff !important; box-shadow: 0 0 0 2px rgb(0 0 0 / .55) !important; }
   .skip { position: absolute; left: 12px; top: -60px; z-index: 30; padding: 10px 14px; border-radius: 10px; background: var(--navy); color: #fff; font-weight: 700; text-decoration: none; }
   .skip:focus { top: 12px; }
   a { color: inherit; }
@@ -153,11 +154,6 @@
   .hero { background: var(--navy); background: linear-gradient(180deg, var(--navy), color-mix(in oklab, var(--navy), #fff 12%)); color: #fff; border-radius: 0 0 28px 28px; }
   .hero > .wrap { padding-block: 8px 10px; }
   /* 이번 주 찬양이 보일 때는 머리글도 같은 남색으로 이어 붙임 (편집 화면은 흰 머리글 그대로) */
-  body:has(#topZone:not([hidden]) :is(#hero, #heroSkel):not([hidden])) .top { background: linear-gradient(180deg, color-mix(in oklab, var(--navy), #000 16%), var(--navy)); border-bottom: 0; color: #fff; }
-  body:has(#topZone:not([hidden]) :is(#hero, #heroSkel):not([hidden])) .brand small { color: rgb(255 255 255 / .75); }
-  body:has(#topZone:not([hidden]) :is(#hero, #heroSkel):not([hidden])) .topnav .btn { background: rgb(255 255 255 / .15); border-color: transparent; color: #fff; border-radius: 999px; }
-  body:has(#topZone:not([hidden]) :is(#hero, #heroSkel):not([hidden])) .topnav .btn:hover { background: rgb(255 255 255 / .26); }
-  body:has(#topZone:not([hidden]) :is(#hero, #heroSkel):not([hidden])) #fontBtn[data-size] { background: #fff; color: var(--navy); }
   .hero .eyebrow { color: rgb(255 255 255 / .8); margin: 0 0 4px; font-size: 15px; letter-spacing: .02em; } /* 한글은 자간을 벌리지 않음 */
   /* 날짜 줄: '9월 27일 [일요일]' — 요일 알약은 날짜와 같은 줄 */
   .herohead { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 12px; }
@@ -746,6 +742,140 @@
     .group .chips .chip { flex-basis: calc(50% - 3px); } /* 파트 버튼 두 칸씩 */
     .heroparts a i { font-size: 14px; letter-spacing: -.03em; }
   }
+
+  /* ===== 새 디자인 1단계 (2026-10-19, 사용자 선택 '일력 + 내 파트' 6-가) =====
+     공지 → 일력 카드 → 내 파트 목록, 아래 메뉴 4칸(내 파트·전체 일정·영상·공지). 색은 지금 테마의 남색 + 일정표 일요일 빨강(DESIGN.md)
+     글자 크기 단계(작게 .75·보통 .9·크게 1.1)는 그대로 두고, 이 칸들은 '작게'에서 시안 크기 그대로 보이게 1/.75 (보통·크게는 그만큼 더 큼) */
+  :root { --red: #c0392b; --red-soft: #fbeceb; --dark: #17202e; --serif: "Noto Serif KR", "AppleMyungjo", "Nanum Myeongjo", serif; }
+  #topZone, #publicView, .tabbar { zoom: calc(1 / .75); }
+  body:is(.small, .mid, .big) #publicView .modebar { zoom: 1; }
+    body:has(#publicView:not([hidden])) { padding-bottom: calc((72px + env(safe-area-inset-bottom)) / var(--z, 1)); }
+  body:has(#publicView:not([hidden])) main.wrap { padding-top: 8px; }
+  .top .wrap { padding-block: 8px; }
+  .top .logo { width: 40px; height: auto; }
+
+  /* 공지 두 줄 (일력 위) */
+  #topZone { max-width: 570px; margin-inline: auto; padding: 0 12px; }
+  #topZone .notices { margin: 12px 0 0; gap: 0; background: #fff; border-radius: 12px; padding: 2px 14px; }
+  #topZone .noticebar { border: 0; border-bottom: 1px solid var(--line); border-radius: 0; padding: 10px 0; background: none; font-weight: 400; font-size: 14.5px; min-height: 44px; }
+  #topZone .notices > :last-child .noticebar { border-bottom: 0; }
+  #topZone .noticebar:hover { color: var(--navy); }
+  #topZone .noticebar .tag { background: none; color: var(--red); padding: 0; font-size: 14.5px; border-radius: 0; }
+  #topZone .noticebar .txt { -webkit-line-clamp: 1; line-clamp: 1; }
+
+  /* 일력 카드 */
+  #topZone .hero { margin: 12px 0 0; background: #fff; color: var(--ink); border-radius: 6px 6px 14px 14px; overflow: hidden; box-shadow: 0 2px 0 #dfe2e7; }
+  #topZone .heroskel { background: #fff; }
+  .hero .rings { height: 20px; background: var(--navy); display: flex; justify-content: space-around; align-items: center; }
+  .hero .rings i { width: 8px; height: 8px; border-radius: 50%; background: var(--bg); }
+  .leaf { padding: 14px 20px 18px; display: grid; grid-template-columns: auto 1fr; column-gap: 16px; align-items: end; }
+  .leafnum { margin: 0; font-family: var(--serif); font-weight: 900; font-size: 112px; line-height: .85; color: var(--red); letter-spacing: -.04em; }
+  .leafmeta { margin: 0; padding-bottom: 6px; font-size: 14px; color: var(--muted); }
+  .leafmeta b { display: block; font-size: 18px; color: var(--ink); }
+  .leaf > :is(#heroTbd, #heroCards, #shareMsg, #rsvp) { grid-column: 1 / -1; }
+  #topZone .herotbd { margin: 12px 0 0; padding: 0; background: none; color: var(--muted); font-size: 13.5px; font-weight: 400; }
+  .leafsong { border-top: 1px solid var(--line); margin-top: 14px; padding-top: 12px; }
+  .leafsong h2 { margin: 0; font-size: 26px; line-height: 1.25; word-break: keep-all; overflow-wrap: anywhere; }
+  .leafsong h2.tbd { color: var(--muted); }
+  .leaftype { margin: 0 0 2px; font-size: 13px; color: var(--red); font-weight: 700; }
+  .leafppl { margin: 2px 0 12px; color: var(--muted); font-size: 14px; }
+  .leafsong .note { color: var(--ink); margin: 0 0 12px; }
+  .leafchips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .leafchips a, .leafchips .rshare { min-height: 40px; padding: 0 14px; display: inline-flex; align-items: center; justify-content: center; gap: 4px; border: 0; border-radius: 8px; background: var(--navy-soft); color: var(--navy); font-weight: 600; font-size: 14.5px; text-decoration: none; transition: background .15s, color .15s; }
+  .leafchips a:hover, .leafchips .rshare:hover { background: #e2e7ef; }
+  .leafchips a.hl { background: var(--navy); color: #fff; }
+  .leafchips a.mine { background: var(--red); color: #fff; }
+  .leafchips .tick { display: none; } .leafchips a.mine .tick { display: inline; }
+  #topZone .heroedit { margin-top: 8px; }
+  #topZone .heroedit .iconbtn { background: #fff; border-color: var(--line); color: var(--navy); }
+  #topZone .sharemsg { color: var(--navy); }
+
+  /* 목록 제목·탭 안 고르기(월별·연간·집회 특송 / 연습 영상·실황) */
+  #publicView .viewhead { margin: 18px 0 6px; }
+  body.hometab #publicView .viewhead h2 { font-size: 15px; color: var(--muted); font-weight: 600; }
+  #viewTitle .mn { font-family: var(--serif); font-weight: 900; font-size: 64px; line-height: .85; color: var(--red); letter-spacing: -.03em; margin-right: 6px; }
+  #viewTitle .my { font-size: 17px; }
+  #publicView .modebar { position: static; transform: none; width: auto; margin: 0 0 12px; padding: 4px; gap: 4px; border-radius: 12px; background: #e4e7ec; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  #publicView .modebar.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  #publicView .modebar .btn { min-height: 40px; border-radius: 9px; font-size: 14.5px; font-weight: 600; color: var(--muted); }
+  #publicView .modebar .btn span { display: inline; }
+  #publicView .modebar .btn[aria-pressed="true"] { background: #fff; color: var(--ink); box-shadow: 0 1px 2px rgb(16 24 40 / .12); }
+  #publicView .modebar .btn[hidden] { display: none; }
+  #publicView .searchrow[hidden] { display: none; }
+
+  /* 목록 한 줄 */
+  .rows { background: #fff; border-radius: 14px; padding: 0 14px; }
+  .rows > .rowbox + .rowbox .rowline { border-top: 1px solid var(--line); }
+  .rowline { display: flex; align-items: center; gap: 12px; padding: 10px 0; }
+  .rowmain { flex: 1; min-width: 0; display: flex; align-items: center; gap: 12px; border: 0; background: none; padding: 2px 0; margin: 0; font: inherit; color: inherit; text-align: left; cursor: pointer; }
+  div.rowmain { cursor: default; }
+  .rowmain .t { flex: 1; min-width: 0; font-size: 16px; line-height: 1.35; word-break: keep-all; overflow-wrap: anywhere; }
+  .rowmain .t small { display: block; color: var(--muted); font-size: 13px; }
+  .rowmain .t.tbd { color: var(--muted); }
+  button.rowmain:hover .t { color: var(--navy); }
+  .rd { width: 46px; flex-shrink: 0; font-weight: 700; font-size: 15px; }
+  .rd.serif { text-align: center; line-height: 1; font-weight: 400; }
+  .rd.serif b { display: block; font-family: var(--serif); font-weight: 900; font-size: 26px; color: var(--red); }
+  .rd.serif small { font-size: 12px; color: var(--muted); }
+  .rd.serif.asm b { color: var(--navy); }
+  .rowbox.past .t { color: var(--muted); }
+  .circ { width: 42px; height: 42px; border-radius: 50%; border: 2px solid var(--red); display: grid; place-items: center; color: var(--red); font-weight: 700; font-size: 14px; flex-shrink: 0; text-decoration: none; transition: background .15s, color .15s; }
+  a.circ:hover { background: var(--red); color: #fff; }
+  .circ.all { border-color: var(--navy); color: var(--navy); font-size: 12px; }
+  a.circ.all:hover { background: var(--navy); color: #fff; }
+  .circ.off { border-color: var(--line); color: #b3bac6; font-size: 12px; }
+  /* 줄을 누르면 펼쳐지는 자료 (예전 카드) — 날짜·제목·지휘반주는 줄에 이미 있으므로 숨김 */
+  .rowbox > .card { border: 0; padding: 0 0 12px; background: none; grid-template-columns: minmax(0, 1fr); }
+  .rowbox > .card > .date, .rowbox > .card .titlerow > h4, .rowbox > .card .people { display: none; }
+  .rowbox > .card .cardhist { margin-top: 0; }
+  .rowbox.justsaved { box-shadow: inset 4px 0 0 var(--navy); }
+  #list > .monthsep { margin: 18px 0 8px; font-size: 15px; color: var(--muted); }
+  #list > .pastsep { margin: 18px 0 8px; }
+
+  /* 월별 달력 */
+  .mcal { background: #fff; border-radius: 14px; padding: 10px; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; text-align: center; font-size: 13px; margin-bottom: 12px; }
+  .mcal > * { min-height: 36px; border-radius: 8px; display: grid; place-items: center; color: #9aa3b2; border: 0; background: none; font: inherit; padding: 0; }
+  .mcal .h { min-height: 22px; color: var(--muted); font-size: 12px; } .mcal .h:first-child { color: var(--red); }
+  .mcal .sun { color: var(--red); }
+  .mcal .sun.has { background: var(--red-soft); font-weight: 700; }
+  .mcal .asm { background: var(--navy-soft); color: var(--navy); font-weight: 700; }
+  .mcal > .on, .mcal > .sun.on { background: var(--red); color: #fff; } /* .sun.has보다 뒤·같은 세기라 이김 */
+  .mcal button { cursor: pointer; transition: filter .15s; } .mcal button:hover { filter: brightness(.95); }
+
+  /* 영상 */
+  #publicView .rrow { border: 0; border-radius: 14px; padding: 10px; }
+  #publicView .rthumb { width: 128px; }
+
+  /* 공지 탭 */
+  .noticepanel { padding-top: 4px; }
+  .nlist { display: grid; gap: 10px; }
+  .nlist article { position: relative; background: #fff; border-radius: 14px; padding: 14px 16px; }
+  .nlist .ntag { color: var(--red); font-weight: 700; font-size: 13px; }
+  .nlist article p { margin: 2px 0 0; font-size: 17px; white-space: pre-line; overflow-wrap: anywhere; }
+  .nlist article .iconbtn { position: absolute; top: 10px; right: 10px; }
+  h3.lh { margin: 22px 0 6px; font-size: 15px; color: var(--muted); font-weight: 600; }
+  .settings { background: #fff; border-radius: 14px; padding: 0 16px; }
+  .setrow { min-height: 56px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--line); font-size: 15.5px; }
+  .setrow:last-child { border-bottom: 0; }
+  .setrow[hidden] { display: none; }
+  .setrow > span { flex: 1; } .setrow small { color: var(--muted); font-size: 13px; display: block; }
+  .setrow .linkbtn { text-decoration: none; font-weight: 700; color: var(--navy); min-height: 44px; padding: 0 4px; margin: 0; font-size: 15.5px; }
+  .setrow .linkbtn:hover { text-decoration: underline; }
+  .setrow:has(.themepick) { flex-wrap: wrap; padding: 10px 0 12px; gap: 8px; }
+  .setrow .themepick { flex-basis: 100%; display: flex; gap: 6px; flex-wrap: wrap; }
+  .footbrand { display: flex; align-items: center; gap: 8px; margin: 22px 0 0; color: var(--muted); font-size: 13px; }
+  .footbrand span:not(.ver) { display: flex; flex-direction: column; line-height: 1.2; } .footbrand b { color: var(--ink); font-size: 14px; }
+
+  /* 아래 메뉴 4칸 */
+  .tabbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 9; display: grid; grid-template-columns: repeat(4, 1fr); background: var(--dark); padding: 6px 0 calc(6px + env(safe-area-inset-bottom)); }
+  .tabbar[hidden] { display: none; }
+  @media (min-width: 600px) { .tabbar, body:has(#publicView:not([hidden])) .player { max-width: 570px; margin-inline: auto; } .tabbar { border-radius: 16px 16px 0 0; } } /* PC 세 칸(2단계) 전까지는 가운데 한 줄에 맞춤 */
+  .tabbar button { min-height: 52px; border: 0; background: none; color: #aab3c2; font: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer; transition: color .15s; }
+  .tabbar button:hover { color: #fff; }
+  .tabbar button[aria-current="true"] { color: #fff; font-weight: 800; }
+  /* 재생창은 아래 메뉴 바로 위 */
+  body:has(#publicView:not([hidden])) .player { bottom: calc(64px + env(safe-area-inset-bottom)); border-radius: 18px 18px 0 0; }
+  @media print { #topZone, #publicView, .tabbar { zoom: 1; } .tabbar { display: none; } }
 </style>
 <!-- 고른 화면 색을 그리기 전에 먼저 입혀, 열 때 색이 한 번 바뀌어 보이지 않게 함 -->
 <script>try{var t=localStorage.getItem('choir-theme');if(t==='2'||t==='3')document.documentElement.dataset.theme=t;}catch(e){}</script>
@@ -759,8 +889,8 @@
       <span class="brand"><b>찬양대 알리미</b><small>인천영종교회</small></span>
     </button>
     <nav class="topnav">
-      <button type="button" class="btn" id="fontBtn" title="글자 크기: 지금 보통 — 누르면 크게" aria-label="글자 크기: 지금 보통 — 누르면 크게">크게 보기</button>
-      <button type="button" class="btn" id="layoutBtn" title="PC 화면 배치 바꾸기"></button>
+      <button type="button" class="btn" id="fontBtn" hidden title="글자 크기: 지금 보통 — 누르면 크게" aria-label="글자 크기: 지금 보통 — 누르면 크게">크게 보기</button>
+      <button type="button" class="btn" id="layoutBtn" title="PC 화면 배치 바꾸기" hidden></button>
       <button type="button" class="btn" id="toPublic" hidden>일정 보기</button>
       <a class="btn" href="#edit" id="toEdit">일정 편집</a>
     </nav>
@@ -772,19 +902,19 @@
   <!-- 쪽 제목 — 화면에는 로고가 대신하고, 화면 읽기 프로그램에는 이 글이 읽힘 -->
   <h1 class="sronly">찬양대 알리미 — 인천영종교회</h1>
   <section class="hero heroskel" id="heroSkel" hidden aria-hidden="true"><div class="wrap"><i></i><i></i><i></i><i></i></div></section>
+  <div class="notices" id="notices" role="list" aria-label="공지사항"></div>
   <section class="hero" id="hero" aria-label="이번 주 찬양" hidden>
-    <div class="wrap">
+    <div class="rings" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    <div class="leaf">
+      <p class="leafnum" id="leafNum"></p>
+      <p class="leafmeta" id="leafMeta"></p>
       <p class="herotbd" id="heroTbd" hidden></p>
-      <div class="herohead"> <!-- 한 줄: '9월 27일 [일요일] 주일 찬양 · 내일' (좁으면 구분만 아랫줄로) -->
-        <h2 class="eyebrow" id="heroLabel"></h2>
-        <p class="herodate" id="heroDate"></p>
-      </div>
       <div id="heroCards"></div>
-      <button type="button" class="heroshare" id="shareBtn"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 8l5-5 5 5M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg> 파트연습 공유하기</button>
       <p class="sharemsg" id="shareMsg" role="status" hidden></p>
       <div class="rsvp" id="rsvp" hidden></div>
     </div>
   </section>
+</div>
   <!-- 영상 재생창 (유튜브 버튼을 누르면 열림) -->
   <div class="player" id="player" hidden>
     <div class="playerhead">
@@ -800,7 +930,6 @@
       <button type="button" id="loopOff" disabled>반복 끄기</button>
     </div>
   </div>
-</div>
 
 <nav class="side" id="side" aria-label="보기 메뉴"></nav>
 
@@ -823,9 +952,15 @@
 
   <!-- 공개 화면 -->
   <div id="publicView">
-    <div class="notices" id="notices" role="list" aria-label="공지사항"></div>
-
     <div id="schedule" hidden>
+      <div class="modebar" id="modeBar" role="group" aria-label="조회 모드">
+        <button type="button" class="btn" id="modeUpcoming" aria-pressed="true"><span>미리</span> <span>보기</span></button>
+        <button type="button" class="btn" id="modeMonth" aria-pressed="false"><span>월별</span> <span>보기</span></button>
+        <button type="button" class="btn" id="modeYear" aria-pressed="false"><span>연간</span> <span>보기</span></button>
+        <button type="button" class="btn" id="modeAssembly" aria-pressed="false"><span>집회</span> <span>특송</span></button>
+        <button type="button" class="btn" id="modeRehearsal" aria-pressed="false"><span>연습</span> <span>영상</span></button>
+        <button type="button" class="btn" id="modeLive" aria-pressed="false"><span>실황</span> <span>보기</span></button>
+      </div>
       <div class="searchrow">
         <span class="glass" aria-hidden="true">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
@@ -840,14 +975,6 @@
         <h2 id="viewTitle"></h2>
       </div>
 
-      <div class="modebar" id="modeBar" role="group" aria-label="조회 모드">
-        <button type="button" class="btn" id="modeUpcoming" aria-pressed="true"><span>미리</span> <span>보기</span></button>
-        <button type="button" class="btn" id="modeMonth" aria-pressed="false"><span>월별</span> <span>보기</span></button>
-        <button type="button" class="btn" id="modeYear" aria-pressed="false"><span>연간</span> <span>보기</span></button>
-        <button type="button" class="btn" id="modeAssembly" aria-pressed="false"><span>집회</span> <span>특송</span></button>
-        <button type="button" class="btn" id="modeRehearsal" aria-pressed="false"><span>연습</span> <span>영상</span></button>
-        <button type="button" class="btn" id="modeLive" aria-pressed="false"><span>실황</span> <span>보기</span></button>
-      </div>
 
       <p class="summary periodsummary" id="summary"></p>
       <div class="periodbar" id="periodBar">
@@ -871,6 +998,20 @@
       <div class="list" id="list"></div>
       <p class="emptySundays" id="emptySundays" hidden></p>
     </div>
+    <!-- 공지 탭: 공지 전체 + 알림과 화면 (예전 맨 아래 글의 버튼들) -->
+    <section class="noticepanel" id="noticePanel" hidden>
+      <h2 class="sronly">공지와 설정</h2>
+      <div class="nlist" id="noticeCards"></div>
+      <h3 class="lh">알림과 화면</h3>
+      <div class="settings">
+        <div class="setrow" id="pushRow" hidden><span>일정 알림 받기<small>곡이 바뀌거나 공지가 올라오면 알려 줌</small></span><button type="button" class="linkbtn" id="pushBtn"></button></div>
+        <div class="setrow"><span>휴대폰 캘린더에 넣기<small>구글·아이폰 캘린더 구독</small></span><button type="button" class="linkbtn" id="calBtn">열기</button></div>
+        <div class="setrow"><span>글자 크기</span><button type="button" class="linkbtn" id="sizeBtn"></button></div>
+        <div class="setrow"><span>화면 색</span><div class="themepick" id="themePick" role="group" aria-label="화면 색 고르기"></div></div>
+        <div class="setrow"><span>사이트 주소 보내기</span><button type="button" class="linkbtn" id="siteShareBtn">공유</button></div>
+      </div>
+      <p class="footbrand"><img src="logo.png" alt="" width="29" height="27"><span><b>찬양대 알리미</b><small>인천영종교회</small></span><span class="ver" id="appVer" hidden></span></p>
+    </section>
   </div>
 
   <!-- 관리자 로그인 (#edit) -->
@@ -943,16 +1084,12 @@
   </div>
 </main>
 
-<footer class="wrap">
-  <div class="footbrand">
-    <img src="logo.png" alt="" width="29" height="27">
-    <span><b>찬양대 알리미</b><small>인천영종교회</small></span>
-    <span class="ver" id="appVer" hidden></span>
-  </div>
-  <button type="button" class="linkbtn" id="pushBtn" hidden></button>
-  <button type="button" class="linkbtn" id="calBtn">📅 캘린더 구독</button>
-  <div class="themepick" id="themePick" role="group" aria-label="화면 색 고르기"><span class="tplabel">화면 색</span></div>
-</footer>
+<nav class="tabbar" id="tabBar" aria-label="메뉴">
+  <button type="button" data-tab="home">내 파트</button>
+  <button type="button" data-tab="all">전체 일정</button>
+  <button type="button" data-tab="video">영상</button>
+  <button type="button" data-tab="notice">공지</button>
+</nav>
 
 <!-- 저장·삭제 결과 알림 — 어디까지 내려가 있든 화면 위에 떠서 보임 -->
 <div class="status" id="edStatus" role="status"></div>
@@ -1281,6 +1418,7 @@ let loadState = 'loading', loadMsg = '', staleMsg = '', refreshing = false, last
 let viewY = +TODAY.slice(0, 4), viewM = +TODAY.slice(5, 7);
 const thisPeriod = () => Math.floor((+TODAY.slice(5, 7) - 1) / 2); // 오늘이 속한 2개월 구간 (0=1·2월 … 5=11·12월)
 let viewB = thisPeriod(); // 집회특송·연습 영상에서 보고 있는 구간
+let tab = 'home';       // 아래 메뉴 4칸: 'home'(내 파트) / 'all'(전체 일정: 월별·연간·집회 특송) / 'video'(연습 영상·실황) / 'notice'(공지·설정)
 let mode = 'upcoming';  // 'upcoming'(8주) / 'month'(고른 달) / 'year'(고른 해) / 'assembly'(집회특송) / 'rehearsal'(연습 영상) / 'live'(실황)
 let upcomingStart = nextSunday();
 let query = '';         // 검색어
@@ -1516,9 +1654,9 @@ function play(yt, url, caption, ev, part) {
 // 재생창 자리: 공개 화면에서는 항상 topZone 안에 둠 — PC 화면은 CSS로 그 칸에 붙이고(2026-09-29 요청), 그 밖에는 화면 아래 고정(position: fixed).
 // 화면 방향을 돌려 PC↔모바일이 바뀌어도 옮기지 않음 (옮기면 재생 중인 영상이 처음부터 다시 불러와짐). 편집 화면(topZone 숨김)에서만 아래로 옮김
 function placePlayer() {
-  const p = $('player'), inZone = !$('topZone').hidden, docked = inZone && document.body.classList.contains('pc');
-  if (inZone && p.parentElement !== $('topZone')) $('topZone').append(p);
-  if (!inZone && p.parentElement !== document.body) $('edStatus').after(p);
+  const p = $('player'), inZone = !$('publicView').hidden, docked = false; // 2단계(PC 세 칸)에서 docked 다시
+  if (inZone && p.nextElementSibling !== $('side')) $('side').before(p);
+  if (!inZone && p.previousElementSibling !== $('edStatus')) $('edStatus').after(p);
   const h = docked || p.hidden ? 0 : p.offsetHeight;
   document.body.style.paddingBottom = h ? h + 'px' : ''; // 재생창이 목록 끝을 가리지 않게
   document.documentElement.style.scrollPaddingBottom = h ? h + 'px' : ''; // 누른 버튼을 재생창 위로 올릴 때 쓰는 여백
@@ -1628,29 +1766,23 @@ const partChip = (x, caption, extra, ev) => {
   return a;
 };
 
-// 이번 주 찬양 한 곡 — 목록의 카드와 달리 곡 제목을 가장 크게 보여 줌. many: 같은 날 곡이 여럿이면 곡마다 구분 표시
-function heroSong(ev, many, compact) {
-  const people = peopleEls(ev);
-  const cap = showTitle(ev);
-  const links = [
-    ...HEAD_PARTS.map(h => ({ label: h.label, part: h.part, url: safeUrl(ev.parts?.[h.part]), hi: h.part === '전체', bare: true })).filter(x => x.url),
-    ...(liveUrl(ev) ? [{ label: '실황', url: liveUrl(ev), bare: true }] : []),
-    ...linkList(ev.scores, '악보').map(x => ({ ...x, bare: true })),
-    ...linkList(ev.refs, '참고').map(x => ({ ...x, bare: true })),
-  ];
-  const parts = PARTS.filter(p => !HEAD_PARTS.some(h => h.part === p))
-    .map(p => ({ label: [el('b', {}, PART_SHORT[p] || p, el('span', { class: 'tick', 'aria-hidden': 'true' }, '✓')), el('i', {}, p)], full: p, url: safeUrl(ev.parts?.[p]), mine: p === myPart, bare: true })) // S / 소프라노 두 줄 (고른 칸은 흰색으로만 표시)
-    .filter(x => x.url);
-  return el('div', { class: 'herosong' + (compact ? ' compact' : '') },
-    many && el('p', { class: 'herotype' }, typeLabel(typeOf(ev))),
-    titleEl('h3', ev),
-    people.length > 0 && el('p', { class: 'heroppl' }, people),
-    ev.note && noteEl(ev), // 안내 메모는 듣기 전에 읽도록 이름 바로 아래
-    // 악보·참고가 많으면(7개 이상) 5개만 보이고 나머지는 [더 보기] — 버튼 벽이 되지 않게
-    links.length > 0 && el('div', { class: 'herolinks' }, links.slice(0, links.length > 6 ? 5 : 6).map(x => chip(x, null, cap, x.hi && 'hi', ev)),
-      links.length > 6 && el('button', { type: 'button', onclick: e => e.currentTarget.replaceWith(...links.slice(5).map(x => chip(x, null, cap, x.hi && 'hi', ev))) }, `+${links.length - 5}개 더 보기`)),
-    parts.length > 0 && el('div', { class: 'heroparts' }, parts.map(x => partChip(x, cap, x.mine && 'hl', ev))), // 고른 파트는 하얗게
-    !links.length && !parts.length && !ev.note && el('p', { class: 'heroppl' }, '연습 자료 준비 중'),
+// 일력 카드의 곡 한 개 — 제목 · 지휘·반주 · [듣기][S][A][T][B][반주][악보…]. 고른 파트는 빨강 ✓ (누르면 '내 파트'로 기억)
+function leafSong(ev, many) {
+  const cap = showTitle(ev), people = peopleEls(ev), url = p => safeUrl(ev.parts?.[p]);
+  const items = [
+    url('전체') && chip({ label: '듣기', part: '전체', url: url('전체'), bare: true }, null, cap, 'lc hl', ev),
+    ...MY_PARTS.filter(url).map(p => partChip({ label: [PART_SHORT[p], el('span', { class: 'tick', 'aria-hidden': 'true' }, ' ✓')], full: p, url: url(p), mine: p === myPart, bare: true }, cap, 'lc' + (p === myPart ? ' mine' : ''), ev)),
+    url('반주') && chip({ label: '반주', part: '반주', url: url('반주'), bare: true }, null, cap, 'lc', ev),
+    ...linkList(ev.scores, '악보').map(x => chip({ ...x, bare: true }, null, cap, 'lc', ev)),
+    ...linkList(ev.refs, '참고').map(x => chip({ ...x, bare: true }, null, cap, 'lc', ev)),
+    liveUrl(ev) && chip({ label: '실황', url: liveUrl(ev), bare: true }, null, cap, 'lc', ev),
+  ].filter(Boolean);
+  return el('div', { class: 'leafsong' },
+    many && el('p', { class: 'leaftype' }, typeLabel(typeOf(ev))),
+    titleEl('h2', ev),
+    people.length > 0 && el('p', { class: 'leafppl' }, people),
+    ev.note && noteEl(ev),
+    items.length > 0 ? el('div', { class: 'leafchips' }, items) : el('p', { class: 'leafppl' }, '연습 자료 준비 중'),
     token && el('div', { class: 'heroedit' }, editBtn(ev)));
 }
 
@@ -1671,16 +1803,56 @@ function groupTbd(list, keep = () => false) {
   });
   return out;
 }
-// 묶인 곡 미정 카드: 날짜 상자에 처음~끝, 아래 줄에 날짜를 모두
-function tbdCard(g) {
+// 목록 한 줄 (새 디자인): 날짜 · 제목과 지휘·반주 · 오른쪽 동그라미(내 파트 영상, 파트를 안 골랐으면 듣기).
+// 줄을 누르면 아래에 그 곡의 자료 전부(예전 카드)가 펼쳐짐. serif: 날짜를 일력 숫자로(전체 일정)
+function rowDate(ev, serif) {
+  if (!serif) return el('span', { class: 'rd' }, md(ev.date));
+  const sun = dowOf(ev.date) === 0;
+  return el('span', { class: 'rd serif' + (sun ? '' : ' asm') }, el('b', {}, +ev.date.slice(8, 10)), el('small', {}, sun ? '주일' : typeLabel(typeOf(ev)).replace(/ 특송$/, '')));
+}
+function rowCircle(ev) {
+  const mine = myPart && safeUrl(ev.parts?.[myPart]), all = safeUrl(ev.parts?.['전체']), u = mine || all;
+  const label = myPart && (mine || !all) ? PART_SHORT[myPart] : '듣기', what = mine ? myPart : '듣기';
+  if (!u) return el('span', { class: 'circ off', 'aria-hidden': 'true' }, label);
+  const yt = youtube(u);
+  return el('a', { class: 'circ' + (mine ? '' : ' all'), href: u, target: '_blank', rel: 'noopener', 'aria-label': `${showTitle(ev)} ${what}`,
+    onclick: yt && (e => { e.preventDefault(); play(yt, u, `${showTitle(ev)} · ${what}`, ev, mine ? myPart : '전체'); }) }, label);
+}
+function row(ev, serif) {
+  const people = peopleEls(ev);
+  const box = el('div', { class: 'rowbox' + (ev.date < TODAY ? ' past' : '') + (justSaved(ev.id) ? ' justsaved' : ''), 'data-id': ev.id, 'data-date': ev.date });
+  const main = el('button', { type: 'button', class: 'rowmain', 'aria-expanded': 'false', onclick: () => {
+    let c = box.querySelector('.card');
+    if (!c) { c = card(ev); c.querySelector('.cardhist')?.removeAttribute('hidden'); box.append(c); } else c.hidden = !c.hidden;
+    main.setAttribute('aria-expanded', String(!c.hidden));
+  } }, rowDate(ev, serif), el('span', { class: 't' + (isTbd(ev) ? ' tbd' : '') }, showTitle(ev), people.length > 0 && el('small', {}, people)));
+  box.append(el('div', { class: 'rowline' }, main, rowCircle(ev)));
+  return box;
+}
+function groupRow(g, serif) {
   const ds = g._group.map(e => e.date).sort();
-  return el('article', { class: 'card tbdgroup' + (ds.at(-1) < TODAY ? ' past' : '') },
-    el('div', { class: 'date' + (typeOf(g) !== '주일 찬양' ? ' special' : '') },
-      el('strong', {}, md(ds[0])), el('span', { class: 'dow' }, `~ ${md(ds.at(-1))}`), el('span', { class: 'kind' }, typeLabel(typeOf(g)))),
-    el('div', { class: 'body' },
-      el('div', { class: 'titlerow' }, el('h4', { class: 'tbd' }, '곡 미정'),
-        mode === 'upcoming' && el('div', { class: 'headchips' }, shareBtn('곡 미정', () => shareEvents(g._group)))), // 미리 보기 카드는 모두 공유 (묶음은 그 날짜들을 함께)
-      el('p', { class: 'label people' }, `${ds.map(d => `${md(d)}(${DOW[dowOf(d)]})`).join(' · ')} · ${ds.length}번`)));
+  return el('div', { class: 'rowbox tbdrow' + (ds.at(-1) < TODAY ? ' past' : ''), 'data-date': ds[0] }, el('div', { class: 'rowline' },
+    el('div', { class: 'rowmain' }, rowDate(g, serif), el('span', { class: 't tbd' }, '곡 미정', el('small', {}, `${ds.map(d => `${md(d)}(${DOW[dowOf(d)]})`).join(' · ')} · ${ds.length}번`))),
+    el('span', { class: 'circ off', 'aria-hidden': 'true' }, myPart ? PART_SHORT[myPart] : '듣기')));
+}
+// 이어지는 줄(.rowbox)을 흰 덩어리 하나(.rows)로 묶음 — 달 구분·'지난 찬양' 글은 그 사이에
+const wrapRows = nodes => nodes.reduce((out, n) => {
+  if (n.classList?.contains('rowbox')) { const last = out.at(-1); last?.classList?.contains('rows') ? last.append(n) : out.push(el('div', { class: 'rows' }, n)); }
+  else out.push(n);
+  return out;
+}, []);
+// 월별 달력: 주일은 빨강, 주일이 아닌 일정(집회 등)은 남색, 이번 주 찬양 날은 칠함. 일정 있는 날을 누르면 그 줄로
+function monthCal(y, m, list, nextDate) {
+  const first = `${y}-${pad(m)}-01`, days = new Date(Date.UTC(y, m, 0)).getUTCDate(), has = new Set(list.map(e => e.date));
+  const cells = DOW.map(d => el('span', { class: 'h' }, d));
+  for (let i = 0; i < dowOf(first); i++) cells.push(el('span'));
+  for (let d = 1; d <= days; d++) {
+    const k = `${y}-${pad(m)}-${pad(d)}`, sun = dowOf(k) === 0, on = has.has(k);
+    const cls = [sun && 'sun', on && !sun && 'asm', k === nextDate && 'on', on && 'has'].filter(Boolean).join(' ');
+    cells.push(on ? el('button', { type: 'button', class: cls, 'aria-label': `${fmtDate(k)} 일정으로`, onclick: () => document.querySelector(`#list [data-date="${k}"]`)?.scrollIntoView({ block: 'center' }) }, d)
+      : el('span', { class: cls || null }, d));
+  }
+  return el('div', { class: 'mcal', role: 'group', 'aria-label': `${y}년 ${m}월 달력` }, cells);
 }
 
 // 같은 곡을 부른 다른 날 (최근 것부터) — 목록을 그릴 때마다 한 번만 묶음
@@ -1760,6 +1932,11 @@ function linkify(text) {
 
 function renderNotices() {
   const list = notices.map(n => String(n || '').trim()).filter(Boolean);
+  // 공지 탭: 공지 전체를 카드로 (관리자는 ✎로 바로 수정)
+  $('noticeCards').replaceChildren(...(list.length ? notices.map((n, idx) => ({ text: String(n || '').trim(), idx })).filter(x => x.text).map(({ text, idx }) =>
+    el('article', {}, el('span', { class: 'ntag' }, '공지'), el('p', {}, ...linkify(text)),
+      token && el('button', { type: 'button', class: 'iconbtn', 'aria-label': '공지 수정', onclick: () => openNoticeEdit(idx) }, '✎')))
+    : [el('p', { class: 'empty' }, '올라온 공지가 없습니다.')]));
   if (!list.length) {
     $('notices').replaceChildren(); // 공지가 없으면 칸 자체를 비움
     return;
@@ -1838,6 +2015,10 @@ function setMyPart(p) {
     a.classList.toggle(a.closest('.heroparts') ? 'hl' : 'mine', on);
     on ? a.setAttribute('aria-current', 'true') : a.removeAttribute('aria-current');
   });
+  if (tab === 'home' && !$('publicView').hidden) { // 목록 제목·동그라미가 내 파트를 따름 — 다시 그린 뒤 누른 버튼에 초점을 되돌림
+    renderPublic();
+    document.querySelector(`#hero [data-part="${p}"]`)?.focus();
+  }
 }
 
 /* ===== 연습 영상 =====
@@ -2046,27 +2227,39 @@ function renderPublic() {
   const nextDate = events.find(e => e.date >= TODAY && !isTbd(e))?.date; // 곡이 정해진 가장 가까운 일정 (곡 미정은 건너뜀)
   const tbdFirst = events.filter(e => e.date >= TODAY && (!nextDate || e.date < nextDate) && isTbd(e));
   const gap = nextDate ? (utc(nextDate) - utc(TODAY)) / 864e5 : 0;
-  const badge = gap === 0 ? '오늘' : gap < 7 ? '이번 주' : '다음 찬양';
 
-  // 맨 위 강조 카드 (검색 중에는 결과만 보이도록 숨김)
-  const showHero = !!nextDate; // 이번 주 찬양은 어느 화면에서나 계속 보이게
+  // 아래 메뉴 탭: 내 파트는 늘 다음 주일부터 8주, 공지 탭은 목록 대신 공지·설정
+  if (tab === 'home') { mode = 'upcoming'; upcomingStart = nextSunday(); query = ''; }
+  $('topZone').hidden = tab !== 'home';
+  $('schedule').hidden = tab === 'notice';
+  $('noticePanel').hidden = tab !== 'notice';
+  $('tabBar').querySelectorAll('button').forEach(b => b.setAttribute('aria-current', String(b.dataset.tab === tab)));
+  $('searchInput').closest('.searchrow').hidden = tab !== 'all';
+  ['modeMonth', 'modeYear', 'modeAssembly'].forEach(id => { $(id).hidden = tab !== 'all'; });
+  ['modeRehearsal', 'modeLive'].forEach(id => { $(id).hidden = tab !== 'video'; });
+  $('modeUpcoming').hidden = true;
+  $('modeBar').classList.toggle('two', tab === 'video');
+  document.body.classList.toggle('hometab', tab === 'home');
+
+  // 일력 카드: 큰 날짜 숫자 + '10월 · 주일 / 6일 남음' + 곡
+  const showHero = !!nextDate;
   $('hero').hidden = !showHero;
   const heroEvents = showHero ? events.filter(e => e.date === nextDate) : [];
   if (showHero) {
-    // 두 줄로: '주일 찬양 · 3일 뒤' / '9월 27일 [일요일]' (예전 '이번 주'와 '오늘부터 N일 뒤'는 뜻이 겹쳐 하나로)
-    const when = gap === 0 ? '오늘' : gap === 1 ? '내일' : `${gap}일 뒤`;
-    $('heroLabel').textContent = heroEvents.length > 1 ? `찬양 ${heroEvents.length}곡 · ${when}` : `${typeOf(heroEvents[0])} · ${when}`;
+    const when = gap === 0 ? '오늘' : gap === 1 ? '내일' : `${gap}일 남음`;
+    $('leafNum').textContent = +nextDate.slice(8, 10);
+    $('leafMeta').replaceChildren(el('b', {}, `${+nextDate.slice(5, 7)}월 · ${dowOf(nextDate) === 0 ? '주일' : DOW[dowOf(nextDate)] + '요일'}`), when);
     // 그 사이에 곡이 아직 없는 일정(집회 등)이 있으면 한 줄로 알려 줌
     $('heroTbd').hidden = !tbdFirst.length;
     const byType = new Map(); // 구분 → 날짜들 ('10/16(금)·10/17(토) 특별집회')
     tbdFirst.forEach(e => { const k = typeLabel(typeOf(e)), d = `${md(e.date)}(${DOW[dowOf(e.date)]})`; byType.set(k, [...new Set([...(byType.get(k) || []), d])]); });
     $('heroTbd').textContent = [...byType].map(([k, ds]) => `${ds.join('·')} ${k}`).join(', ') + (tbdFirst.length ? ' (곡 미정)' : '');
-    $('heroDate').replaceChildren(`${+nextDate.slice(5, 7)}월 ${+nextDate.slice(8, 10)}일`, el('em', {}, `${DOW[dowOf(nextDate)]}요일`));
-    $('heroCards').replaceChildren(...heroEvents.map(e => heroSong(e, heroEvents.length > 1, heroEvents.length > 1))); // 같은 날 여러 곡이면 모두 작은 카드로 (위계가 거꾸로 보이지 않게)
-    $('shareBtn').onclick = () => shareEvents(heroEvents);
+    $('heroCards').replaceChildren(...heroEvents.map(e => leafSong(e, heroEvents.length > 1)));
+    // [공유]는 마지막 곡 버튼 줄 끝에 (예전 '파트연습 공유하기' — 그날 곡 모두를 보냄)
+    const share = shareBtn('이번 주 찬양', () => shareEvents(heroEvents)), lastChips = [...$('heroCards').querySelectorAll('.leafchips')].pop();
+    lastChips ? lastChips.append(share) : $('heroCards').append(el('div', { class: 'leafchips' }, share));
     $('shareMsg').hidden = true;
   }
-  renderRsvp();
 
   const rehearsalMode = mode === 'rehearsal' && !query;
   const liveMode = mode === 'live' && !query;
@@ -2081,12 +2274,20 @@ function renderPublic() {
     : liveMode
     ? { list: [], title: `${videoRecent}실황`, range: videoRange, summary: `실황 영상 ${shownLive.length}개 · 최근 것부터`, empty: '', emptySundays: [] }
     : buildView();
-  $('viewTitle').textContent = view.title;
+  // 제목: 내 파트는 '알토가 준비할 곡', 월별은 큰 달 숫자
+  if (tab === 'home') $('viewTitle').textContent = myPart ? `${myPart}가 준비할 곡` : '다가오는 찬양';
+  else if (mode === 'month' && !query) $('viewTitle').replaceChildren(el('span', { class: 'mn' }, viewM), el('span', { class: 'my' }, `월 · ${viewY}`));
+  else $('viewTitle').textContent = view.title;
   printView = rehearsalMode || liveMode ? null : { kind: query ? 'search' : mode, title: view.title, range: view.range, list: view.list }; // 인쇄할 목록 (연습 영상은 인쇄 없음)
   $('summary').textContent = view.summary;
   if (rehearsalMode) renderRehearsals(shownRehearsals);
   else if (liveMode) renderLive(shownLive);
-  else $('list').replaceChildren(...(view.list.length
+  else if (tab === 'home') { // 내 파트: 일력 카드의 곡은 빼고, 한 줄씩
+    const rest = view.list.filter(e => e.date !== nextDate);
+    $('list').replaceChildren(rest.length ? el('div', { class: 'rows' }, groupTbd(rest).map(({ e }) => e._group ? groupRow(e) : row(e)))
+      : el('p', { class: 'empty' }, `앞으로 ${UPCOMING_WEEKS}주 안에 다른 찬양이 아직 없습니다. [전체 일정]에서 볼 수 있어요.`));
+  }
+  else $('list').replaceChildren(...(mode === 'month' && !query ? [monthCal(viewY, viewM, view.list, nextDate)] : []), ...wrapRows(view.list.length
     ? groupTbd(view.list, e => e.date === nextDate).flatMap(({ e, i }, j, items) => {
       const month = e.date.slice(0, 7);
       const yearList = mode === 'year' && !query;
@@ -2094,8 +2295,7 @@ function renderPublic() {
       const separator = j === 0 || pastStart || month !== items[j - 1].e.date.slice(0, 7) // 첫 달도 빠뜨리지 않고
         // 월별은 제목에 이미 '26년 9월'이 있어 화면에서는 숨기고 화면 읽기용 제목으로만 둠
         ? [el('h3', { class: 'monthsep' + (mode === 'month' && !query ? ' sronly' : '') }, yearList ? `${+month.slice(5)}월` : `${yearLabel(month.slice(0, 4))} ${+month.slice(5)}월`)] : [];
-      const b = e.date === nextDate ? badge : null;
-      return [...(pastStart ? [el('p', { class: 'pastsep' }, '지난 찬양')] : []), ...separator, e._group ? tbdCard(e) : card(e, b)];
+      return [...(pastStart ? [el('p', { class: 'pastsep' }, '지난 찬양')] : []), ...separator, e._group ? groupRow(e, true) : row(e, true)];
     })
     : [el('p', { class: 'empty' }, view.empty, ...(!query && events.length ? [el('br'),
       el('button', { type: 'button', class: 'linkbtn', onclick: () => { // 오늘에서 가장 가까운 일정으로 (미리보기는 그 주부터, 나머지는 그 달로)
@@ -2108,11 +2308,12 @@ function renderPublic() {
   view.emptySundays = futureSundays;
   $('emptySundays').hidden = rehearsalMode || liveMode || !view.emptySundays.length || !view.list.length;
   $('emptySundays').textContent = `아직 곡이 없는 주일 ${view.emptySundays.length}회 — ${view.emptySundays.map(md).join(', ')}`;
-  $('modeBar').hidden = !!query;
-  $('periodBar').hidden = !!query;
+  $('modeBar').hidden = !!query || tab === 'home';
+  $('periodBar').hidden = !!query || tab === 'home';
+  $('emptySundays').hidden ||= tab === 'home';
   $('searchSummary').hidden = !query;
   $('searchSummary').textContent = query ? view.summary : '';
-  $('summary').hidden = !!query; // 검색 중에는 검색 요약 하나만
+  $('summary').hidden = !!query || tab === 'home'; // 검색 중에는 검색 요약 하나만
   $('periodText').hidden = !view.range;
   $('periodText').textContent = view.range || '';
   $('modeUpcoming').setAttribute('aria-pressed', String(mode === 'upcoming'));
@@ -3316,8 +3517,7 @@ const scrollToScheduleSearch = () => requestAnimationFrame(() => {
 });
 // 연간·집회 화면은 지난 곡부터 길게 이어지므로 들어갈 때 오늘 이후 첫 곡으로 이동 (없으면 검색창)
 const scrollToUpcoming = () => requestAnimationFrame(() => {
-  const dateOf = Object.fromEntries(events.map(e => [e.id, e.date]));
-  const first = [...document.querySelectorAll('article.card[data-id]')].find(c => dateOf[c.dataset.id] >= TODAY);
+  const first = [...document.querySelectorAll('#list .rowbox[data-date]')].find(c => c.dataset.date >= TODAY);
   if (!first) return scrollToScheduleSearch();
   first.scrollIntoView({ block: 'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
 });
@@ -3336,6 +3536,21 @@ $('modeAssembly').onclick = () => chooseMode(() => showPeriod('assembly'));
 $('modeRehearsal').onclick = () => chooseMode(() => showPeriod('rehearsal'));
 $('modeLive').onclick = () => chooseMode(() => showPeriod('live'));
 $('modeYear').onclick = () => chooseMode(() => showYear(viewY));
+// 아래 메뉴 4칸
+function setTab(t) {
+  if (t === tab && t !== 'home') return scrollTo(0, 0);
+  tab = t;
+  clearSearch();
+  if (t === 'all' && !['month', 'year', 'assembly'].includes(mode)) { mode = 'month'; viewY = +TODAY.slice(0, 4); viewM = +TODAY.slice(5, 7); }
+  if (t === 'video' && !['rehearsal', 'live'].includes(mode)) { mode = 'rehearsal'; videoEnd = latestVideo(mode); videoFollow = true; }
+  renderPublic();
+  scrollTo(0, 0);
+}
+$('tabBar').addEventListener('click', e => { const b = e.target.closest('button[data-tab]'); if (b) setTab(b.dataset.tab); });
+// 공지 탭의 글자 크기·주소 보내기
+const sizeLabel = () => { const [label, now] = SIZES[curSize()]; $('sizeBtn').textContent = now; $('sizeBtn').setAttribute('aria-label', `글자 크기: 지금 ${now} — 누르면 ${label.replace(' 보기', '')}`); };
+$('sizeBtn').onclick = () => { applySize(SIZES[curSize()][2]); sizeLabel(); placePc(); };
+$('siteShareBtn').onclick = () => shareText('찬양대 알리미', `인천영종교회 찬양대 알리미\n${location.origin}/`, flash, '공유하지 못했습니다. 주소창의 사이트 주소를 복사해 보내 주세요.');
 // 연도별은 [인쇄 · 목록]과 [인쇄 · 한눈에] 두 가지. 브라우저 메뉴로 인쇄하면 목록
 let printStyle = null;
 let printOrientation = null;
@@ -3360,13 +3575,9 @@ const pcMq = matchMedia('(min-width: 1080px)');
 const wideMq = matchMedia('(min-width: 880px) and (min-height: 500px)');
 const PC_LAYOUT_KEY = 'choir-pc-layout';
 let pcLayout = lsGet(PC_LAYOUT_KEY) === 'H' ? 'H' : 'B';
+// ponytail: 새 디자인 1단계(2026-10) — PC도 휴대폰과 같은 한 줄 화면. PC 세 칸(일력·목록·달력+재생창)은 2단계에서 body.pc로 다시
 const placePc = () => {
-  const pc = pcMq.matches || (wideMq.matches && curSize() !== 'big'), two = pcLayout === 'H';
-  document.body.classList.toggle('pc', pc);
-  document.body.classList.toggle('pcH', two);
-  pc ? $('topZone').insertBefore($('notices'), $('player').parentElement === $('topZone') ? $('player') : null) : $('publicView').prepend($('notices'));
-  !pc ? $('summary').before($('modeBar')) : two ? $('hero').after($('modeBar')) : $('side').append($('modeBar'));
-  $('layoutBtn').textContent = two ? '세 칸 보기' : '두 칸 보기';
+  document.body.classList.remove('pc', 'pcH');
   placePlayer();
 };
 $('layoutBtn').onclick = () => {
@@ -3525,7 +3736,8 @@ function route() {
   const ready = loadState === 'ok';
 
   $('publicView').hidden = edit;
-  $('topZone').hidden = edit; // 이번 주 찬양(남색 영역)은 공개 화면에서만
+  $('topZone').hidden = edit; // 일력 카드는 공개 화면에서만 (탭은 renderPublic이 다시 정함)
+  $('tabBar').hidden = edit;
   if (!$('player').hidden) placePlayer(); // PC에서 칸에 붙어 있던 재생창은 편집 화면에서는 아래로
   $('loginView').hidden = !showLogin;
   $('editorView').hidden = !edit || showLogin;
@@ -3770,8 +3982,8 @@ const pushSay = msg => { $('pushMsg').textContent = msg; $('pushOn').hidden = tr
 async function pushRender() {
   const sub = await pushSub().catch(() => null);
   const on = !!sub && Notification.permission === 'granted';
-  $('pushBtn').textContent = on ? '🔔 알림 끄기' : '🔔 알림 받기';
-  $('pushBtn').hidden = false;
+  $('pushBtn').textContent = on ? '끄기' : '켜기';
+  $('pushRow').hidden = false;
   const hide = lsGet(PUSH_KEY) === '1';
   if (!on && !hide && Notification.permission === 'default') {
     $('pushMsg').textContent = '새 찬양 일정이 올라오면 알림으로 알려 드려요.';
@@ -3842,6 +4054,7 @@ PUSH_CHKS.forEach(id => {
 applyTheme(themeId);
 // 처음 글자 크기: 휴대폰은 작게, 폭 600px↑(펼친 폴드·태블릿·PC)는 보통 — 펼친 폴드(약 673px)에서도 작게(0.75)는 너무 작음 (2026-10-10) — 한 번 고르면 그 크기로 기억
 { const v = lsGet(BIG_KEY); applySize(v === '1' ? 'big' : v === 'm' ? 'mid' : v === 's' ? 'small' : innerWidth >= 600 ? 'mid' : 'small'); }
+sizeLabel();
 placePc(); // 저장된 글자 크기에 따라 PC 화면 여부가 달라짐 (가로로 편 폴드)
 load();
 
