@@ -65,9 +65,9 @@
   /* vh는 zoom을 한 번 더 먹어 작게(.75)에서 화면의 75%가 됨 → 높이를 vh로 잡을 때는 / var(--z, 1)로 실제 화면 높이에 맞춤 */
   body.small :is(.player, .modebar) { zoom: calc(1 / .75); } /* 재생창·아래 메뉴는 원래 크기 그대로 (누르기 쉽게) */
   /* 작게(0.75배)에서도 보조 글씨는 실제 13.5px, 누르는 칸은 실제 44px 아래로 내려가지 않게 (2026-10-04 시안 A) — 제목·이번 주 곡 제목은 작은 그대로 */
-  body.small :is(.summary, .date .dow, .date .kind, .chip small, .monthsep, .people, .heroppl, .label, .done, .badge, .eyebrow, footer, .themebtn, .linkbtn, .herolinks a, .heroparts a small, .heroshare, .tplabel, .ver, .brand small, .topnav .btn, .herodate em, .noticebar .tag, .heroparts a i, .rsvp, .rsvp .pick, .edwarn, #pushCount, .rsvpadmin, .noticefull, .titlehist, .hint):not(:is(#topZone, #publicView) *) { font-size: 18px; }
+  body.small :is(.summary, .date .dow, .date .kind, .chip small, .monthsep, .people, .heroppl, .label, .done, .badge, .eyebrow, footer, .themebtn, .linkbtn, .herolinks a, .heroparts a small, .heroshare, .tplabel, .ver, .brand small, .topnav .btn, .herodate em, .noticebar .tag, .heroparts a i, .rsvp, .rsvp .pick, .edwarn, #pushCount, .rsvpadmin, .noticefull, .titlehist, .hint):not(:is(#topZone, #publicView, #notices) *) { font-size: 18px; }
   body.small #fontBtn { font-size: 18px; } /* #fontBtn 자체 규칙이 더 강해서 따로 */
-  body.small :is(.chip, .themebtn, .linkbtn, .arrow, .topnav .btn, .heroshare, .heroparts a, .herolinks a, .btn, .rsvp .pick, .pushpick):not(:is(#topZone, #publicView) *) { min-height: 58px; }
+  body.small :is(.chip, .themebtn, .linkbtn, .arrow, .topnav .btn, .heroshare, .heroparts a, .herolinks a, .btn, .rsvp .pick, .pushpick):not(:is(#topZone, #publicView, #notices) *) { min-height: 58px; }
   body.small .herosong.compact .herolinks a { min-height: 58px; font-size: 18px; } /* 같은 날 두 곡의 작은 카드도 바닥 보정 (compact 규칙이 더 세서 따로) */
   body.small .pushpick { font-size: 18px; }
   body.mid :is(.player, .modebar) { zoom: calc(1 / .9); }
@@ -688,7 +688,7 @@
      공지 → 일력 카드 → 내 파트 목록, 아래 메뉴 4칸(내 파트·전체 일정·영상·공지). 색은 지금 테마의 남색 + 일정표 일요일 빨강(DESIGN.md)
      글자 크기 단계(작게 .75·보통 .9·크게 1.1)는 그대로 두고, 이 칸들은 '작게'에서 시안 크기 그대로 보이게 1/.75 (보통·크게는 그만큼 더 큼) */
   :root { --red: #c0392b; --red-soft: #fbeceb; --dark: #17202e; --serif: "Noto Serif KR", "AppleMyungjo", "Nanum Myeongjo", serif; }
-  #topZone, #publicView, .tabbar { zoom: calc(1 / .75); }
+  #topZone, #publicView, .tabbar, #notices { zoom: calc(1 / .75); }
   body:is(.small, .mid, .big) #publicView .modebar { zoom: 1; }
     body:has(#publicView:not([hidden])) { padding-bottom: calc((72px + env(safe-area-inset-bottom)) / var(--z, 1)); }
   body:has(#publicView:not([hidden])) main.wrap { padding-top: 8px; }
@@ -697,12 +697,14 @@
 
   /* 공지 두 줄 (일력 위) */
   #topZone { max-width: 570px; margin-inline: auto; padding: 0 12px; }
-  #topZone .notices { margin: 12px 0 0; gap: 0; background: #fff; border-radius: 12px; padding: 2px 14px; }
-  #topZone .noticebar { border: 0; border-bottom: 1px solid var(--line); border-radius: 0; padding: 10px 0; background: none; font-weight: 400; font-size: 14.5px; min-height: 44px; }
-  #topZone .notices > :last-child .noticebar { border-bottom: 0; }
-  #topZone .noticebar:hover { color: var(--navy); }
-  #topZone .noticebar .tag { background: none; color: var(--red); padding: 0; font-size: 14.5px; border-radius: 0; }
-  #topZone .noticebar .txt { -webkit-line-clamp: 1; line-clamp: 1; }
+  #noticeToggle[aria-expanded="true"] { background: var(--navy); color: #fff; border-color: var(--navy); }
+  #notices.notices { box-sizing: content-box; max-width: 546px; margin: 12px auto 0; gap: 0; background: #fff; border-radius: 12px; padding: 2px 14px; }
+  @media (max-width: 599px) { #notices.notices { margin-inline: 12px; } }
+  #notices .noticebar { border: 0; border-bottom: 1px solid var(--line); border-radius: 0; padding: 10px 0; background: none; font-weight: 400; font-size: 14.5px; min-height: 44px; }
+  #notices > :last-child .noticebar { border-bottom: 0; }
+  #notices .noticebar:hover { color: var(--navy); }
+  #notices .noticebar .tag { background: none; color: var(--red); padding: 0; font-size: 14.5px; border-radius: 0; }
+  #notices .noticebar .txt { -webkit-line-clamp: 1; line-clamp: 1; }
 
   /* 일력 카드 */
   #topZone .hero { margin: 12px 0 0; background: #fff; color: var(--ink); border-radius: 6px 6px 14px 14px; overflow: hidden; box-shadow: 0 2px 0 #dfe2e7; }
@@ -831,9 +833,10 @@
     grid-template-columns: minmax(16px, 1fr) minmax(calc(320px / .75), calc(400px / .75)) minmax(0, calc(640px / .75)) minmax(calc(260px / .75), calc(320px / .75)) minmax(16px, 1fr);
     column-gap: calc(24px / .75); }
   body.pc.pub > * { grid-column: 1 / -1; }
-  body.pc.pub > #topZone { grid-column: 2; grid-row: 2; position: sticky; top: 0; max-width: none; padding: 0 0 16px; max-height: calc(100vh * .75 / var(--z)); overflow-y: auto; scrollbar-width: thin; }
-  body.pc.pub > main.wrap { grid-column: 3; grid-row: 2; max-width: none; margin: 0; padding: 0 0 40px; }
-  body.pc.pub > .pcright { display: block; grid-column: 4; grid-row: 2; position: sticky; top: 0; zoom: calc(1 / .75); padding-bottom: 16px; }
+  body.pc.pub > #notices { grid-column: 2 / 5; grid-row: 2; max-width: none; width: auto; margin: 12px 0 0; }
+  body.pc.pub > #topZone { grid-column: 2; grid-row: 3; position: sticky; top: 0; max-width: none; padding: 0 0 16px; max-height: calc(100vh * .75 / var(--z)); overflow-y: auto; scrollbar-width: thin; }
+  body.pc.pub > main.wrap { grid-column: 3; grid-row: 3; max-width: none; margin: 0; padding: 0 0 40px; }
+  body.pc.pub > .pcright { display: block; grid-column: 4; grid-row: 3; position: sticky; top: 0; zoom: calc(1 / .75); padding-bottom: 16px; }
   body.pc.pub .pccal:not([hidden]) { display: block; }
   body.pc.pub .pccal .lh { margin-top: 12px; }
   body.pc.pub .pcright .player { zoom: 1; position: static; max-width: none; margin: 14px 0 0; border-radius: 14px; padding: 10px 12px 12px; box-shadow: 0 4px 14px rgb(16 24 40 / .14); }
@@ -865,17 +868,19 @@
     <nav class="topnav">
       <button type="button" class="btn" id="fontBtn" hidden title="글자 크기: 지금 보통 — 누르면 크게" aria-label="글자 크기: 지금 보통 — 누르면 크게">크게 보기</button>
       <button type="button" class="btn" id="toPublic" hidden>일정 보기</button>
+      <button type="button" class="btn" id="noticeToggle" aria-expanded="false" aria-controls="notices" hidden>공지</button>
       <a class="btn" href="#edit" id="toEdit">일정 편집</a>
     </nav>
   </div>
 </header>
+<!-- 공지: 머리글의 [공지]를 누르면 열림 (처음엔 닫힘, 2026-10-19 사용자) -->
+<div class="notices" id="notices" role="list" aria-label="공지사항" hidden></div>
 
 <!-- 공개 화면 맨 위: 이번 주 찬양 — 머리글과 한 면으로 이어진 남색 영역 (편집 화면에서는 숨김) -->
 <div id="topZone">
   <!-- 쪽 제목 — 화면에는 로고가 대신하고, 화면 읽기 프로그램에는 이 글이 읽힘 -->
   <h1 class="sronly">찬양대 알리미 — 인천영종교회</h1>
   <section class="hero heroskel" id="heroSkel" hidden aria-hidden="true"><div class="wrap"><i></i><i></i><i></i><i></i></div></section>
-  <div class="notices" id="notices" role="list" aria-label="공지사항"></div>
   <section class="hero" id="hero" aria-label="이번 주 찬양" hidden>
     <div class="rings" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
     <div class="leaf">
@@ -1909,6 +1914,8 @@ function linkify(text) {
 
 function renderNotices() {
   const list = notices.map(n => String(n || '').trim()).filter(Boolean);
+  $('noticeToggle').hidden = !list.length; // 공지가 없으면 [공지] 버튼도 숨김
+  if (!list.length) setNoticeOpen(false);
   // 공지 탭: 공지 전체를 카드로 (관리자는 ✎로 바로 수정)
   $('noticeCards').replaceChildren(...(list.length ? notices.map((n, idx) => ({ text: String(n || '').trim(), idx })).filter(x => x.text).map(({ text, idx }) =>
     el('article', {}, el('span', { class: 'ntag' }, '공지'), el('p', {}, ...linkify(text)),
@@ -1942,6 +1949,13 @@ function renderNotices() {
     b.querySelector('.more').hidden = true;
   });
 }
+
+// 머리글 [공지]: 누르면 머리글 바로 아래에 공지가 열리고, 다시 누르면 닫힘
+function setNoticeOpen(open) {
+  $('notices').hidden = !open;
+  $('noticeToggle').setAttribute('aria-expanded', String(open));
+}
+$('noticeToggle').onclick = () => setNoticeOpen($('notices').hidden);
 
 // 공유 결과를 공유 버튼 바로 아래에 잠깐 보여 줌
 function shareNote(msg) {
@@ -3711,6 +3725,7 @@ function route() {
   $('publicView').hidden = edit;
   $('topZone').hidden = edit; // 일력 카드는 공개 화면에서만 (탭은 renderPublic이 다시 정함)
   $('tabBar').hidden = edit;
+  if (edit) { setNoticeOpen(false); $('noticeToggle').hidden = true; } // 편집 화면에서는 공지 버튼 없음 (공지 수정은 편집 화면 도구에서)
   document.body.classList.toggle('pub', !edit);
   if (!$('player').hidden) placePlayer(); // PC에서 칸에 붙어 있던 재생창은 편집 화면에서는 아래로
   $('loginView').hidden = !showLogin;
