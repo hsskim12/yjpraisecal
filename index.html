@@ -144,7 +144,7 @@
   /* 공지사항 */
   .notices { margin: 0 0 18px; display: grid; gap: 8px; }
   .noticebar { display: flex; align-items: center; gap: 10px; width: 100%; min-width: 0; text-align: left; background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; font-weight: 700; font-size: 16px; }
-  .noticebar:hover { border-color: var(--navy); }
+  @media (hover: hover) { .noticebar:hover { border-color: var(--navy); } }
   .noticebar .tag { background: var(--accent); color: #fff; font-size: 15px; font-weight: 700; border-radius: 999px; padding: 3px 10px; flex-shrink: 0; }
   .noticebar .txt { overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; } /* 두 줄까지, 넘치면 … */
   .noticebar .more { margin-left: auto; color: var(--muted); font-size: 18px; font-weight: 400; flex-shrink: 0; }
@@ -176,14 +176,14 @@
   .herolinks { display: grid; grid-template-columns: repeat(auto-fit, minmax(88px, 1fr)); gap: 7px; margin-top: 12px; } /* 좁아져도 한 버튼만 한 줄을 다 차지하지 않게 */
   .herolinks a, .herolinks button { min-width: 0; min-height: 44px; border: 0; display: inline-flex; align-items: center; justify-content: center;
     font-size: 19.5px; font-weight: 700; color: var(--navy); background: #fff; border-radius: 13px; padding: 8px 12px; text-decoration: none; } /* 15px의 1.3배 */
-  .herolinks a:hover, .herolinks button:hover { background: var(--navy-soft); }
+  @media (hover: hover) { .herolinks a:hover, .herolinks button:hover { background: var(--navy-soft); } }
   .herolinks a.hi { background: var(--accent); color: #fff; }
-  .herolinks a.hi:hover { background: var(--accent-dark); }
+  @media (hover: hover) { .herolinks a.hi:hover { background: var(--accent-dark); } }
   /* 파트 버튼 — 큼직한 네 칸, S / 소프라노 두 줄. 고른 파트(내 파트)는 하얗게 */
   .heroparts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 7px; margin-top: 8px; }
   .heroparts a { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0; padding: 6px 2px 5px;
     color: #fff; background: rgb(255 255 255 / .14); border-radius: 13px; text-decoration: none; }
-  .heroparts a:not(.hl):hover { box-shadow: inset 0 0 0 2px rgb(255 255 255 / .6); } /* 바탕을 밝히면 흰 글자 대비가 모자라 테두리로 */
+  @media (hover: hover) { .heroparts a:not(.hl):hover { box-shadow: inset 0 0 0 2px rgb(255 255 255 / .6); } } /* 바탕을 밝히면 흰 글자 대비가 모자라 테두리로 */
   .heroparts a b { font-size: 25px; font-weight: 800; line-height: 1.05; } /* 19px의 1.3배 */
   .heroparts a i { font-style: normal; font-size: 15.5px; line-height: 1.25; font-weight: 500; color: #fff; } /* 12px의 1.3배 · 흐리게 하면 밝은 테마에서 대비가 모자라 흰색 그대로 */
   .heroparts a.hl { background: #fff; color: var(--navy); }
@@ -195,7 +195,7 @@
   .herotype { margin: 0 0 -12px; font-size: 15px; font-weight: 700; color: rgb(255 255 255 / .85); } /* 같은 날 여러 곡일 때 곡마다 구분 */
   .sharemsg { margin: 6px 0 0; text-align: center; font-size: 15px; font-weight: 600; color: #fff; }
   .heroshare { display: flex; align-items: center; justify-content: center; gap: 6px; width: fit-content; margin: 6px auto 0; min-height: 40px; padding: 4px 14px; border: 0; background: none; color: rgb(255 255 255 / .85); font-size: 18px; font-weight: 600; } /* 14px의 약 1.3배 */
-  .heroshare:hover { color: #fff; text-decoration: underline; }
+  @media (hover: hover) { .heroshare:hover { color: #fff; text-decoration: underline; } }
   .hero .note { color: #fff; border-left-color: rgb(255 255 255 / .6); margin-top: 12px; }
   .heroedit { display: flex; justify-content: flex-end; margin-top: 10px; }
   /* 처음 불러오는 동안 이번 주 찬양 자리에 보이는 빈 틀 */
@@ -223,7 +223,7 @@
     position: absolute; right: 6px; width: 36px; height: 36px; border: 0; border-radius: 999px;
     background: var(--line-strong); color: #3d4757; font-size: 15px; line-height: 1; display: grid; place-items: center;
   }
-  .searchrow .clearbtn:hover { background: #c6cedb; color: var(--ink); }
+  @media (hover: hover) { .searchrow .clearbtn:hover { background: #c6cedb; color: var(--ink); } }
   .viewhead { margin-bottom: 10px; }
   .viewhead h2 { margin: 0; font-size: 20px; line-height: 1.3; }
   .summary { color: var(--muted); font-size: 15px; }
@@ -242,7 +242,7 @@
     background: transparent; color: #3d4757; font-size: 18px; line-height: 1.15; font-weight: 750;
     white-space: nowrap; box-shadow: none;
   }
-  .modebar .btn:hover { background: var(--navy-soft); }
+  @media (hover: hover) { .modebar .btn:hover { background: var(--navy-soft); } }
   .modebar .btn[aria-pressed="true"] { background: var(--navy); color: #fff; box-shadow: 0 3px 10px rgb(31 58 99 / .24); }
   body.big .modebar { zoom: calc(1 / 1.1); } /* 전체 확대가 고정 메뉴 폭까지 늘리지 않게 */
   body:has(#schedule:not([hidden]) #modeBar:not([hidden])) { padding-bottom: calc(82px + env(safe-area-inset-bottom)); }
@@ -251,7 +251,7 @@
   .periodbar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
   .periodsummary { margin: 0 0 6px; font-size: 15px; color: var(--ink); } /* 기간 요약은 화살표 위 줄에 */
   .periodbar .arrow { width: 40px; height: 40px; font-size: 20px; line-height: 1; border: 1px solid var(--line); border-radius: 10px; background: #fff; flex-shrink: 0; }
-  .periodbar .arrow:hover { background: var(--navy-soft); }
+  @media (hover: hover) { .periodbar .arrow:hover { background: var(--navy-soft); } }
   .periodmid { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; min-width: 0; }
   .ympick { display: flex; gap: 6px; min-width: 0; }
   .periodtext { font-size: 16px; font-weight: 700; color: var(--ink); }
@@ -274,7 +274,7 @@
   .rrow.live .rthumb { width: 224px; } /* 실황은 사진을 연습 영상의 2배로 */
   .rrow.live .rinfo { flex: 1 1 180px; } /* 자리가 모자라면 제목·날짜는 사진 아래로 */
   .rname { display: block; font-size: 17px; font-weight: 700; color: var(--ink); text-decoration: none; word-break: keep-all; overflow-wrap: anywhere; }
-  .rname:hover { text-decoration: underline; }
+  @media (hover: hover) { .rname:hover { text-decoration: underline; } }
   .rinfo small { color: var(--muted); font-size: 15px; }
 
   /* 월이 바뀌는 지점 구분선 */
@@ -298,6 +298,7 @@
   .titlerow { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; }
   .titlerow h4 { margin: 0; font-size: 22px; word-break: keep-all; overflow-wrap: anywhere; }
   .titlebtn { border: 0; background: none; padding: 0; margin: 0; font: inherit; color: inherit; text-align: left; cursor: pointer; border-radius: 6px; transition: color .15s; }
+  
   .titlebtn:hover, .titlebtn[aria-expanded="true"] { color: var(--navy); }
   .titlebtn .histmark { color: var(--muted); font-size: .7em; }
   .cardhist { margin: 6px 0 0; }
@@ -310,12 +311,12 @@
   .label { margin: 0 0 6px; font-size: 16px; color: var(--muted); }
   .chips { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
   .chip { display: inline-flex; align-items: center; justify-content: center; gap: 5px; min-height: 44px; padding: 8px 14px; border-radius: 10px; background: var(--navy-soft); color: var(--navy); text-decoration: none; font-size: 16px; font-weight: 600; }
-  .chip:hover { background: color-mix(in oklab, var(--navy-soft), var(--navy) 10%); }
+  @media (hover: hover) { .chip:hover { background: color-mix(in oklab, var(--navy-soft), var(--navy) 10%); } }
   .group .chips .chip { font-size: 17px; min-width: 60px; }    /* 파트 연습 버튼 */
   .chip.hl { background: var(--accent); color: #fff; }         /* 듣기·반주·악보·참고연주·실황 */
-  .chip.hl:hover { background: var(--accent-dark); }
+  @media (hover: hover) { .chip.hl:hover { background: var(--accent-dark); } }
   .chip.line { background: #fff; color: var(--accent-dark); box-shadow: inset 0 0 0 1.5px var(--accent); } /* 반주·악보·실황·참고 */
-  .chip.line:hover { background: var(--accent-soft); }
+  @media (hover: hover) { .chip.line:hover { background: var(--accent-soft); } }
   .group .chips .chip { flex-direction: column; gap: 0; line-height: 1.2; padding-block: 6px; } /* ▶ S / 소프라노 두 줄 */
   .chip small { font-size: 14px; font-weight: 600; }
   .pastsep ~ .card .done { display: none; } /* 검색 결과: '지난 찬양' 제목 아래 카드에는 따로 붙이지 않음 */
@@ -326,6 +327,7 @@
   .pastsep { margin: 26px 0 0; font-size: 16px; font-weight: 800; color: var(--ink); } /* 검색 결과의 '지난 찬양' */
   .tbd { color: var(--muted); }                                                /* 곡 미정 */
   /* 내 파트: '고른 것'은 어디서나 남색 — 듣기·악보(강조색)와 한눈에 구분 */
+  
   .chip.mine, .chip.mine:hover { background: var(--navy); color: #fff; box-shadow: 0 0 0 2px var(--card), 0 0 0 4px var(--navy); }
   /* 안내 메모 — 눈에 띄도록 버건디 계열 */
   .note { margin: 10px 0 0; white-space: pre-line; font-size: 16px; color: var(--note); font-weight: 600; border-left: 3px solid var(--note); padding-left: 10px; }
@@ -336,7 +338,7 @@
   .muted { margin: 8px 0 0; color: var(--muted); font-size: 15px; }
   .empty { background: #fff; border: 1px dashed var(--line); border-radius: 14px; padding: 18px; text-align: center; color: var(--muted); margin: 0; }
   .emptyadd { display: block; width: 100%; font-size: 15px; cursor: pointer; }
-  .emptyadd:hover { border-color: var(--navy); color: var(--navy); background: var(--navy-soft); }
+  @media (hover: hover) { .emptyadd:hover { border-color: var(--navy); color: var(--navy); background: var(--navy-soft); } }
   .emptySundays { margin: 12px 0 0; color: var(--muted); font-size: 15px; padding: 10px 14px; background: #fff; border: 1px dashed var(--line); border-radius: 10px; }
 
   /* 화면 아래 고정 유튜브 재생창 */
@@ -357,7 +359,7 @@
   .playerloop button { transition: background .15s, color .15s; }
   #loopA, #loopB { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; min-height: 48px; line-height: 1.2; }
   #loopA small, #loopB small { font-size: 13px; font-weight: 600; opacity: .85; }
-  .playerloop button:not(:disabled):hover { background: rgb(255 255 255 / .24); }
+  @media (hover: hover) { .playerloop button:not(:disabled):hover { background: rgb(255 255 255 / .24); } }
   .playerloop button:disabled { opacity: .45; }
   .playerhead .iconbtn { background: rgb(255 255 255 / .12); border-color: rgb(255 255 255 / .3); color: #fff; }
   /* 영상은 유튜브가 허용하는 가장 작은 16:9 크기 356×200 (최소 200×200을 지키면서 목록을 덜 가리게).
@@ -387,7 +389,7 @@
   .status:empty { display: none; }
   .status.err { background: var(--danger); }
   .status button { flex-shrink: 0; min-height: 36px; border: 1px solid rgb(255 255 255 / .5); border-radius: 9px; background: rgb(255 255 255 / .14); color: #fff; font-size: 15px; font-weight: 700; padding: 5px 12px; }
-  .status button:hover { background: rgb(255 255 255 / .26); }
+  @media (hover: hover) { .status button:hover { background: rgb(255 255 255 / .26); } }
   .status .toastx { min-width: 36px; padding: 5px 0; }
   .toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 10px; }
   .helprow { display: flex; align-items: flex-start; gap: 10px; }
@@ -441,7 +443,7 @@
   .recard { display: flex; align-items: center; gap: 10px; min-width: 0; min-height: 60px; background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 8px 10px 8px 6px; cursor: grab; user-select: none; -webkit-user-select: none; touch-action: pan-y; }
   .recard.static { cursor: default; padding-left: 12px; }
   .recard.empty { width: 100%; min-height: 48px; justify-content: center; border-style: dashed; color: var(--muted); font-size: 15px; cursor: pointer; }
-  .recard.empty:hover { border-color: var(--navy); color: var(--navy); background: var(--navy-soft); }
+  @media (hover: hover) { .recard.empty:hover { border-color: var(--navy); color: var(--navy); background: var(--navy-soft); } }
   .recard.dragging { position: relative; z-index: 5; box-shadow: 0 8px 20px rgb(0 0 0 / .2); cursor: grabbing; }
   .reslot.over .recard:not(.dragging) { outline: 2px dashed var(--accent); outline-offset: 2px; }
   .reslot.moved .recard { background: var(--warn-bg); border-color: var(--warn-line); }
@@ -469,7 +471,7 @@
   .formhead .btn { padding: 7px 14px; }
   .iconbtn { border: 1px solid var(--line); background: #fff; border-radius: 9px; width: 40px; height: 40px; font-size: 16px; line-height: 1; flex-shrink: 0; min-width: calc(44px / var(--z, 1)); min-height: calc(44px / var(--z, 1)); } /* 확대·축소(zoom)를 곱해도 실제 44px 이상 */
   .player .iconbtn { min-width: 0; min-height: 0; } /* 재생창은 이미 원래 크기로 되돌려 둠 */
-  .iconbtn:hover { background: var(--navy-soft); }
+  @media (hover: hover) { .iconbtn:hover { background: var(--navy-soft); } }
   .noticefull { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 16px; line-height: 1.7; }
   .inlink { color: var(--navy); font-weight: 600; }
   .tworow { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
@@ -514,7 +516,7 @@
   .ytitem { display: grid; grid-template-columns: 96px minmax(0, 1fr) auto; gap: 10px; align-items: center; border: 1px solid var(--line); border-radius: 10px; padding: 6px; }
   .ytitem img { width: 96px; height: 54px; object-fit: cover; border-radius: 6px; background: var(--navy-soft); display: block; }
   .ytitem a { font-size: 15px; font-weight: 600; color: var(--ink); text-decoration: none; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-  .ytitem a:hover { text-decoration: underline; }
+  @media (hover: hover) { .ytitem a:hover { text-decoration: underline; } }
   .ytthumb { display: block; }
   .ytitem.current { border-color: var(--accent); background: #fff8ec; }
   .curbadge { display: inline-block; margin-bottom: 2px; background: var(--accent); color: #fff; font-size: 12px; font-weight: 700; border-radius: 999px; padding: 0 8px; }
@@ -528,13 +530,13 @@
   #fontBtn { min-width: 76px; font-size: 15px; line-height: 1.2; padding: 8px 10px; white-space: nowrap; }
   /* 일정 편집 — 대원용 화면에서 튀지 않게 회색 톤 */
   #toEdit, #toPublic { background: var(--surface-sunken); border-color: var(--line-strong); color: #4a5568; }
-  #toEdit:hover, #toPublic:hover { background: #e3e8ef; color: var(--ink); }
+  @media (hover: hover) { #toEdit:hover, #toPublic:hover { background: #e3e8ef; color: var(--ink); } }
   #fontBtn[data-size] { background: var(--navy); color: #fff; border-color: var(--navy); }
   /* 화면 색 고르기 (바닥글) */
   .themepick { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; }
   .themepick .tplabel { font-size: 15px; font-weight: 700; color: var(--muted); margin-right: 2px; }
   .themebtn { display: inline-flex; align-items: center; gap: 7px; min-height: 40px; padding: 7px 12px; border: 1px solid var(--line); border-radius: 999px; background: #fff; font-size: 15px; font-weight: 600; color: var(--ink); }
-  .themebtn:hover { border-color: var(--line-strong); }
+  @media (hover: hover) { .themebtn:hover { border-color: var(--line-strong); } }
   .themebtn .dots { display: inline-flex; flex-shrink: 0; }
   .themebtn .dots i { display: block; width: 13px; height: 13px; border-radius: 999px; box-shadow: 0 0 0 1.5px #fff; }
   .themebtn .dots i + i { margin-left: -5px; }
@@ -706,7 +708,7 @@
   @media (max-width: 599px) { #notices.notices { margin-inline: 12px; } }
   #notices .noticebar { border: 0; border-bottom: 1px solid var(--line); border-radius: 0; padding: 10px 0; background: none; font-weight: 400; font-size: 14.5px; min-height: 44px; }
   #notices > :last-child .noticebar { border-bottom: 0; }
-  #notices .noticebar:hover { color: var(--navy); }
+  @media (hover: hover) { #notices .noticebar:hover { color: var(--navy); } }
   #notices .noticebar .tag { background: none; color: var(--red); padding: 0; font-size: 14.5px; border-radius: 0; }
   #notices .noticebar .txt { -webkit-line-clamp: 1; line-clamp: 1; }
 
@@ -729,14 +731,14 @@
   .leafsong .note { color: var(--ink); margin: 0 0 12px; }
   .leafchips { display: flex; flex-wrap: wrap; gap: 6px; }
   .leafchips a, .leafchips .rshare { min-height: 40px; padding: 0 14px; display: inline-flex; align-items: center; justify-content: center; gap: 4px; border: 0; border-radius: 8px; background: var(--navy-soft); color: var(--navy); font-weight: 600; font-size: 14.5px; text-decoration: none; transition: background .15s, color .15s; }
-  .leafchips a:hover, .leafchips .rshare:hover { background: #e2e7ef; }
+  @media (hover: hover) { .leafchips a:hover, .leafchips .rshare:hover { background: #e2e7ef; } }
   .leafchips a.hl { background: var(--navy); color: #fff; }
   .leafchips a.mine { background: var(--red); color: #fff; }
   .leafchips .tick { display: none; } .leafchips a.mine .tick { display: inline; }
   .leafchips.main a { flex: 1 1 0; min-height: 48px; font-size: 17px; font-weight: 700; } /* 첫 줄: 듣기·내 파트 크게 */
   .leafchips.more { margin-top: 8px; }
   .leafchips.more a, .leafchips.more .rshare { min-height: 40px; padding: 0 12px; background: none; box-shadow: inset 0 0 0 1px var(--line); font-size: 15px; } /* 나머지: 테두리만 있는 작은 버튼 */
-  .leafchips.more a:hover, .leafchips.more .rshare:hover { background: var(--navy-soft); }
+  @media (hover: hover) { .leafchips.more a:hover, .leafchips.more .rshare:hover { background: var(--navy-soft); } }
   .leafchips.more a.mine { background: var(--red); box-shadow: none; }
   #topZone .heroedit { margin-top: 8px; }
   #topZone .heroedit .iconbtn { background: #fff; border-color: var(--line); color: var(--navy); }
@@ -764,7 +766,7 @@
   .rowmain .t { flex: 1; min-width: 0; font-size: 16px; line-height: 1.35; word-break: keep-all; overflow-wrap: anywhere; }
   .rowmain .t small { display: block; color: var(--muted); font-size: 15px; }
   .rowmain .t.tbd { color: var(--muted); }
-  button.rowmain:hover .t { color: var(--navy); }
+  @media (hover: hover) { button.rowmain:hover .t { color: var(--navy); } }
   .rd { width: 46px; flex-shrink: 0; font-weight: 700; font-size: 15px; }
   .rd.serif { width: 62px; text-align: center; line-height: 1; font-weight: 400; }
   .rd.serif b { display: block; font-family: var(--serif); font-weight: 900; font-size: 26px; color: var(--red); }
@@ -772,9 +774,9 @@
   .rd.serif.asm b { color: var(--navy); }
   .rowbox.past .t { color: var(--muted); }
   .circ { width: 42px; height: 42px; border-radius: 50%; border: 2px solid var(--red); display: grid; place-items: center; color: var(--red); font-weight: 700; font-size: 15px; flex-shrink: 0; text-decoration: none; transition: background .15s, color .15s; }
-  a.circ:hover { background: var(--red); color: #fff; }
+  @media (hover: hover) { a.circ:hover { background: var(--red); color: #fff; } }
   .circ.all { border-color: var(--navy); color: var(--navy); font-size: 15px; letter-spacing: -.04em; }
-  a.circ.all:hover { background: var(--navy); color: #fff; }
+  @media (hover: hover) { a.circ.all:hover { background: var(--navy); color: #fff; } }
   .circ.off { border-color: var(--muted); border-style: dashed; color: var(--muted); font-size: 15px; letter-spacing: -.04em; } /* 누를 수 없음: 곡 미정='미정', 영상 없음='—' (대비 ≥3) */
   /* 줄을 누르면 펼쳐지는 자료 (예전 카드) — 날짜·제목·지휘반주는 줄에 이미 있으므로 숨김 */
   .rowbox > .card { border: 0; padding: 0 0 12px; background: none; grid-template-columns: minmax(0, 1fr); }
@@ -792,7 +794,7 @@
   .mcal .sun.has { background: var(--red-soft); font-weight: 700; }
   .mcal .asm { background: var(--navy-soft); color: var(--navy); font-weight: 700; }
   .mcal > .on, .mcal > .sun.on { background: var(--red); color: #fff; } /* .sun.has보다 뒤·같은 세기라 이김 */
-  .mcal button { cursor: pointer; transition: filter .15s; } .mcal button:hover { filter: brightness(.95); }
+  .mcal button { cursor: pointer; transition: filter .15s; } @media (hover: hover) { .mcal button:hover { filter: brightness(.95); } }
 
   /* 영상 */
   /* 사진·제목이 한 줄, [재생][공유]·관리자 [수정][삭제]는 아래 줄 전체 폭 (제목이 좁은 칸에서 한 글자씩 꺾이지 않게) */
@@ -819,12 +821,12 @@
   .setrow[hidden] { display: none; }
   .setrow > span { flex: 1; } .setrow small { color: var(--muted); font-size: 15px; display: block; }
   .setrow .linkbtn { text-decoration: none; font-weight: 700; color: var(--navy); min-height: 44px; padding: 0 4px; margin: 0; font-size: 15.5px; }
-  .setrow .linkbtn:hover { text-decoration: underline; }
+  @media (hover: hover) { .setrow .linkbtn:hover { text-decoration: underline; } }
   /* 설정 줄 모양으로 구분 (2026-10-19 사용자): 켜고 끄기 = 스위치, 글자 크기 = 3칸, 다른 화면으로 = 줄 끝 › (줄 전체를 누름) */
   .setrow.go { position: relative; }
   .setrow.go .linkbtn { font-size: 24px; font-weight: 400; color: var(--muted); padding: 0 2px; }
   .setrow.go .linkbtn::after { content: ''; position: absolute; inset: 0; }
-  .setrow.go:hover > span { color: var(--navy); }
+  @media (hover: hover) { .setrow.go:hover > span { color: var(--navy); } }
   .switch { position: relative; width: 52px; height: 32px; flex-shrink: 0; border: 0; border-radius: 999px; background: var(--muted); cursor: pointer; transition: background .15s; }
   .switch::after { content: ''; position: absolute; top: 3px; left: 3px; width: 26px; height: 26px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgb(16 24 40 / .25); transition: transform .15s; }
   .switch[aria-checked="true"] { background: var(--navy); }
@@ -842,7 +844,7 @@
   .tabbar[hidden] { display: none; }
   @media (min-width: 600px) { .tabbar, body:has(#publicView:not([hidden])) .player { max-width: 570px; margin-inline: auto; } .tabbar { border-radius: 16px 16px 0 0; } } /* PC 세 칸(2단계) 전까지는 가운데 한 줄에 맞춤 */
   .tabbar button { min-height: 52px; border: 0; border-radius: 10px; background: none; color: #aab3c2; font: inherit; font-size: 15px; font-weight: 600; cursor: pointer; transition: color .15s, background .15s; }
-  .tabbar button:hover { color: #fff; }
+  @media (hover: hover) { .tabbar button:hover { color: #fff; } }
   .tabbar button[aria-current="true"] { color: #fff; font-weight: 800; background: rgb(255 255 255 / .12); } /* 지금 탭: 옅은 바탕 칸 (PC 머리글 메뉴와 같은 모양) */
   /* 재생창은 아래 메뉴 바로 위 */
   /* 아래 메뉴는 글자 크기를 따라 --z/.75배, 재생창은 늘 1배 → 위치·폭을 메뉴 배율로 맞춤 (보통·크게에서 겹치던 것) */
@@ -890,7 +892,44 @@
   body.pc.pub .top .tabbar { position: static; display: flex; gap: 4px; background: none; padding: 0; max-width: none; margin: 0 8px 0 auto; border-radius: 0; box-shadow: none; }
   body.pc.pub .top .tabbar button { min-height: 40px; padding: 0 16px; border-radius: 9px; font-size: 14.5px; }
   body.pc.pub .top .tabbar button[aria-current="true"] { background: rgb(255 255 255 / .12); color: #fff; }
-  body.pc.pub .top .tabbar button:hover { color: #fff; }
+  @media (hover: hover) { body.pc.pub .top .tabbar button:hover { color: #fff; } }
+  /* PC 머리글: [공지]·[일정 편집]은 흰 상자 대신 메뉴와 같은 톤 */
+  body.pc.pub .top :is(#noticeToggle, #toEdit) { zoom: calc(1 / .75); min-height: 40px; padding: 0 16px; border: 0; border-radius: 9px; background: none; color: #aab3c2; font-size: 14.5px; display: inline-flex; align-items: center; }
+  body.pc.pub .top #noticeToggle[aria-expanded="true"] { background: rgb(255 255 255 / .12); color: #fff; }
+  body.pc.pub .top #noticeToggle.new::after { background: #ff8f80; } /* 어두운 바탕에서 보이는 밝은 빨강 */
+  /* 펼친 줄의 버튼: 일력 카드와 같은 모양 (듣기=남색, 내 파트=빨강, 나머지=테두리) */
+  .rowbox > .card .headchips { margin-left: 0; width: 100%; }
+  .rowbox > .card .chip { border-radius: 8px; }
+  .rowbox > .card .chip.hl { background: var(--navy); color: #fff; font-weight: 700; }
+  .rowbox > .card .chip.line { background: none; color: var(--navy); box-shadow: inset 0 0 0 1px var(--line); font-size: 15px; }
+  .rowbox > .card .chip.mine { background: var(--red); color: #fff; box-shadow: none; }
+  .rowbox > .card .group .chips .chip b { font-size: 16px; }
+  .rowbox > .card .group .chips .chip small { font-size: 15px; font-weight: 500; }
+  @media (hover: hover) {
+    .rowbox > .card .chip.hl:hover { background: color-mix(in oklab, var(--navy), #000 12%); }
+    .rowbox > .card .chip.line:hover { background: var(--navy-soft); }
+    .rowbox > .card .chip.mine:hover { background: color-mix(in oklab, var(--red), #000 12%); }
+    body.pc.pub .top :is(#noticeToggle, #toEdit):hover { background: rgb(255 255 255 / .08); color: #fff; }
+  }
+  /* 누름 반응·나타남 (emil-design-eng): 터치 잔상을 없애고, 눌렀을 때 살짝 작아지며, 창·재생창·펼친 줄은 부드럽게 나타남 */
+  a, button, summary { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+  button.rowmain:active { opacity: .6; }
+  @media (prefers-reduced-motion: no-preference) {
+    :root { --ease-out: cubic-bezier(.23, 1, .32, 1); }
+    :is(.btn, .chip, .iconbtn, .circ, .switch, .leafchips a, .leafchips .rshare, .tabbar button, .seg button, .linkbtn) {
+      transition: transform 120ms var(--ease-out), background-color .15s, color .15s, box-shadow .15s, border-color .15s;
+    }
+    :is(.btn, .chip, .iconbtn, .circ, .switch, .leafchips a, .leafchips .rshare, .tabbar button, .seg button, .linkbtn):not(:disabled):active { transform: scale(.97); }
+    dialog[open], dialog[open]::backdrop { transition: opacity 200ms var(--ease-out), transform 200ms var(--ease-out); }
+    @starting-style {
+      dialog[open] { opacity: 0; transform: translateY(8px) scale(.98); }
+      dialog[open]::backdrop { opacity: 0; }
+    }
+    .player:not([hidden]) { transition: opacity 240ms var(--ease-out), transform 240ms var(--ease-out); }
+    @starting-style { .player:not([hidden]) { opacity: 0; transform: translateY(24px); } }
+    .rowbox > .card.enter { transition: opacity 180ms var(--ease-out), transform 180ms var(--ease-out); }
+    @starting-style { .rowbox > .card.enter { opacity: 0; transform: translateY(-4px); } }
+  }
   @media print { #topZone, #publicView, .tabbar { zoom: 1; } .tabbar { display: none; } }
 </style>
 <!-- 고른 화면 색을 그리기 전에 먼저 입혀, 열 때 색이 한 번 바뀌어 보이지 않게 함 -->
@@ -1856,9 +1895,9 @@ function rowCircle(ev) {
 function row(ev, serif) {
   const people = peopleEls(ev);
   const box = el('div', { class: 'rowbox' + (ev.date < TODAY ? ' past' : '') + (justSaved(ev.id) ? ' justsaved' : ''), 'data-id': ev.id, 'data-date': ev.date });
-  const main = el('button', { type: 'button', class: 'rowmain', 'aria-expanded': 'false', onclick: () => {
+  const main = el('button', { type: 'button', class: 'rowmain', 'aria-expanded': 'false', onclick: e => {
     let c = box.querySelector('.card');
-    if (!c) { c = card(ev); c.querySelector('.cardhist')?.removeAttribute('hidden'); box.append(c); } else c.hidden = !c.hidden;
+    if (!c) { c = card(ev); c.classList.toggle('enter', e.isTrusted); c.querySelector('.cardhist')?.removeAttribute('hidden'); box.append(c); } else c.hidden = !c.hidden; // 사람이 눌렀을 때만 움직임 (파트를 바꿔 다시 펼칠 땐 그대로)
     main.setAttribute('aria-expanded', String(!c.hidden));
   } }, rowDate(ev, serif), el('span', { class: 't' + (isTbd(ev) ? ' tbd' : '') }, showTitle(ev), people.length > 0 && el('small', {}, people)));
   box.append(el('div', { class: 'rowline' }, main, rowCircle(ev)));
@@ -1931,7 +1970,7 @@ function card(ev, badge) {
   ];
   // 아래: 파트 연습 — '▶ S / 소프라노' 두 줄 (맨 위와 같은 표기)
   const partChips = PARTS.filter(p => !HEAD_PARTS.some(h => h.part === p))
-    .map(p => ({ label: [el('b', {}, `▶ ${PART_SHORT[p] || p}`), el('small', {}, p)], full: p, url: safeUrl(ev.parts?.[p]), mine: p === myPart })).filter(x => x.url);
+    .map(p => ({ label: [el('b', {}, PART_SHORT[p] || p), el('small', {}, p)], full: p, url: safeUrl(ev.parts?.[p]), mine: p === myPart })).filter(x => x.url);
 
   return el('article', { class: 'card' + (past ? ' past' : '') + (badge ? ' next' : '') + (justSaved(ev.id) ? ' justsaved' : ''), 'data-id': ev.id },
     el('div', { class: 'date' + (typeOf(ev) !== '주일 찬양' ? ' special' : '') },
@@ -2346,9 +2385,9 @@ function renderPublic() {
   const videoRange = `${periodDate(videoStart())} – ${periodDate(videoEnd, videoStart().slice(0, 4))}`;
   const videoRecent = (rehearsalMode || liveMode) && videoEnd === latestVideo(mode) ? '최근 8주 ' : '';
   const view = rehearsalMode
-    ? { list: [], title: `${videoRecent}연습 영상`, range: videoRange, summary: `연습 영상 ${shownRehearsals.length}개 · 최근 것부터`, empty: '', emptySundays: [] }
+    ? { list: [], title: `${videoRecent}연습 영상`, range: videoRange, summary: '', empty: '', emptySundays: [] }
     : liveMode
-    ? { list: [], title: `${videoRecent}실황`, range: videoRange, summary: `실황 영상 ${shownLive.length}개 · 최근 것부터`, empty: '', emptySundays: [] }
+    ? { list: [], title: `${videoRecent}실황`, range: videoRange, summary: '', empty: '', emptySundays: [] }
     : buildView();
   // 제목: 내 파트는 '알토가 준비할 곡', 월별은 큰 달 숫자
   if (tab === 'home') $('viewTitle').textContent = myPart ? `${myPart}가 준비할 곡` : '다가오는 찬양';
@@ -2389,7 +2428,7 @@ function renderPublic() {
   $('emptySundays').hidden ||= tab === 'home';
   $('searchSummary').hidden = !query;
   $('searchSummary').textContent = query ? view.summary : '';
-  $('summary').hidden = !!query || tab === 'home'; // 검색 중에는 검색 요약 하나만
+  $('summary').hidden = !!query || tab === 'home' || !view.summary; // 검색 중에는 검색 요약 하나만
   $('periodText').hidden = !view.range;
   $('periodText').textContent = view.range || '';
   $('modeUpcoming').setAttribute('aria-pressed', String(mode === 'upcoming'));
