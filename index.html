@@ -930,6 +930,64 @@
     .rowbox > .card.enter { transition: opacity 180ms var(--ease-out), transform 180ms var(--ease-out); }
     @starting-style { .rowbox > .card.enter { opacity: 0; transform: translateY(-4px); } }
   }
+  /* ===== 일정 편집 개선 (2026-11-06 시안 ①②③) ===== */
+  /* 수정 창: 파트 영상 단추 — 채움(남색)·자동으로 찾음(노랑)·비어 있음(점선) */
+  #partFields { background: var(--bg); border: 0; padding: 12px; }
+  #partFields > legend { font-weight: 700; padding: 0 4px; }
+  .partchips { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin-bottom: 4px; }
+  .partchips button { min-height: 44px; border: 0; border-radius: 8px; background: #fff; box-shadow: inset 0 0 0 1px var(--line-strong); color: var(--muted); font: inherit; font-size: 15px; font-weight: 600; cursor: pointer; }
+  .partchips button.on { background: var(--navy-soft); color: var(--navy); box-shadow: none; font-weight: 700; }
+  .partchips button.auto { background: var(--warn-bg); color: #7a4b00; box-shadow: inset 0 0 0 1px var(--warn-line); font-weight: 700; }
+  .partrows > summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; color: var(--navy); font-weight: 600; font-size: 15px; }
+  .partrows[open] > summary { margin-bottom: 6px; }
+  /* 편집 보기 전환 [표 | 목록] */
+  .edview { display: inline-flex; gap: 2px; padding: 3px; border-radius: 10px; background: #e4e7ec; margin: 4px 0 12px; }
+  .edview button { min-height: 40px; padding: 0 16px; border: 0; border-radius: 8px; background: none; color: #46536a; font: inherit; font-size: 15px; font-weight: 600; cursor: pointer; }
+  .edview button[aria-pressed="true"] { background: #fff; color: var(--ink); font-weight: 700; box-shadow: 0 1px 2px rgb(16 24 40 / .12); }
+  /* 표 */
+  .tbnav { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+  .tbnav .btn { width: 44px; min-height: 44px; padding: 0; font-size: 18px; }
+  .tbnav b { font-size: 17px; }
+  .tbl { background: #fff; border-radius: 14px; padding: 4px 0; }
+  .tbrow { display: grid; grid-template-columns: 96px minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr) 150px; gap: 8px; align-items: center; padding: 8px 14px; border-top: 1px solid var(--line); }
+  .tbrow.tbhead { border-top: 0; color: var(--muted); font-size: 14px; font-weight: 600; padding-block: 10px 4px; }
+  .tbrow.dirty { background: #fffdf0; }
+  .tbrow.empty input { border-style: dashed; background: transparent; }
+  .tbdate b { display: block; font-size: 16px; }
+  .tbdate small { color: var(--red); font-size: 13px; } .tbdate small.special { color: var(--navy); }
+  .tbrow input { width: 100%; box-sizing: border-box; min-height: 44px; padding: 0 12px; border: 1px solid var(--line); border-radius: 8px; font: inherit; font-size: 16px; color: var(--navy); background: #fff; }
+  .tbrow input.dirty { border: 2px solid #d4a72c; }
+  .tbvid { width: 100%; min-height: 40px; padding: 0 10px; border: 0; border-radius: 8px; background: none; box-shadow: inset 0 0 0 1px var(--line); color: var(--muted); font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
+  .tbvid.on { background: var(--navy-soft); box-shadow: none; color: var(--navy); font-weight: 700; }
+  .tbvid.auto { background: var(--warn-bg); box-shadow: inset 0 0 0 1px var(--warn-line); color: #7a4b00; font-weight: 700; }
+  #edTable .hint { margin: 10px 2px 0; }
+  .tbbar { position: sticky; bottom: 0; z-index: 5; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 12px -4px 0; padding: 12px 16px; border-radius: 14px 14px 0 0; background: var(--dark); color: #fff; }
+  .tbbar .tbwhat { color: #aab3c2; font-size: 14px; }
+  .tbbar .pushpick { margin-left: auto; display: flex; align-items: center; gap: 6px; color: #e6e9ee; }
+  .tbbar .btn { min-height: 44px; }
+  .tbbar #tbUndo { background: none; color: #fff; border-color: #46536a; }
+  /* 좁은 화면: 표 → 주마다 카드 (같은 칸·같은 기능) */
+  @media (max-width: 720px) {
+    .tbl { background: none; padding: 0; display: grid; gap: 12px; }
+    .tbrow.tbhead { display: none; }
+    .tbrow { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-areas: "date vid" "title title" "cond pian"; background: #fff; border-radius: 14px; border-top: 0; padding: 14px; }
+    .tbrow.empty { background: transparent; box-shadow: inset 0 0 0 1px var(--line-strong); }
+    .tbrow.dirty { box-shadow: inset 0 0 0 2px var(--warn-line); }
+    .tbdate { grid-area: date; display: flex; align-items: baseline; gap: 8px; } .tbtitle { grid-area: title; } .tbcond { grid-area: cond; } .tbpian { grid-area: pian; } .tbv { grid-area: vid; }
+    .tbrow.empty :is(.tbcond, .tbpian, .tbv) { display: none; }
+    .tbrow.empty { grid-template-areas: "date date" "title title"; }
+    .tbrow input { min-height: 48px; }
+    .tbbar .pushpick { margin-left: 0; flex-basis: 100%; }
+    .tbbar .btn { flex: 1; }
+    /* 수정 창: 휴대폰은 화면 가득, [취소][저장]은 아래 고정, 입력칸 48px·글자 16px(확대 방지) */
+    #dlg { width: 100vw; max-width: none; height: 100dvh; max-height: none; margin: 0; border-radius: 0; zoom: calc(1 / var(--z, 1)); }
+    #dlg > form { min-height: 100%; box-sizing: border-box; display: flex; flex-direction: column; padding-bottom: 0; }
+    #dlg .formhead .actions { display: none; }
+    #dlg > form > .actions { position: sticky; bottom: 0; margin: auto -18px 0; padding: 12px 18px calc(16px + env(safe-area-inset-bottom)); background: #fff; border-top: 1px solid var(--line); display: grid; grid-template-columns: 1fr 2fr; gap: 8px; }
+    #dlg > form > .actions .btn { min-height: 52px; font-size: 16px; }
+    #dlg :is(input:not([type="checkbox"]), select) { min-height: 48px; font-size: 16px; box-sizing: border-box; }
+    #dlg textarea { font-size: 16px; }
+  }
   @media print { #topZone, #publicView, .tabbar { zoom: 1; } .tabbar { display: none; } }
 </style>
 <!-- 고른 화면 색을 그리기 전에 먼저 입혀, 열 때 색이 한 번 바뀌어 보이지 않게 함 -->
@@ -1111,6 +1169,12 @@
         <button type="button" class="btn" id="rosterBtn">대원 명단</button>
         <button type="button" class="btn" id="pastBtn" hidden></button>
       </div>
+      <!-- [표 | 목록] — 표: 앞으로 8주를 한 번에 적기 (2026-11-06 시안 ①②), 목록: 끌어 옮기기·지난 일정·검색 -->
+      <div class="edview" role="group" aria-label="편집 보기">
+        <button type="button" data-v="table">표</button>
+        <button type="button" data-v="list">목록 · 순서 바꾸기</button>
+      </div>
+      <div id="edTable" hidden></div>
       <p class="edwarn" id="tbdWarn" hidden></p>
       <p class="hint edtip" id="dragTip" hidden>곡 순서를 바꾸려면 곡 카드의 <b>⠿</b>를 손가락으로 잡고 다른 날짜로 끌어 놓으세요. <button type="button" class="linkbtn" id="dragTipClose">알겠습니다</button></p>
       <p class="hint" id="pushCount" hidden></p>
@@ -1136,6 +1200,12 @@
       </div>
       <p class="summary" id="edSearchSummary" hidden></p>
       <div id="edList"></div>
+      <div class="tbbar" id="tbBar" hidden>
+        <b id="tbCount"></b><span class="tbwhat" id="tbWhat"></span>
+        <label class="pushpick"><input type="checkbox" id="tbPush"> 저장하면 알림 보내기</label>
+        <button type="button" class="btn" id="tbUndo">되돌리기</button>
+        <button type="button" class="btn primary" id="tbSave">저장</button>
+      </div>
     </div>
   </div>
 
@@ -1262,10 +1332,6 @@
       </div>
     </div>
     <label class="field">날짜 <span class="hint">(새 일정은 곡이 없는 가장 가까운 주일이 들어갑니다)</span><input type="date" name="date" required></label>
-    <label class="field">구분<select name="type" required></select></label>
-    <label class="field" id="typeCustomRow" hidden>직접 입력할 구분 <span class="hint">(30자 이내)</span>
-      <input name="typeCustom" maxlength="30" placeholder="예: 부활절 특송">
-    </label>
     <label class="field">찬양 제목<input name="title" maxlength="100" placeholder="예: 하나님의 시간" required></label>
     <label class="checkrow"><input type="checkbox" id="tbdChk"> <b>곡 미정</b> <span class="hint">(곡이 정해지면 체크를 풀고 제목을 적어 주세요)</span></label>
     <p class="titlehist" id="titleHist" aria-live="polite" hidden></p>
@@ -1275,9 +1341,15 @@
     </div>
     <datalist id="conductorList"></datalist>
     <datalist id="pianistList"></datalist>
+    <!-- 파트 영상: 칸마다 채움 여부를 단추로 보여 주고, 누르면 그 칸을 열어 고침 (2026-11-06 시안 ③) -->
+    <fieldset id="partFields"><legend>파트 영상</legend></fieldset>
+    <!-- 자주 안 쓰는 칸은 [더 보기]에 — 내용이 있으면 펼친 채로 열림 -->
     <details class="linkfold" id="linkFold">
-    <summary>영상 · 악보 · 실황 링크 <span class="hint" id="linkCount"></span></summary>
-    <fieldset id="partFields"><legend>유튜브 파트 연습 링크 <span class="hint">(선택)</span></legend></fieldset>
+    <summary>더 보기 — 구분 · 악보 · 참고연주 · 실황 · 메모 <span class="hint" id="linkCount"></span></summary>
+    <label class="field">구분<select name="type" required></select></label>
+    <label class="field" id="typeCustomRow" hidden>직접 입력할 구분 <span class="hint">(30자 이내)</span>
+      <input name="typeCustom" maxlength="30" placeholder="예: 부활절 특송">
+    </label>
     <label class="field">악보 링크 <span class="hint">(한 줄에 하나 · 링크 앞에 이름을 붙일 수 있어요)</span>
       <textarea name="scores" rows="3" placeholder="https://drive.google.com/...&#10;소프라노 악보 https://..."></textarea>
     </label>
@@ -1292,8 +1364,8 @@
       <button type="button" class="iconbtn" id="liveSearch" title="실황 영상 유튜브에서 찾기" aria-label="실황 영상 유튜브에서 찾기">🔍</button>
       <div class="partpreview" id="pv-live" hidden></div>
     </div>
-    </details>
     <label class="field">안내 메모 <span class="hint">(선택)</span><textarea name="note" rows="3" maxlength="2000" placeholder="연습 시 참고할 내용"></textarea></label>
+    </details>
     <label class="checkrow"><input type="checkbox" id="pushChk"> <b>저장하면 알림 보내기</b> <span class="hint">(알림 받기를 켠 대원에게 · 밤 10시~아침 8시에 저장하면 아침 8시에 보냄)</span></label>
     <p class="err" id="formErr" role="alert" hidden></p>
     <div class="actions">
@@ -2577,7 +2649,7 @@ function mutate(body, applyNow, okMsg, undo, reopen) {
     err => { settle(op); handleErr(err, reopen); });
 }
 // 저장이 끝나기 전에 창을 닫으려 하면 한 번 물어봄 (옮겨 놓고 저장 안 한 순서도)
-addEventListener('beforeunload', e => { if (ops.length || pending()) e.preventDefault(); });
+addEventListener('beforeunload', e => { if (ops.length || pending() || tbEdits.size) e.preventDefault(); });
 
 // 저장 응답에 붙어 온 알림 결과 (Code.gs notify_)
 const pushNote = p => !p ? '' : p.queued ? ' 알림은 아침 8시에 보냅니다.' : p.ok ? ` 알림을 ${p.sent}대에 보냈습니다.` : ' 알림은 보내지 못했습니다.';
@@ -2696,6 +2768,135 @@ const withMonths = (items, rowOf) => items.flatMap((it, k) => {
 
 let edQuery = ''; // 편집 화면 검색어
 
+/* ===== 표 보기 (2026-11-06): 앞으로 8주를 한 줄씩 — 제목·지휘·반주를 바로 적고 [저장]으로 한 번에.
+   제목을 적고 칸을 나가면 파트 영상을 찾아 둠(전에 부른 곡이면 그때 링크). 영상 칸을 누르면 수정 창 */
+const EDVIEW_KEY = 'choir-edview';
+let edView = lsGet(EDVIEW_KEY) === 'list' ? 'list' : 'table';
+let tbOff = 0;                 // 8주 단위로 앞뒤 이동
+const tbEdits = new Map();     // 줄 key → { title, conductor, pianist, parts } (저장 전 고친 것)
+const tbKey = r => r.ev ? r.ev.id : 'd:' + r.date;
+function tbRows() {
+  const start = dayKey(utc(nextSunday()) + tbOff * 56 * 864e5), end = dayKey(utc(start) + 55 * 864e5);
+  const evs = events.filter(e => e.date >= start && e.date <= end), taken = new Set(evs.map(e => e.date));
+  const rows = evs.map(ev => ({ date: ev.date, type: typeOf(ev), ev }));
+  for (let d = start; d <= end; d = dayKey(utc(d) + 7 * 864e5)) if (!taken.has(d)) rows.push({ date: d, type: '주일 찬양', ev: null });
+  return { start, end, rows: rows.sort((a, b) => a.date.localeCompare(b.date) || (a.ev ? 0 : 1) - (b.ev ? 0 : 1)) };
+}
+const tbVal = (r, k) => { const e = tbEdits.get(tbKey(r)); return e && k in e ? e[k] : (r.ev?.[k] || ''); };
+const tbParts = r => ({ ...(r.ev?.parts || {}), ...(tbEdits.get(tbKey(r))?.parts || {}) });
+function tbSet(r, k, v) {
+  const key = tbKey(r), e = { ...(tbEdits.get(key) || {}) };
+  if (k === 'parts') e.parts = v; else e[k] = v;
+  const same = ['title', 'conductor', 'pianist'].every(f => !(f in e) || e[f] === (r.ev?.[f] || '')) && !e.parts;
+  same ? tbEdits.delete(key) : tbEdits.set(key, e);
+}
+function tbBarUpdate() {
+  $('tbBar').hidden = !tbEdits.size;
+  $('tbCount').textContent = `${tbEdits.size}줄 바뀜`;
+  $('tbWhat').textContent = tbRows().rows.filter(r => tbEdits.has(tbKey(r))).map(r => md(r.date)).join(' · ');
+}
+function renderTable() {
+  const { start, end, rows } = tbRows();
+  fillNameLists();
+  const a = document.activeElement, keep = a?.dataset?.tk && [a.dataset.tk, a.dataset.f, a.selectionStart];
+  const head = el('div', { class: 'tbnav' },
+    el('button', { type: 'button', class: 'btn', 'aria-label': '앞 8주', onclick: () => { tbOff--; renderTable(); } }, '‹'),
+    el('b', {}, `${fmtDate(start)} – ${fmtDate(end)}`),
+    el('button', { type: 'button', class: 'btn', 'aria-label': '다음 8주', onclick: () => { tbOff++; renderTable(); } }, '›'),
+    tbOff !== 0 && el('button', { type: 'button', class: 'linkbtn', onclick: () => { tbOff = 0; renderTable(); } }, '이번 주로'));
+  const input = (r, f, label, list) => {
+    const key = tbKey(r), changed = tbEdits.get(key) && f in tbEdits.get(key);
+    return el('input', { value: tbVal(r, f), maxlength: f === 'title' ? 100 : 30, list: list || null, 'data-tk': key, 'data-f': f,
+      class: changed ? 'dirty' : null, placeholder: r.ev ? label : f === 'title' ? '제목을 적으면 일정이 생겨요' : label,
+      'aria-label': `${md(r.date)} ${label}`, autocomplete: 'off',
+      oninput: e => { tbSet(r, f, e.target.value); e.target.classList.toggle('dirty', !!tbEdits.get(key) && f in tbEdits.get(key)); e.target.closest('.tbrow').classList.toggle('dirty', tbEdits.has(key)); tbBarUpdate(); },
+      onchange: f === 'title' ? e => tbFind(r, e.target) : null });
+  };
+  const body = rows.map(r => {
+    const parts = tbParts(r), n = PARTS.filter(p => safeUrl(parts[p])).length, found = tbEdits.get(tbKey(r))?.parts;
+    const vid = el('button', { type: 'button', class: 'tbvid' + (found ? ' auto' : n ? ' on' : ''), 'data-vk': tbKey(r),
+      onclick: () => tbOpen(r) }, found ? `영상 ${Object.keys(found).length}개 찾음 · 확인 ›` : n ? `영상 ${n}/${PARTS.length} ›` : r.ev ? '영상 추가 ›' : '자세히 ›');
+    return el('div', { class: 'tbrow' + (r.ev ? '' : ' empty') + (tbEdits.has(tbKey(r)) ? ' dirty' : ''), role: 'row' },
+      el('div', { class: 'tbdate', role: 'cell' }, el('b', {}, md(r.date)), el('small', { class: r.type !== '주일 찬양' ? 'special' : null }, `${DOW[dowOf(r.date)]} · ${typeLabel(r.type)}${r.ev ? '' : ' · 빈 자리'}`)),
+      el('div', { class: 'tbtitle', role: 'cell' }, input(r, 'title', '찬양 제목')),
+      el('div', { class: 'tbcond', role: 'cell' }, input(r, 'conductor', '지휘', 'conductorList')),
+      el('div', { class: 'tbpian', role: 'cell' }, input(r, 'pianist', '반주', 'pianistList')),
+      el('div', { class: 'tbv', role: 'cell' }, vid));
+  });
+  $('edTable').replaceChildren(head,
+    el('div', { class: 'tbl', role: 'table', 'aria-label': '앞으로 8주 일정' },
+      el('div', { class: 'tbrow tbhead', role: 'row' }, ...['날짜', '찬양 제목', '지휘', '반주', '영상'].map(t => el('div', { role: 'columnheader' }, t))),
+      ...body),
+    el('p', { class: 'hint' }, '노란 칸은 고쳤지만 아직 저장하지 않은 칸입니다. 제목을 적고 칸을 나가면 파트 영상을 찾아 둡니다 — [저장]하면 함께 들어가요.'));
+  tbBarUpdate();
+  if (keep) { const i = $('edTable').querySelector(`input[data-tk="${CSS.escape(keep[0])}"][data-f="${keep[1]}"]`); if (i) { i.focus(); try { i.setSelectionRange(keep[2], keep[2]); } catch {} } }
+}
+// 제목을 적고 나가면: 전에 부른 같은 곡의 링크 → 없으면 유튜브에서 파트 영상 찾기 (이미 링크가 있는 일정은 그대로)
+async function tbFind(r, inputEl) {
+  const title = inputEl.value.trim(), key = tbKey(r);
+  if (!title || isTbd({ title }) || PARTS.some(p => safeUrl(r.ev?.parts?.[p]))) return;
+  const src = events.filter(e => e.id !== r.ev?.id && normTitle(e.title) === normTitle(title) && PARTS.some(p => safeUrl(e.parts?.[p])))
+    .sort((a, b) => b.date.localeCompare(a.date))[0];
+  let parts = {};
+  if (src) PARTS.forEach(p => { const u = safeUrl(src.parts?.[p]); if (u) parts[p] = u; });
+  else {
+    const box = Object.fromEntries(PARTS.map(p => [p, { value: '', classList: { add() {}, remove() {} } }]));
+    const btn = $('edTable').querySelector(`[data-vk="${CSS.escape(key)}"]`);
+    if (!btn) return;
+    await fillParts(title, p => box[p], btn, () => {}).catch(() => {});
+    PARTS.forEach(p => { if (box[p].value) parts[p] = box[p].value; });
+  }
+  if (normTitle(tbVal(r, 'title')) !== normTitle(title) || !Object.keys(parts).length) return; // 그사이 제목을 또 바꿨으면 버림
+  tbSet(r, 'parts', parts);
+  renderTable();
+}
+// 영상 칸: 그 줄을 수정 창으로 (고친 내용이 있으면 창으로 옮김)
+function tbOpen(r) {
+  const e = tbEdits.get(tbKey(r));
+  if (e && !confirm('이 줄에서 고친 내용을 수정 창으로 옮겨 이어서 고칠까요?')) return;
+  if (!r.ev && !e) return openForm(null, false, { date: r.date, type: r.type });
+  const merged = { ...(r.ev || { date: r.date, type: r.type, scores: [], refs: [], note: '', live: '' }),
+    title: tbVal(r, 'title'), conductor: tbVal(r, 'conductor'), pianist: tbVal(r, 'pianist'), parts: tbParts(r) };
+  tbEdits.delete(tbKey(r));
+  tbBarUpdate();
+  openForm(merged);
+  if (e?.parts) PARTS.forEach(p => { if (e.parts[p]) form['part-' + p].classList.add('autofilled'); });
+  partChips();
+}
+// [저장]: 줄마다 따로 보냄 — 다른 기기와 부딪힌 줄만 실패로 알리고 나머지는 저장 (실패한 줄은 [입력한 내용 다시 열기]로 되살림)
+function saveTable() {
+  const { rows } = tbRows(), list = rows.filter(r => tbEdits.has(tbKey(r)));
+  const bad = list.filter(r => !tbVal(r, 'title').trim());
+  if (bad.length) return flash(`${bad.map(r => md(r.date)).join(', ')}: 찬양 제목을 적어 주세요 (곡이 없으면 '미정').`, true);
+  const notify = $('tbPush').checked;
+  list.forEach((r, i) => {
+    const e = tbEdits.get(tbKey(r)), id = r.ev?.id || newId();
+    const ev = { ...(r.ev ? eventBody(r.ev) : { date: r.date, type: r.type, scores: [], refs: [], note: '', live: '' }),
+      title: tbVal(r, 'title').trim(), conductor: tbVal(r, 'conductor').trim(), pianist: tbVal(r, 'pianist').trim(), parts: tbParts(r) };
+    const saved = { ...(r.ev || {}), ...ev, id };
+    const last = i === list.length - 1;
+    mutate({ action: 'save', token, id, event: ev, ...(r.ev && { base: r.ev.updated }),
+      ...(notify && last && { notify: { count: list.length, desc: list.length > 1 ? `${md(list[0].date)} 외 ${list.length - 1}건` : changeDesc(r.ev, ev) } }) },
+      () => { events = sorted([...events.filter(x => x.id !== id), saved]); },
+      last ? `${list.length}줄을 저장했습니다.` : `${md(r.date)} 저장`, null,
+      () => { edView = 'table'; tbEdits.set(tbKey(r), e); renderEditor(); });
+  });
+  tbEdits.clear(); $('tbPush').checked = false;
+  renderEditor();
+}
+$('tbSave').onclick = saveTable;
+$('tbUndo').onclick = () => { if (confirm('고친 내용을 모두 되돌릴까요?')) { tbEdits.clear(); renderEditor(); } };
+document.querySelector('.edview').onclick = e => {
+  const b = e.target.closest('button[data-v]');
+  if (!b || b.dataset.v === edView) return;
+  if (b.dataset.v === 'list' && tbEdits.size && !confirm('표에서 고친 내용이 아직 저장되지 않았습니다. 목록으로 가면 사라집니다. 갈까요?')) return;
+  if (b.dataset.v === 'table' && pending()) return flash('목록에서 옮긴 순서를 먼저 저장하거나 취소해 주세요.', true);
+  if (b.dataset.v === 'list') tbEdits.clear();
+  edView = b.dataset.v; lsSet(EDVIEW_KEY, edView);
+  if (edView === 'table') { $('edSearch').value = ''; edQuery = ''; }
+  renderEditor();
+};
+
 function renderEditor() {
   if (!pending()) board = buildBoard(); // 옮긴 게 없으면 늘 최신 일정으로 다시 그림
   const locked = pending(); // 옮긴 뒤 저장 전에는 수정·삭제·추가를 막음 (서로 꼬이지 않게)
@@ -2707,6 +2908,12 @@ function renderEditor() {
   loadRsvpAdmin();
   renderEdNotes();
   $('edSearchClear').hidden = !edQuery;
+  const tableView = edView === 'table';
+  document.querySelectorAll('.edview button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === edView)));
+  $('edTable').hidden = !tableView; $('tbBar').hidden = !tableView || !tbEdits.size;
+  $('edList').hidden = $('edSearchSummary').hidden = tableView;
+  document.querySelector('#edBody .searchrow').hidden = tableView;
+  if (tableView) { $('pastBtn').hidden = $('reBar').hidden = $('dragTip').hidden = true; renderTable(); return; }
 
   const changed = reChanged().length;
   const picked = board.contents.filter(c => c && sel.has(c.srcId)).length;
@@ -2884,10 +3091,23 @@ $('partFields').append(
   el('div', { class: 'autorow' },
     el('button', { type: 'button', class: 'btn', id: 'autoBtn', onclick: autoFillParts }, '🔍 파트 영상 자동 찾기'),
     el('span', { class: 'hint', id: 'autoMsg' }, AUTO_HINT)),
-  ...PARTS.map(p => linkRow(`${p} 영상`, el('input', {
-    type: 'url', id: 'part-' + p, name: 'part-' + p, placeholder: 'https://youtu.be/...',
-    oninput: e => e.target.classList.remove('autofilled'),
-  }), { part: p, label2: p })));
+  // 파트 단추: 채움(✓)·자동으로 찾음(노랑)·비어 있음(+). 누르면 아래 링크 칸을 열어 그 칸으로
+  el('div', { class: 'partchips', id: 'partChips' }, ...PARTS.map(p => el('button', { type: 'button', 'data-part': p,
+    onclick: () => { $('partRows').open = true; form['part-' + p].focus(); } }, p === '전체' ? '듣기' : p))),
+  el('details', { class: 'partrows', id: 'partRows' }, el('summary', {}, '링크 보기 · 고치기'),
+    ...PARTS.map(p => linkRow(`${p} 영상`, el('input', {
+      type: 'url', id: 'part-' + p, name: 'part-' + p, placeholder: 'https://youtu.be/...',
+      oninput: e => e.target.classList.remove('autofilled'),
+    }), { part: p, label2: p }))));
+function partChips() {
+  $('partChips').querySelectorAll('button').forEach(b => {
+    const i = form['part-' + b.dataset.part], has = !!i.value.trim(), auto = i.classList.contains('autofilled');
+    b.className = has ? (auto ? 'auto' : 'on') : '';
+    b.textContent = (b.dataset.part === '전체' ? '듣기' : b.dataset.part) + (has ? ' ✓' : ' +');
+    b.setAttribute('aria-label', `${b.dataset.part === '전체' ? '듣기' : b.dataset.part} 영상 ${has ? (auto ? '자동으로 찾음, 확인 필요' : '있음') : '없음'}`);
+  });
+}
+$('partFields').addEventListener('input', partChips);
 
 // ▶: 칸에 들어 있는 영상을 그 줄 아래에서 재생 (한 번에 하나, 다시 누르면 닫힘)
 function closePartPreviews() {
@@ -3024,7 +3244,7 @@ const hasWord = (t, p) => PART_WORDS[p].some(w => t.includes(w));
 const fitsPart = (t, p) => hasWord(t, p) && PARTS.every(o => o === p || o === '전체' || !hasWord(t, o));
 const autoMsg = t => { $('autoMsg').textContent = t; };
 
-function autoFillParts() { return fillParts(form.title.value.trim(), p => form['part-' + p], $('autoBtn'), autoMsg); }
+function autoFillParts() { return fillParts(form.title.value.trim(), p => form['part-' + p], $('autoBtn'), autoMsg).then(partChips); }
 
 // title 곡의 파트 영상을 찾아 비어 있는 칸에 넣음 (본문 창과 집회 창이 함께 씀)
 async function fillParts(title, inputOf, btn, say) {
@@ -3100,8 +3320,10 @@ function openForm(ev, asCopy, slot = null) {
   form.refs.value = (v.refs || []).join('\n');
   form.note.value = v.note || '';
   form.live.value = v.live || '';
-  $('linkFold').open = false; // 지휘·반주만 바꿀 때 링크 칸을 지나지 않게 접어 둠 (요약에 입력 개수)
-  linkCount();
+  // [더 보기]는 안에 적힌 것(기본이 아닌 구분·악보·참고·실황·메모)이 있으면 펼친 채로
+  $('linkFold').open = !slot && (t && t !== TYPES[0] || !!(v.scores?.length || v.refs?.length || v.live || v.note));
+  $('partRows').open = false;
+  linkCount(); partChips();
   closePartPreviews();
   $('formErr').hidden = true;
   openDlg($('dlg'));
@@ -3226,7 +3448,8 @@ form.addEventListener('submit', async e => {
   if (!bad.length && dupParts.length && !confirm(`같은 영상이 두 곳에 들어 있습니다: ${dupParts.join(', ')}\n그래도 저장할까요?`)) return;
 
   if (bad.length) {
-    if (bad.some(b => /링크|악보|참고연주|실황/.test(b))) $('linkFold').open = true; // 접힌 칸의 잘못도 보이게
+    if (bad.some(b => /링크|악보|참고연주|실황|구분/.test(b))) $('linkFold').open = true; // 접힌 칸의 잘못도 보이게
+    if (bad.some(b => PARTS.some(p => b.includes(p)))) $('partRows').open = true;
     $('formErr').textContent = badMsg(bad);
     $('formErr').hidden = false;
     return;
@@ -3297,11 +3520,13 @@ function askShift(ev, dup, moved) {
   return new Promise(res => d.addEventListener('close', () => res(d.returnValue || 'cancel'), { once: true }));
 }
 
-// 접힌 링크 칸 요약: "영상 4/6 · 악보 1 · 참고 0 · 실황 있음"
+// 접힌 [더 보기] 요약: 안에 적힌 것만 "(악보 1 · 실황 · 메모)"
 function linkCount() {
   const lines = t => String(t || '').split('\n').filter(x => x.trim()).length;
-  const parts = PARTS.filter(p => form['part-' + p].value.trim()).length;
-  $('linkCount').textContent = `(영상 ${parts}/${PARTS.length} · 악보 ${lines(form.scores.value)} · 참고 ${lines(form.refs.value)} · 실황 ${form.live.value.trim() ? '있음' : '없음'})`;
+  const has = [form.type.value !== TYPES[0] && typeLabel(form.type.value === TYPE_CUSTOM ? form.typeCustom.value : form.type.value),
+    lines(form.scores.value) && `악보 ${lines(form.scores.value)}`, lines(form.refs.value) && `참고 ${lines(form.refs.value)}`,
+    form.live.value.trim() && '실황', form.note.value.trim() && '메모'].filter(Boolean);
+  $('linkCount').textContent = has.length ? `(${has.join(' · ')})` : '';
 }
 $('linkFold').addEventListener('input', linkCount);
 
@@ -4200,7 +4425,7 @@ if ('serviceWorker' in navigator) {
   const hadController = !!navigator.serviceWorker.controller;
   const reloadWhenIdle = () => {
     // 입력 창이 열려 있거나 저장 중이면 끝날 때까지 기다림 (쓰던 내용이 날아가지 않게)
-    if (saving || pending() || document.querySelector('dialog[open]') || !$('player').hidden) return setTimeout(reloadWhenIdle, 3000);
+    if (saving || pending() || tbEdits.size || document.querySelector('dialog[open]') || !$('player').hidden) return setTimeout(reloadWhenIdle, 3000);
     location.reload();
   };
   navigator.serviceWorker.addEventListener('controllerchange', () => { if (hadController) reloadWhenIdle(); });
