@@ -1562,6 +1562,29 @@ let saving = false;     // 저장·삭제를 서버에 보내는 중
 let newestFirst = { year: false }; // 연도별만 순서를 바꿀 수 있음
 // 연습 영상·실황: 8주씩 (2026-09-29 요청). 끝 날짜는 처음에 가장 최근 영상 날짜 — 최근 8주분이 최근부터 보임
 let videoEnd = TODAY, videoFollow = true; // videoFollow: ‹ ›로 옮기기 전까지는 새 영상이 올라오면 따라감
+// 새로고침하면 보던 탭·보기·달·위치 그대로 (2026-11-06 사용자: 새로고침만 — 앱을 새로 열면 처음 화면) — 숨겨질 때 이 탭의 sessionStorage에 저장
+const VIEW_KEY = 'choir-view';
+const ssGet = k => { try { return sessionStorage.getItem(k); } catch { return null; } };
+let restoreView = null;
+try {
+  const v = JSON.parse(ssGet(VIEW_KEY));
+  if (v && ['home', 'all', 'video', 'notice'].includes(v.tab)) {
+    tab = v.tab;
+    if (['month', 'year', 'assembly', 'rehearsal', 'live'].includes(v.mode)) mode = v.mode;
+    if (Number.isInteger(v.viewY)) viewY = v.viewY;
+    if (v.viewM >= 1 && v.viewM <= 12) viewM = v.viewM;
+    if (Number.isInteger(v.viewB)) viewB = v.viewB;
+    restoreView = v;
+  }
+} catch {}
+if ('scrollRestoration' in history) history.scrollRestoration = 'manual'; // 위치는 직접 되살림 (브라우저가 그리기 전 위치로 옮겨 어긋나지 않게)
+function saveView() {
+  let v = {};
+  try { v = JSON.parse(ssGet(VIEW_KEY)) || {}; } catch {}
+  try { sessionStorage.setItem(VIEW_KEY, JSON.stringify({ ...v, tab, mode, viewY, viewM, viewB, [location.hash === '#edit' ? 'ey' : 'y']: Math.round(scrollY) })); } catch {}
+}
+addEventListener('pagehide', saveView);
+document.addEventListener('visibilitychange', () => { if (document.hidden) saveView(); });
 const videoDates = m => (m === 'live' ? events.filter(e => liveUrl(e)).map(e => e.date) : rehearsals.map(r => r.date)).sort().reverse(); // 최근부터
 const latestVideo = m => videoDates(m)[0] || TODAY;
 const videoStart = () => dayKey(utc(videoEnd) - (UPCOMING_WEEKS * 7 - 1) * 864e5);
@@ -2474,7 +2497,7 @@ function renderPublic() {
     $('list').replaceChildren(rest.length ? el('div', { class: 'rows' }, groupTbd(rest).map(({ e }) => e._group ? groupRow(e) : row(e)))
       : el('p', { class: 'empty' }, `앞으로 ${UPCOMING_WEEKS}주 안에 다른 찬양이 아직 없습니다. [전체 일정]에서 볼 수 있어요.`));
   }
-  else $('list').replaceChildren(...(mode === 'month' && !query && !(isPc() && tab === 'all') ? [monthCal(viewY, viewM, view.list, nextDate)] : []), ...wrapRows(view.list.length
+  else $('list').replaceChildren(...wrapRows(view.list.length
     ? groupTbd(view.list, e => e.date === nextDate).flatMap(({ e, i }, j, items) => {
       const month = e.date.slice(0, 7);
       const yearList = mode === 'year' && !query;
@@ -4117,6 +4140,11 @@ function route() {
   }
   if (!ready || showLogin) return;
   edit ? renderEditor() : renderPublic();
+  if (restoreView) { // 처음 그린 뒤 한 번만: 보던 위치로
+    const y = edit ? restoreView.ey : restoreView.y;
+    restoreView = null;
+    if (y > 0) requestAnimationFrame(() => scrollTo(0, y));
+  }
 }
 
 /* ===== 홈 화면에 추가 안내 (한 번 닫으면 다시 뜨지 않음) ===== */
