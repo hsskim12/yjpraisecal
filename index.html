@@ -825,6 +825,8 @@
   .meninfo[open] summary::after { content: '접기 ▴'; }
   .meninfo[open] > p { margin-top: 10px; }
   #menAdd { margin-top: 12px; }
+  #menList :is(.rd, .card .date) { display: none; } /* 남성중창은 날짜 없이 곡만 (2026-11-08 사용자) */
+  #menList .card { grid-template-columns: minmax(0, 1fr); }
   h3.lh { margin: 22px 0 6px; font-size: 15px; color: var(--muted); font-weight: 600; }
   .settings { background: #fff; border-radius: 14px; padding: 0 16px; }
   .setrow { min-height: 56px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--line); font-size: 15.5px; }
