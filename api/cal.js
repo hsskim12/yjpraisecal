@@ -28,7 +28,7 @@ function ics(events) {
   const from = new Date(Date.now() - 90 * 864e5).toISOString().slice(0, 10); // 석 달 전부터
   const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//yjpraisecal//choir//KO', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH',
     'X-WR-CALNAME:찬양대 알리미', 'X-WR-TIMEZONE:Asia/Seoul', 'REFRESH-INTERVAL;VALUE=DURATION:PT6H', 'X-PUBLISHED-TTL:PT6H'];
-  events.filter(e => e.id && realDay(e.date) && e.date >= from).forEach(e => {
+  events.filter(e => e.id && realDay(e.date) && e.date >= from && e.type !== '남성중창').forEach(e => { // 남성중창은 사이트 [남성중창] 탭에서만
     const t = String(e.title ?? '').trim(); // 제목이 없으면 'undefined' 대신 '곡 미정'
     const who = [e.conductor && `지휘 ${e.conductor}`, e.pianist && `반주 ${e.pianist}`].filter(Boolean).join(' · ');
     lines.push('BEGIN:VEVENT', `UID:${String(e.id).replace(/[^\w.-]/g, '')}@yjpraisecal`, `DTSTAMP:${stamp}`,
