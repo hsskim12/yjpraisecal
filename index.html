@@ -1488,15 +1488,23 @@ const API_URL = 'https://script.google.com/macros/s/AKfycbzt6FAXMBSwMNe-jXw1wnsj
 const PARTS = ['전체', '소프라노', '알토', '테너', '베이스', '반주'];
 // 제목 오른쪽 버튼 (데이터 키인 part 값은 그대로 두고 표시 이름만 정함)
 const HEAD_PARTS = [{ part: '전체', label: '듣기' }, { part: '반주', label: '반주' }];
-const PART_SHORT = { '소프라노': 'S', '알토': 'A', '테너': 'T', '베이스': 'B', '테너1': 'T1', '테너2': 'T2', '바리톤': 'Bar' }; // 파트 버튼 표시
+const PART_SHORT = { '소프라노': 'S', '알토': 'A', '테너': 'T', '베이스': 'B' }; // 파트 버튼 표시
 const MY_PARTS = ['소프라노', '알토', '테너', '베이스'];  // '내 파트'가 될 수 있는 것 (저장값 확인용 · 반주는 [반주] 버튼으로 따로 봄)
 const DOW = ['일', '월', '화', '수', '목', '금', '토'];
 const TYPES = ['주일 찬양', '대집회 특송', '중집회 특송', '모두회 특송', '구역모임 특송', '남성중창']; // 새 구분은 여기에만 추가
-// 남성중창 곡: [남성중창] 탭에만 보이고(다른 탭·달력·캘린더 구독에서는 빠짐), 파트 칸이 남성 4부
+// 남성중창 곡: [남성중창] 탭에만 보이고(다른 탭·달력·캘린더 구독에서는 빠짐), 파트는 소프라노·테너·베이스 (2026-11-08 사용자 — 알토 없음)
 const MEN = '남성중창';
-const MEN_PARTS = ['전체', '테너1', '테너2', '바리톤', '베이스', '반주'];
-const ALL_PARTS = ['전체', '소프라노', '알토', '테너', '테너1', '테너2', '바리톤', '베이스', '반주']; // 수정 창의 칸 (둘을 합친 것 — 어느 구분이든 순서가 맞게)
+const MEN_PARTS = ['전체', '소프라노', '테너', '베이스', '반주'];
 const partsOf = type => type === MEN ? MEN_PARTS : PARTS;
+// v16.0에서 테너1·테너2로 저장한 남성중창 링크는 소프라노·테너로 읽음 (관리자가 다시 저장하면 새 칸으로 옮겨 저장됨)
+const OLD_MEN = { '테너1': '소프라노', '테너2': '테너' };
+function menParts(e) {
+  if (e.type !== MEN || !e.parts) return e;
+  const p = { ...e.parts };
+  Object.entries(OLD_MEN).forEach(([o, n]) => { if (p[o] && !p[n]) p[n] = p[o]; delete p[o]; });
+  delete p['바리톤'];
+  return { ...e, parts: p };
+}
 const ASSEMBLY_TYPES = ['대집회 특송', '중집회 특송'];  // [집회특송] 화면에 모아 보는 구분
 const typeLabel = type => ({ '주일 찬양': '주일', '대집회 특송': '집회', '중집회 특송': '중집회', '모두회 특송': '모두회', '구역모임 특송': '구역' })[type] || type;
 const TYPE_CUSTOM = '__custom__'; // 목록에 없는 구분을 직접 적을 때
@@ -1716,7 +1724,7 @@ function api(body, query = {}) {
 }
 
 function applyData(d) {
-  events = sorted(d.events || []);
+  events = sorted((d.events || []).map(menParts));
   notices = Array.isArray(d.notices) ? d.notices : [];
   rehearsals = (Array.isArray(d.rehearsals) ? d.rehearsals : []).sort((a, b) => b.date.localeCompare(a.date));
   roster = Array.isArray(d.roster) ? d.roster : [];
@@ -1826,7 +1834,7 @@ const liveUrl = ev => { const u = safeUrl(ev.live); return youtube(u) ? u : ''; 
 // 듣기·파트·악보·참고·실황 중 링크가 하나라도 있는지
 // 연도 오타 막기 — 올해에서 2년 넘게 떨어진 날짜는 저장하지 않음 (먼 미래 일정 하나로 편집 화면에 빈 주일이 수천 줄 생기지 않게)
 const farYear = d => Math.abs(+d.slice(0, 4) - +TODAY.slice(0, 4)) > 2;
-const hasLinks = ev => ALL_PARTS.some(p => safeUrl(ev.parts?.[p])) || linkList(ev.scores, '').length > 0 || linkList(ev.refs, '').length > 0 || !!liveUrl(ev);
+const hasLinks = ev => PARTS.some(p => safeUrl(ev.parts?.[p])) || linkList(ev.scores, '').length > 0 || linkList(ev.refs, '').length > 0 || !!liveUrl(ev);
 
 // ev·part: 곡의 파트 영상을 틀 때 — 재생창 위에 그 곡의 다른 파트 버튼을 보여 줌 (위로 올라가지 않고 바꿔 듣기)
 function play(yt, url, caption, ev, part) {
@@ -3159,10 +3167,10 @@ $('partFields').append(
     el('button', { type: 'button', class: 'btn', id: 'autoBtn', onclick: autoFillParts }, '🔍 파트 영상 자동 찾기'),
     el('span', { class: 'hint', id: 'autoMsg' }, AUTO_HINT)),
   // 파트 단추: 채움(✓)·자동으로 찾음(노랑)·비어 있음(+). 누르면 아래 링크 칸을 열어 그 칸으로
-  el('div', { class: 'partchips', id: 'partChips' }, ...ALL_PARTS.map(p => el('button', { type: 'button', 'data-part': p,
+  el('div', { class: 'partchips', id: 'partChips' }, ...PARTS.map(p => el('button', { type: 'button', 'data-part': p,
     onclick: () => { $('partRows').open = true; form['part-' + p].focus(); } }, p === '전체' ? '듣기' : p))),
   el('details', { class: 'partrows', id: 'partRows' }, el('summary', {}, '링크 보기 · 고치기'),
-    ...ALL_PARTS.map(p => linkRow(`${p} 영상`, el('input', {
+    ...PARTS.map(p => linkRow(`${p} 영상`, el('input', {
       type: 'url', id: 'part-' + p, name: 'part-' + p, placeholder: 'https://youtu.be/...',
       oninput: e => e.target.classList.remove('autofilled'),
     }), { part: p, label2: p }))));
@@ -3175,10 +3183,10 @@ function partChips() {
   });
 }
 $('partFields').addEventListener('input', partChips);
-// 구분에 맞는 파트 칸만 보여 줌 (남성중창 = 테너1·테너2·바리톤·베이스)
+// 구분에 맞는 파트 칸만 보여 줌 (남성중창은 알토 칸 없음)
 function syncPartSlots() {
   const ps = partsOf(form.type.value);
-  ALL_PARTS.forEach(p => {
+  PARTS.forEach(p => {
     $('partChips').querySelector(`[data-part="${p}"]`).hidden = !ps.includes(p);
     form['part-' + p].closest('.partrow').hidden = !ps.includes(p);
   });
@@ -3312,8 +3320,6 @@ $('ytDlg').addEventListener('close', () => $('ytList').replaceChildren()); // �
 const PART_WORDS = {
   '전체': ['합창', '전체', 'choir', 'full'], '소프라노': ['소프라노', 'soprano'], '알토': ['알토', 'alto'],
   '테너': ['테너', 'tenor'], '베이스': ['베이스', 'bass'], '반주': ['반주', 'accomp'],
-  '테너1': ['테너1', '1테너', 'tenor1', '1sttenor', 'firsttenor'], '테너2': ['테너2', '2테너', 'tenor2', '2ndtenor', 'secondtenor'],
-  '바리톤': ['바리톤', 'baritone', 'bariton'],
 };
 const squash = s => String(s || '').toLowerCase().replace(/[^0-9a-z가-힣]/g, ''); // 띄어쓰기·기호를 빼고 비교
 const hasWord = (t, p) => PART_WORDS[p].some(w => t.includes(w));
@@ -3392,7 +3398,7 @@ function openForm(ev, asCopy, slot = null) {
   showTitleHist();
   form.conductor.value = v.conductor || '';
   form.pianist.value = v.pianist || '';
-  ALL_PARTS.forEach(p => { form['part-' + p].value = v.parts?.[p] || ''; form['part-' + p].classList.remove('autofilled'); });
+  PARTS.forEach(p => { form['part-' + p].value = v.parts?.[p] || ''; form['part-' + p].classList.remove('autofilled'); });
   autoMsg(AUTO_HINT);
   form.scores.value = (v.scores || []).join('\n');
   form.refs.value = (v.refs || []).join('\n');
@@ -3438,7 +3444,7 @@ function showTitleHist() {
 function fillFrom(src, btn) {
   let n = 0;
   const put = (input, value) => { if (value && !input.value.trim()) { input.value = value; input.classList.add('autofilled'); n++; } };
-  ALL_PARTS.forEach(p => put(form['part-' + p], safeUrl(src.parts?.[p])));
+  PARTS.forEach(p => put(form['part-' + p], safeUrl(src.parts?.[p])));
   put(form.live, liveUrl(src));
   if (!form.scores.value.trim() && src.scores?.length) { form.scores.value = src.scores.join('\n'); n++; }
   if (!form.refs.value.trim() && src.refs?.length) { form.refs.value = src.refs.join('\n'); n++; }
@@ -3571,7 +3577,7 @@ const CHANGE_NAMES = { date: '날짜', type: '구분', title: '제목', conducto
 function changeDesc(prev, ev) {
   if (!prev) return `${md(ev.date)} 새 일정 「${ev.title}」`;
   // 예전 값도 저장할 때와 똑같이 링크를 정리한 뒤 비교 (드롭박스 raw=1 붙이기 등으로 안 바꾼 칸이 바뀐 것처럼 보이지 않게)
-  const old = { ...prev, type: typeOf(prev), parts: collectParts(p => prev.parts?.[p], '', [], ALL_PARTS),
+  const old = { ...prev, type: typeOf(prev), parts: collectParts(p => prev.parts?.[p], '', [], PARTS),
     scores: cleanLines((prev.scores || []).join('\n'), '', '', []), refs: cleanLines((prev.refs || []).join('\n'), '', '', []),
     live: cleanLive(prev.live, '', []) };
   const val = (e, k) => JSON.stringify(e[k] ?? '');
@@ -4091,7 +4097,7 @@ function psTable(list, next) {
         el('td', { class: 't' + (isTbd(e) ? ' tbd' : '') }, psTitle(e)),
         el('td', {}, known(e.conductor) ? e.conductor : ''),
         el('td', {}, known(e.pianist) ? e.pianist : ''),
-        el('td', { class: 'm' }, [ALL_PARTS.some(p => safeUrl(e.parts?.[p])) && '영상', linkList(e.scores, '').length && '악보'].filter(Boolean).join(' ') || '—')))]))),
+        el('td', { class: 'm' }, [PARTS.some(p => safeUrl(e.parts?.[p])) && '영상', linkList(e.scores, '').length && '악보'].filter(Boolean).join(' ') || '—')))]))),
     el('p', { class: 'pslegend' }, el('b'), '이번 주 찬양 · 자료: 사이트에 파트 연습 영상·악보가 있음')];
 }
 // 월별: 날짜를 크게, 곡마다 큰 글씨 + 아래 공지
