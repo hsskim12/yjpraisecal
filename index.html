@@ -827,6 +827,7 @@
   #menAdd { margin-top: 12px; }
   #menList :is(.rd, .card .date) { display: none; } /* 남성중창은 날짜 없이 곡만 (2026-11-08 사용자) */
   #menList .card { grid-template-columns: minmax(0, 1fr); }
+  .circs { display: flex; gap: 6px; flex-shrink: 0; }
   h3.lh { margin: 22px 0 6px; font-size: 15px; color: var(--muted); font-weight: 600; }
   .settings { background: #fff; border-radius: 14px; padding: 0 16px; }
   .setrow { min-height: 56px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--line); font-size: 15.5px; }
@@ -1130,7 +1131,7 @@
     </div>
     <!-- 남성중창 탭 (바로 열기: 주소 끝 #men) — 안내 글 + 남성중창 곡 -->
     <section class="noticepanel menpanel" id="menPanel" hidden>
-      <h2 class="lh">남성중창</h2>
+      <h2 class="lh">2027동계남성중창</h2>
       <div class="nlist" id="menInfoBox"></div>
       <h3 class="lh">곡 일정</h3>
       <div id="menList"></div>
@@ -2030,6 +2031,13 @@ function rowDate(ev, serif) {
   return el('span', { class: 'rd serif' + (sun ? '' : ' asm') }, el('b', {}, +ev.date.slice(8, 10)), el('small', {}, sun ? '주일' : typeLabel(typeOf(ev)).replace(/ 특송$/, '')));
 }
 function rowCircle(ev) {
+  // 남성중창: S·T·B를 줄에서 바로 눌러 재생 (2026-11-08 사용자) — 내 파트는 빨강, 나머지는 남색
+  const men = isMen(ev) ? ['소프라노', '테너', '베이스'].filter(p => youtube(safeUrl(ev.parts?.[p]))) : [];
+  if (men.length) return el('span', { class: 'circs' }, ...men.map(p => {
+    const u = safeUrl(ev.parts[p]);
+    return el('a', { class: 'circ' + (p === myPart ? '' : ' all'), href: u, target: '_blank', rel: 'noopener', 'aria-label': `${showTitle(ev)} ${p}`,
+      onclick: e => { e.preventDefault(); play(youtube(u), u, `${showTitle(ev)} · ${p}`, ev, p); } }, PART_SHORT[p]);
+  }));
   const mine = myPart && safeUrl(ev.parts?.[myPart]), all = safeUrl(ev.parts?.['전체']), u = mine || all;
   const label = myPart && (mine || !all) ? PART_SHORT[myPart] : '듣기', what = mine ? myPart : '듣기';
   if (!u) return el('span', { class: 'circ off', 'aria-hidden': 'true' }, isTbd(ev) ? '미정' : '—');
