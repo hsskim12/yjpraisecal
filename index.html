@@ -814,7 +814,16 @@
   .nlist .ntag { color: var(--red); font-weight: 700; font-size: 15px; }
   .nlist article p { margin: 2px 0 0; font-size: 17px; white-space: pre-line; overflow-wrap: anywhere; }
   .nlist article .iconbtn { position: absolute; top: 10px; right: 10px; }
-  .menpanel .nlist article:has(.iconbtn) p { padding-right: 48px; } /* 남성중창 안내: 관리자 ✎ 자리 */
+  .menpanel .nlist article:has(.iconbtn) { display: flex; align-items: flex-start; gap: 8px; } /* 남성중창 안내: 관리자 ✎는 글 옆 칸 (겹치지 않게) */
+  .menpanel .nlist article:has(.meninfo:not([open])) { align-items: center; }
+  .menpanel .nlist article > :first-child { flex: 1; min-width: 0; }
+  .menpanel .nlist article .iconbtn { position: static; flex: none; }
+  .meninfo summary { display: flex; align-items: center; gap: 8px; min-height: 44px; margin: -8px 0; cursor: pointer; list-style: none; font-size: 17px; }
+  .meninfo summary::-webkit-details-marker { display: none; }
+  .meninfo .mfirst { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .meninfo summary::after { content: '더 보기 ▾'; flex: none; color: var(--muted); font-size: 15px; font-weight: 600; }
+  .meninfo[open] summary::after { content: '접기 ▴'; }
+  .meninfo[open] > p { margin-top: 10px; }
   #menAdd { margin-top: 12px; }
   h3.lh { margin: 22px 0 6px; font-size: 15px; color: var(--muted); font-weight: 600; }
   .settings { background: #fff; border-radius: 14px; padding: 0 16px; }
@@ -3741,8 +3750,11 @@ $('noticeHint').textContent = '첫 화면에는 각 공지가 두 줄까지 보�
 /* ===== 남성중창 탭 ===== */
 function renderMen() {
   const text = menInfo.trim();
+  // 평소에는 첫 줄만, 누르면 전체 (2026-11-08 사용자) — 한 줄짜리 글은 접지 않음
+  const [first, ...more] = text.split('\n'), rest = more.join('\n').trim();
   $('menInfoBox').replaceChildren(text || token ? el('article', {},
-    el('p', {}, ...(text ? linkify(text) : ['아직 안내 글이 없습니다.'])),
+    rest ? el('details', { class: 'meninfo' }, el('summary', {}, el('span', { class: 'mfirst' }, ...linkify(first))), el('p', {}, ...linkify(rest)))
+      : el('p', {}, ...(text ? linkify(text) : ['아직 안내 글이 없습니다.'])),
     token && el('button', { type: 'button', class: 'iconbtn', 'aria-label': '남성중창 안내 수정', onclick: () => openMenInfo() }, '✎')) : '');
   $('menInfoBox').hidden = !text && !token;
   const list = events.filter(isMen), coming = list.filter(e => e.date >= TODAY), past = list.filter(e => e.date < TODAY).reverse();
