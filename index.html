@@ -820,6 +820,20 @@
   .menpanel .nlist article .iconbtn { position: static; flex: none; }
   .meninfo summary { display: flex; align-items: center; gap: 8px; min-height: 44px; margin: -8px 0; cursor: pointer; list-style: none; font-size: 17px; }
   .meninfo summary::-webkit-details-marker { display: none; }
+  /* 다음 연습 칸 (2026-11-08 사용자) */
+  .menpanel .nlist + .nlist { margin-top: 10px; }
+  .nlist article.mnext { background: var(--navy-soft); }
+  .mnhead { display: flex; align-items: baseline; gap: 8px; font-size: 15px; font-weight: 700; color: var(--navy); }
+  .mnhead .mnleft { margin-left: auto; color: var(--red); white-space: nowrap; }
+  .mnwhen { display: block; margin-top: 4px; font-size: 20px; font-weight: 800; color: var(--navy); }
+  .mnplace { display: block; margin-top: 2px; font-size: 16px; color: var(--ink, inherit); overflow-wrap: anywhere; }
+  .mnall { margin-top: 8px; }
+  .mnall summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; font-size: 15px; font-weight: 700; color: var(--navy); }
+  .mnall ol { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; font-size: 16px; }
+  .mprow { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) 44px; gap: 6px; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
+  .mprow input { min-width: 0; height: 48px; font-size: 16px; }
+  .mprow .mpplace { grid-column: 1 / 3; }
+  #mpAdd { margin-bottom: 12px; }
   .meninfo .mfirst { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .meninfo summary::after { content: '더 보기 ▾'; flex: none; color: var(--muted); font-size: 15px; font-weight: 600; }
   .meninfo[open] summary::after { content: '접기 ▴'; }
@@ -1132,6 +1146,7 @@
     <!-- 남성중창 탭 (바로 열기: 주소 끝 #men) — 안내 글 + 남성중창 곡 -->
     <section class="noticepanel menpanel" id="menPanel" hidden>
       <h2 class="lh">2027동계남성중창</h2>
+      <div class="nlist" id="menNext"></div>
       <div class="nlist" id="menInfoBox"></div>
       <h3 class="lh">곡 일정</h3>
       <div id="menList"></div>
@@ -1259,6 +1274,20 @@
     <p class="noticefull" id="noticeFull"></p>
     <div class="actions"><button type="button" class="btn" id="noticeClose2">닫기</button></div>
   </div>
+</dialog>
+
+<!-- 남성중창 연습 일정 수정 (관리자) -->
+<dialog id="menPracDlg" aria-labelledby="menPracTitle">
+  <form id="menPracForm" novalidate>
+    <h2 id="menPracTitle">연습 일정</h2>
+    <p class="hint">날짜·시간·장소를 한 줄씩 넣어요. 지난 연습은 화면에 나오지 않으니 지우지 않아도 됩니다.</p>
+    <div id="mpRows"></div>
+    <button type="button" class="btn" id="mpAdd">+ 연습 추가</button>
+    <div class="actions">
+      <button type="button" class="btn" id="menPracCancel">취소</button>
+      <button type="submit" class="btn primary">저장</button>
+    </div>
+  </form>
 </dialog>
 
 <!-- 남성중창 안내 수정 (관리자) -->
@@ -1596,7 +1625,7 @@ function busy(btn, on, label) {
 }
 
 /* ===== 화면 상태 ===== */
-let events = [], notices = [], rehearsals = [], roster = [], menInfo = ''; // roster: 대원 명단 [{ name, part }] (참석 응답용)
+let events = [], notices = [], rehearsals = [], roster = [], menInfo = '', menPractice = []; // roster: 대원 명단 [{ name, part }] (참석 응답용)
 let loadState = 'loading', loadMsg = '', staleMsg = '', refreshing = false, lastLoadAt = 0, slowLoad = false;
 let viewY = +TODAY.slice(0, 4), viewM = +TODAY.slice(5, 7);
 const thisPeriod = () => Math.floor((+TODAY.slice(5, 7) - 1) / 2); // 오늘이 속한 2개월 구간 (0=1·2월 … 5=11·12월)
@@ -1732,12 +1761,13 @@ function applyData(d) {
   rehearsals = (Array.isArray(d.rehearsals) ? d.rehearsals : []).sort((a, b) => b.date.localeCompare(a.date));
   roster = Array.isArray(d.roster) ? d.roster : [];
   menInfo = typeof d.menInfo === 'string' ? d.menInfo : '';
+  menPractice = Array.isArray(d.menPractice) ? d.menPractice : [];
 }
 
 let cachedAt = 0; // 휴대폰에 기억한 내용의 시각
 function saveCache() {
   cachedAt = Date.now();
-  lsSet(CACHE_KEY, JSON.stringify({ events, notices, rehearsals, roster, menInfo, at: cachedAt }));
+  lsSet(CACHE_KEY, JSON.stringify({ events, notices, rehearsals, roster, menInfo, menPractice, at: cachedAt }));
 }
 
 function readCache() {
@@ -2721,7 +2751,7 @@ let dataGen = 0; // 저장할 때마다 올림 — load()가 받는 사이에 �
 function mutate(body, applyNow, okMsg, undo, reopen) {
   dataGen++;
   body = { ...body, rid: newId() }; // 같은 요청을 여러 번 보내도 서버는 한 번만 처리 (늦게 온 사본이 뒤의 저장을 덮지 않게)
-  if (!ops.length) confirmed = { events, notices, rehearsals, roster, menInfo };
+  if (!ops.length) confirmed = { events, notices, rehearsals, roster, menInfo, menPractice };
   const op = { applyNow };
   ops.push(op);
   saving = true; // 저장이 끝날 때까지 자동 새로고침을 멈춤
@@ -3764,7 +3794,20 @@ let openNotice = 0; // 전체 보기 창에서 열어 둔 공지 번호 (수정 
 $('noticeHint').textContent = '첫 화면에는 각 공지가 두 줄까지 보이고(휴대폰에서 약 40자), 누르면 전체 내용이 열립니다. 비워 두면 표시되지 않습니다.';
 
 /* ===== 남성중창 탭 ===== */
+// '19:00' → '저녁 7시'
+const hm = t => { if (!t) return ''; const [h, m] = t.split(':').map(Number); return `${h < 12 ? '오전' : h < 18 ? '오후' : '저녁'} ${h % 12 || 12}시${m ? ` ${m}분` : ''}`; };
+const pracWhen = x => [`${md(x.date)}(${DOW[dowOf(x.date)]})`, hm(x.time)].filter(Boolean).join(' ');
 function renderMen() {
+  // 다음 연습: 오늘 이후 가장 가까운 연습 + 그 뒤 연습은 접어서
+  const next = menPractice.filter(x => x.date >= TODAY), n0 = next[0];
+  const gap = n0 ? (utc(n0.date) - utc(TODAY)) / 864e5 : 0;
+  $('menNext').replaceChildren(n0 || token ? el('article', { class: 'mnext' },
+    el('div', {}, el('div', { class: 'mnhead' }, '다음 연습', n0 && el('span', { class: 'mnleft' }, gap === 0 ? '오늘' : gap === 1 ? '내일' : `${gap}일 남음`)),
+      n0 ? [el('b', { class: 'mnwhen' }, pracWhen(n0)), n0.place && el('span', { class: 'mnplace' }, n0.place)] : el('span', { class: 'mnplace' }, '정해진 연습이 없습니다.'),
+      next.length > 1 && el('details', { class: 'mnall' }, el('summary', {}, `이후 연습 ${next.length - 1}회 보기 ▾`),
+        el('ol', {}, ...next.slice(1).map(x => el('li', {}, el('b', {}, pracWhen(x)), x.place && ` · ${x.place}`))))),
+    token && el('button', { type: 'button', class: 'iconbtn', 'aria-label': '연습 일정 수정', onclick: () => openMenPrac() }, '✎')) : '');
+  $('menNext').hidden = !n0 && !token;
   const text = menInfo.trim();
   // 평소에는 첫 줄만, 누르면 전체 (2026-11-08 사용자) — 한 줄짜리 글은 접지 않음
   const [first, ...more] = text.split('\n'), rest = more.join('\n').trim();
@@ -3780,6 +3823,30 @@ function renderMen() {
   $('menAdd').hidden = !token;
 }
 $('menAdd').onclick = () => { openForm(null); form.type.value = MEN; form.type.onchange(); $('linkFold').open = true; };
+let pracBase = [];
+function mpRow(x = {}) {
+  const r = el('div', { class: 'mprow' },
+    el('input', { type: 'date', class: 'mpdate', value: x.date || '', 'aria-label': '연습 날짜' }),
+    el('input', { type: 'time', class: 'mptime', value: x.time || '', 'aria-label': '연습 시간' }),
+    el('button', { type: 'button', class: 'iconbtn', 'aria-label': '이 연습 지우기', onclick: () => r.remove() }, '✕'),
+    el('input', { type: 'text', class: 'mpplace', value: x.place || '', maxlength: 100, placeholder: '장소·메모 (예: 2층 찬양대실)', 'aria-label': '연습 장소·메모' }));
+  return r;
+}
+function openMenPrac(list = menPractice) {
+  pracBase = menPractice;
+  $('mpRows').replaceChildren(...(list.length ? list : [{}]).map(mpRow));
+  openDlg($('menPracDlg'));
+}
+$('mpAdd').onclick = () => { const last = [...$('mpRows').children].at(-1), r = mpRow({ time: last?.querySelector('.mptime').value, place: last?.querySelector('.mpplace').value }); $('mpRows').append(r); r.querySelector('.mpdate').focus(); };
+$('menPracCancel').onclick = () => closeDlg($('menPracDlg'));
+$('menPracForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const list = [...$('mpRows').children].map(r => ({ date: r.querySelector('.mpdate').value, time: r.querySelector('.mptime').value, place: r.querySelector('.mpplace').value.trim() }))
+    .filter(x => /^\d{4}-\d{2}-\d{2}$/.test(x.date)).sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
+  closeDlg($('menPracDlg'));
+  mutate({ action: 'menpractice', token, list, base: pracBase }, () => { menPractice = list; },
+    '연습 일정을 저장했습니다.', null, () => openMenPrac(list));
+});
 let menBase = '';
 function openMenInfo(value = menInfo) {
   menBase = menInfo;
