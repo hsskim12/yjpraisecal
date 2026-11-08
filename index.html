@@ -830,6 +830,19 @@
   .mnall { margin-top: 8px; }
   .mnall summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; font-size: 15px; font-weight: 700; color: var(--navy); }
   .mnall ol { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; font-size: 16px; }
+  .nlist article.mnext { flex-wrap: wrap; }
+  .mncal { margin-top: 8px; flex-basis: 100%; }
+  .mncal summary { min-height: 44px; display: flex; align-items: center; gap: 6px; cursor: pointer; list-style: none; font-size: 15px; font-weight: 700; color: var(--navy); }
+  .mncal summary::-webkit-details-marker { display: none; }
+  .mncal summary::after { content: '펼치기 ▾'; margin-left: auto; color: var(--muted); font-weight: 600; }
+  .mncal[open] summary::after { content: '접기 ▴'; }
+  .mcalnav { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 4px 0 8px; font-size: 16px; color: var(--navy); }
+  .mcalnav .btn { min-width: 44px; min-height: 44px; padding: 0; font-size: 18px; }
+  .mncal .mcal { margin-bottom: 0; }
+  .mcal .today { box-shadow: inset 0 0 0 2px var(--line-strong); }
+  .mcal .asm.past { opacity: .55; }
+  .mncap { margin: 8px 0 0; font-size: 16px; color: var(--navy); font-weight: 700; }
+  .mncap:empty { display: none; }
   .mprow { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) 44px; gap: 6px; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
   .mprow input { min-width: 0; height: 48px; font-size: 16px; }
   .mprow .mpplace { grid-column: 1 / 3; }
@@ -948,6 +961,8 @@
       transition: transform 120ms var(--ease-out), background-color .15s, color .15s, box-shadow .15s, border-color .15s;
     }
     :is(.btn, .chip, .iconbtn, .circ, .switch, .leafchips a, .leafchips .rshare, .tabbar button, .seg button, .linkbtn):not(:disabled):active { transform: scale(.97); }
+    .setrow.go .linkbtn.linkbtn:active { transform: none; } /* 줄 전체가 눌리는 칸: 작아지면 줄을 덮던 영역이 화살표만큼 줄어 글자를 눌러도 안 넘어감 (2026-11-08) */
+    .setrow.go:has(.linkbtn:active) { transform: scale(.99); }
     dialog[open], dialog[open]::backdrop { transition: opacity 200ms var(--ease-out), transform 200ms var(--ease-out); }
     @starting-style {
       dialog[open] { opacity: 0; transform: translateY(8px) scale(.98); }
@@ -3794,6 +3809,31 @@ let openNotice = 0; // 전체 보기 창에서 열어 둔 공지 번호 (수정 
 $('noticeHint').textContent = '첫 화면에는 각 공지가 두 줄까지 보이고(휴대폰에서 약 40자), 누르면 전체 내용이 열립니다. 비워 두면 표시되지 않습니다.';
 
 /* ===== 남성중창 탭 ===== */
+// 연습 달력 (접기 가능, 접은 상태는 이 기기에 기억) — 연습 날은 남색, 다음 연습은 빨강, 누르면 아래에 그날 연습
+const PRAC_CAL_KEY = 'choir-praccal';
+let pracM = null; // 보고 있는 달 'YYYY-MM' (없으면 다음 연습의 달)
+function pracCal(n0) {
+  const ym = pracM || (n0 ? n0.date : TODAY).slice(0, 7), y = +ym.slice(0, 4), m = +ym.slice(5, 7);
+  const first = `${ym}-01`, days = new Date(Date.UTC(y, m, 0)).getUTCDate(), cap = el('p', { class: 'mncap', 'aria-live': 'polite' });
+  const byDay = new Map(); menPractice.forEach(x => byDay.set(x.date, [...(byDay.get(x.date) || []), x]));
+  const cells = DOW.map(d => el('span', { class: 'h' }, d));
+  for (let i = 0; i < dowOf(first); i++) cells.push(el('span'));
+  for (let d = 1; d <= days; d++) {
+    const k = `${ym}-${pad(d)}`, xs = byDay.get(k);
+    const cls = [xs && 'asm', xs && k < TODAY && 'past', n0 && k === n0.date && 'on', k === TODAY && 'today'].filter(Boolean).join(' ');
+    cells.push(xs ? el('button', { type: 'button', class: cls, 'aria-label': `${pracWhen(xs[0])} 연습`,
+      onclick: () => { cap.textContent = xs.map(x => [pracWhen(x), x.place].filter(Boolean).join(' · ')).join(' / '); } }, d)
+      : el('span', { class: cls || null }, d));
+  }
+  const go = n => { const t = new Date(Date.UTC(y, m - 1 + n, 1)); pracM = t.toISOString().slice(0, 7); renderMen(); };
+  const det = el('details', { class: 'mncal', ...(lsGet(PRAC_CAL_KEY) === 'closed' ? {} : { open: '' }) },
+    el('summary', {}, '연습 달력'),
+    el('div', { class: 'mcalnav' }, el('button', { type: 'button', class: 'btn', 'aria-label': '이전 달', onclick: () => go(-1) }, '‹'),
+      el('b', {}, `${y}년 ${m}월`), el('button', { type: 'button', class: 'btn', 'aria-label': '다음 달', onclick: () => go(1) }, '›')),
+    el('div', { class: 'mcal', role: 'group', 'aria-label': `${y}년 ${m}월 연습 달력` }, cells), cap);
+  det.addEventListener('toggle', () => lsSet(PRAC_CAL_KEY, det.open ? null : 'closed'));
+  return det;
+}
 // '19:00' → '저녁 7시'
 const hm = t => { if (!t) return ''; const [h, m] = t.split(':').map(Number); return `${h < 12 ? '오전' : h < 18 ? '오후' : '저녁'} ${h % 12 || 12}시${m ? ` ${m}분` : ''}`; };
 const pracWhen = x => [`${md(x.date)}(${DOW[dowOf(x.date)]})`, hm(x.time)].filter(Boolean).join(' ');
@@ -3806,7 +3846,8 @@ function renderMen() {
       n0 ? [el('b', { class: 'mnwhen' }, pracWhen(n0)), n0.place && el('span', { class: 'mnplace' }, n0.place)] : el('span', { class: 'mnplace' }, '정해진 연습이 없습니다.'),
       next.length > 1 && el('details', { class: 'mnall' }, el('summary', {}, `이후 연습 ${next.length - 1}회 보기 ▾`),
         el('ol', {}, ...next.slice(1).map(x => el('li', {}, el('b', {}, pracWhen(x)), x.place && ` · ${x.place}`))))),
-    token && el('button', { type: 'button', class: 'iconbtn', 'aria-label': '연습 일정 수정', onclick: () => openMenPrac() }, '✎')) : '');
+    token && el('button', { type: 'button', class: 'iconbtn', 'aria-label': '연습 일정 수정', onclick: () => openMenPrac() }, '✎'),
+    menPractice.length > 0 && pracCal(n0)) : ''); // 달력은 ✎ 아래 줄 전체 폭
   $('menNext').hidden = !n0 && !token;
   const text = menInfo.trim();
   // 평소에는 첫 줄만, 누르면 전체 (2026-11-08 사용자) — 한 줄짜리 글은 접지 않음
