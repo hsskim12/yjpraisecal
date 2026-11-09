@@ -2797,7 +2797,7 @@ let dragged = false;      // 끌기 직후의 클릭은 고르기로 치지 않�
 const CONTENT_KEYS = ['title', 'conductor', 'pianist', 'parts', 'scores', 'refs', 'note', 'live'];
 
 function buildBoard() {
-  const up = events.filter(e => e.date >= TODAY);
+  const up = events.filter(e => e.date >= TODAY && !isMen(e)); // 자리의 구분이 곡에 입혀지므로 남성중창이 섞이면 옮길 때 주일 곡과 구분이 뒤바뀜 (남성중창은 목록 아래 고정 줄로)
   const last = up.length ? up[up.length - 1].date : TODAY;
   const end = dayKey(utc(last) + 14 * 864e5); // 맨 뒤로 밀 수 있게 마지막 일정 뒤 2주까지
   const taken = new Set(up.map(e => e.date)); // 곡이 하나라도 있는 주일은 빈 자리를 따로 만들지 않음
@@ -2866,7 +2866,7 @@ function slotRow(i, locked) {
         'aria-label': `${c.title} 옮기기`,
         onkeydown: e => moveByKey(e, i),
       }, '⠿'),
-      edInfo(c, moved && `원래 ${md(c.fromDate)}`),
+      edInfo({ ...c, type: s.type }, moved && `원래 ${md(c.fromDate)}`), // 곡 내용(c)에는 구분이 없음 — 파트 칸 수를 자리의 구분으로 셈
       ev && edBtns(ev, locked)));
 }
 
@@ -3077,7 +3077,8 @@ function renderEditor() {
   // 오늘 이후 일정은 위에 (날짜 자리 + 곡 카드), 지난 일정은 펼쳤을 때만 그 아래에 최근 것부터
   const up = withMonths(board.slots.map((s, i) => ({ date: s.date, i })), it => slotRow(it.i, locked));
   const past = showPast ? events.filter(e => e.date < TODAY).reverse() : [];
-  $('edList').replaceChildren(...up, ...(past.length ? [
+  const men = events.filter(e => isMen(e) && e.date >= TODAY);
+  $('edList').replaceChildren(...up, ...(men.length ? [el('h2', { class: 'pasthead' }, `남성중창 ${men.length}곡`), ...men.map(e => staticRow(e, locked))] : []), ...(past.length ? [
     el('h2', { class: 'pasthead', id: 'pastHead' }, `지난 일정 ${past.length}건 · 최근 것부터`),
     ...withMonths(past.map(e => ({ date: e.date, ev: e })), it => staticRow(it.ev, locked)),
   ] : []));
@@ -3602,7 +3603,7 @@ form.addEventListener('submit', async e => {
   if (!$('tbdChk').checked && ev.title.length < 2 && !confirm(`제목이 "${ev.title}"로 아주 짧습니다. 그대로 저장할까요?\n곡이 아직 없으면 [곡 미정]에 체크해 주세요.`)) return;
 
   // 같은 날, 같은 구분으로 이미 등록된 일정이 있으면: 새로 추가·복제는 [한 칸씩 밀기]/[같은 날 함께 저장]/[취소], 수정은 한 번 물어봄
-  const dup = events.find(e => e.id !== editingId && e.date === ev.date && typeOf(e) === ev.type);
+  const dup = ev.type !== MEN && events.find(e => e.id !== editingId && e.date === ev.date && typeOf(e) === ev.type); // 남성중창은 여러 곡이 같은 날에 있는 것이 정상
   let shifted = [];
   if (dup && !editingId) {
     const pick = await askShift(ev, dup, shiftChain(ev.date, ev.type));
@@ -3776,7 +3777,7 @@ $('bulkForm').addEventListener('submit', async e => {
   }
   // 같은 날·같은 구분 일정이 있으면 한 곡씩 추가할 때처럼 [한 칸씩 밀기]/[같은 날 함께 저장]/[취소]
   // 밀기: 새 날짜를 차례로 넣으며 그 자리의 기존 일정을 빈 자리까지 하루씩 뒤로 (결과적으로 기존 일정이 새 기간 뒤로)
-  const dup = events.find(e => saved.some(x => x.date === e.date && typeOf(e) === type));
+  const dup = type !== MEN && events.find(e => saved.some(x => x.date === e.date && typeOf(e) === type));
   let shifted = [];
   if (dup) {
     const plan = () => { // 지금 목록 기준으로 밀릴 곡들
