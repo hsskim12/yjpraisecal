@@ -771,6 +771,7 @@
   .rd.serif { width: 62px; text-align: center; line-height: 1; font-weight: 400; }
   .rd.serif b { display: block; font-family: var(--serif); font-weight: 900; font-size: 26px; color: var(--red); }
   .rd.serif small { font-size: 15px; color: var(--muted); white-space: nowrap; } /* 특별집회도 한 줄 */
+  .rd.serif small.long { display: block; font-size: 12px; line-height: 1.25; white-space: normal; overflow-wrap: anywhere; margin-top: 2px; } /* 직접 적은 긴 구분(2027동계연합찬양2 등)은 칸 안에서 줄바꿈 (2026-11-12 사용자) */
   .rd.serif.asm b { color: var(--navy); }
   .rowbox.past .t { color: var(--muted); }
   .circ { width: 42px; height: 42px; border-radius: 50%; border: 2px solid var(--red); display: grid; place-items: center; color: var(--red); font-weight: 700; font-size: 15px; flex-shrink: 0; text-decoration: none; transition: background .15s, color .15s; }
@@ -2077,7 +2078,8 @@ function groupTbd(list, keep = () => false) {
 function rowDate(ev, serif) {
   if (!serif) return el('span', { class: 'rd' }, md(ev.date));
   const sun = dowOf(ev.date) === 0;
-  return el('span', { class: 'rd serif' + (sun ? '' : ' asm') }, el('b', {}, +ev.date.slice(8, 10)), el('small', {}, sun ? '주일' : typeLabel(typeOf(ev)).replace(/ 특송$/, '')));
+  const label = sun ? '주일' : typeLabel(typeOf(ev)).replace(/ 특송$/, '');
+  return el('span', { class: 'rd serif' + (sun ? '' : ' asm') }, el('b', {}, +ev.date.slice(8, 10)), el('small', { class: label.length > 4 ? 'long' : null }, label));
 }
 function rowCircle(ev) {
   // 남성중창: S·T·B를 줄에서 바로 눌러 재생 (2026-11-08 사용자) — 내 파트는 빨강, 나머지는 남색
